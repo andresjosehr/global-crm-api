@@ -1,0 +1,104 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Http\Requests\{{ name }}Request;
+use Illuminate\Http\Request;
+use App\Models\{{ name }};
+
+class {{ class }}Controller extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+		$data={{ name }}::{{ searchableFields }}paginate($perPage);
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $data);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store({{ name }}Request $request)
+    {
+        ${{ camelName }} = new {{ name }}();
+
+        {{ editableFields }}
+
+        ${{ camelName }}->save();
+
+        return ApiResponseController::response('Registro creado con exito', 200, ${{ camelName }});
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        ${{ camelName }} = {{ name }}::find($id);
+
+        if(!${{ camelName }}){
+            return ApiResponseController::response('No se encontro el registro', 204, null);
+        }
+
+        return ApiResponseController::response('Consulta Exitosa', 200, ${{ camelName }});
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update({{ name }}Request $request, $id)
+    {
+        ${{ camelName }} = {{ name }}::find($id);
+
+        if(!${{ camelName }}){
+            return ApiResponseController::response('No se encontro el registro', 204, null);
+        }
+
+        {{ editableFields }}
+
+        ${{ camelName }}->save();
+
+        return ApiResponseController::response('Registro actualizado con exito', 200, ${{ camelName }});
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        ${{ camelName }} = {{ name }}::find($id);
+
+        if(!${{ camelName }}){
+            return ApiResponseController::response('No se encontro el registro', 204, null);
+        }
+
+        ${{ camelName }}->delete();
+        return ApiResponseController::response('Registro eliminada con exito', 200, null);
+    }
+
+
+    public function getAll()
+    {
+        $data = {{ name }}::all();
+        return ApiResponseController::response('Consulta Exitosa', 200, $data);
+    }
+}
