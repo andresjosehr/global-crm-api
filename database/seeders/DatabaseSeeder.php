@@ -19,6 +19,11 @@ class DatabaseSeeder extends Seeder
         $this->call(ModulesRolesSeeder::class);
         $this->call(UsersSeeder::class);
         $this->call(StudentsSeeder::class);
-
+        $this->call(CountriesSeeder::class);
+        $this->call(CurrenciesSeeder::class);
+        $this->call(CoursesSeeder::class);
+        $this->call(PricesSeeder::class);
+        $this->call(CoursesPricesSeeder::class);
+        $this->call(PaymentMethodsSeeder::class);
     }
 }

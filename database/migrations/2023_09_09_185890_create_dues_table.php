@@ -13,14 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('dues', function (Blueprint $table) {
             $table->id();
-            $table->text('name');
-            $table->text('email');
-            $table->text('phone');
-            $table->text('document');
-            $table->bigInteger('country_id')->unsigned()->nullable();
-            $table->foreign('country_id')->references('id')->on('countries');
+            $table->bigInteger('order_id')->unsigned()->nullable();
+            $table->foreign('order_id')->references('id')->on('orders');
+            $table->date('date');
+            $table->decimal('amount', 8, 2);
+            $table->boolean('paid')->default(false);
+            $table->integer('position')->nullable();
+
             $table->timestamps();
         });
     }
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('dues');
     }
 };

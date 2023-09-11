@@ -13,14 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('course_prices', function (Blueprint $table) {
             $table->id();
-            $table->text('name');
-            $table->text('email');
-            $table->text('phone');
-            $table->text('document');
-            $table->bigInteger('country_id')->unsigned()->nullable();
-            $table->foreign('country_id')->references('id')->on('countries');
+
+            $table->bigInteger('course_id')->unsigned()->nullable();
+            $table->foreign('course_id')->references('id')->on('courses');
+
+            $table->bigInteger('price_id')->unsigned()->nullable();
+            $table->foreign('price_id')->references('id')->on('prices');
+
             $table->timestamps();
         });
     }
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('course_prices');
     }
 };
