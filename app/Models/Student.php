@@ -16,4 +16,9 @@ class Student extends Model
         'document',
         'email',
     ];
+
+    function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

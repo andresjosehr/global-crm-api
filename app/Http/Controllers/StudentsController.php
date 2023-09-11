@@ -71,7 +71,7 @@ class StudentsController extends Controller
      */
     public function show($id)
     {
-        if (!$student = Student::find($id)) {
+        if (!$student = Student::with('orders.courses', 'orders.currency', 'orders.dues', 'orders.user')->find($id)) {
             return ApiResponseController::response('', 204);
         }
 

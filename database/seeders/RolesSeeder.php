@@ -23,6 +23,22 @@ class RolesSeeder extends Seeder
             [
                 'name' => 'Administrador',
                 'description' => 'Administrador del sistema',
+            ],
+            [
+                'name' => 'Asesor de ventas',
+                'description' => '',
+            ],
+            [
+                'name' => 'Asesor academico de cobranza',
+                'description' => '',
+            ],
+            [
+                'name' => 'Asesor academico',
+                'description' => '',
+            ],
+            [
+                'name' => 'Tecnico de instalación',
+                'description' => '',
             ]
         ]);
     }

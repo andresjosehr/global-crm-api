@@ -13,17 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('dues', function (Blueprint $table) {
+        Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('order_id')->unsigned()->nullable();
-            $table->foreign('order_id')->references('id')->on('orders');
-            $table->date('date');
-            $table->decimal('amount', 8, 2);
-            $table->boolean('paid')->default(false);
+            $table->timestamp('date');
+            $table->integer('amount');
             $table->bigInteger('payment_method_id')->unsigned()->nullable();
             $table->foreign('payment_method_id')->references('id')->on('payment_methods');
-            $table->integer('position')->nullable();
-
+            $table->string('reference');
+            $table->longText('observation');
+            $table->boolean('paid')->default(false);
             $table->timestamps();
         });
     }
@@ -35,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('dues');
+        Schema::dropIfExists('payments');
     }
 };

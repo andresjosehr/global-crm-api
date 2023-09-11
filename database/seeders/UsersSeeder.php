@@ -38,6 +38,25 @@ class UsersSeeder extends Seeder
                 'email' => 'jose.cardozo@globaltecnologiasacademy.com',
                 'password' => bcrypt('secret'),
                 'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
+            ],
+
+            [
+                'name' => 'Asesor de ventas 1',
+                'email' => 'asesordeventas1@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+            ],
+            [
+                'name' => 'Asesor de ventas 2',
+                'email' => 'asesordeventas2@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+            ],
+            [
+                'name' => 'Asesor de ventas 3',
+                'email' => 'asesordeventas3@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
             ]
         ]);
 

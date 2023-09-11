@@ -30,7 +30,11 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 	Route::get('get-all-cars', 'App\Http\Controllers\CarsController@getAll');
 
 	Route::resource('students', 'App\Http\Controllers\StudentsController');
+    Route::resource('orders', 'App\Http\Controllers\OrdersController');
     Route::get('student-orders/get-options', 'App\Http\Controllers\OrdersController@getOptions');
+
+    Route::resource('dues', 'App\Http\Controllers\DuesController');
+    Route::resource('orders-courses', 'App\Http\Controllers\OrdersCoursesController');
 
 	/* Add new routes here */
 });

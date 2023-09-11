@@ -21,9 +21,9 @@ return new class extends Migration
             $table->bigInteger('order_id')->unsigned()->nullable();
             $table->foreign('order_id')->references('id')->on('orders');
 
-            $table->bigInteger('payment_method_id')->unsigned()->nullable();
-            $table->foreign('payment_method_id')->references('id')->on('payment_methods');
+            $table->string('license')->nullable();
 
+            $table->string('course_type')->nullable();
 
             $table->timestamp('start');
             $table->timestamp('end');

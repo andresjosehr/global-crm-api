@@ -28,6 +28,10 @@ class ModulesRolesSeeder extends Seeder
                 'module_id' => self::module('Alumnos'),
                 'role_id'   => self::role('Administrador'),
             ],
+            [
+                'module_id' => self::module('Alumnos'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
         ]);
     }
 
