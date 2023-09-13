@@ -32,4 +32,10 @@ class Order extends Model
     function user(){
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    // Accesor for terms_confirmed_by_student boolean
+    public function getTermsConfirmedByStudentAttribute($value)
+    {
+        return $value == 1 ? true : false;
+    }
 }

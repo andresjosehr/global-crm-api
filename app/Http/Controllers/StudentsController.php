@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\Student;
 use Illuminate\Http\Request;
 
@@ -123,5 +124,41 @@ class StudentsController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+
+    function checkTermsAccess(Request $request, $key){
+        $order = Order::where('key', $key)->where('terms_confirmed_by_student', 0)->first();
+
+        if (!$order) {
+            return ApiResponseController::response('Unauthorized', 401);
+        }
+
+        return ApiResponseController::response('Authorized', 200);
+    }
+
+
+    function getTermsInfo($key){
+        $order = Order::where('key', $key)->where('terms_confirmed_by_student', false)->with('student', 'courses.course', 'dues', 'currency')->first();
+
+        if(!$order){
+            return ApiResponseController::response('No se encontró la orden', 404);
+        }
+
+        return ApiResponseController::response('Consulta exitosa', 200, $order);
+    }
+
+
+    function confirmTermsInfo($key){
+        $order = Order::where('key', $key)->where('terms_confirmed_by_student', false)->first();
+
+        if(!$order){
+            return ApiResponseController::response('No se encontró la orden', 404);
+        }
+
+        $order->terms_confirmed_by_student = true;
+        $order->save();
+
+        return ApiResponseController::response('Consulta exitosa', 200, $order);
     }
 }

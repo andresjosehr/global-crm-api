@@ -16,9 +16,15 @@ class OrderCourse extends Model
         'license',
         'course_type',
         'start',
+        'enabled',
         'end',
         'observation',
     ];
+
+    function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
 
     public function setStartAttribute($value)
     {

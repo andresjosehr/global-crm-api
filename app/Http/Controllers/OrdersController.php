@@ -55,6 +55,8 @@ class OrdersController extends Controller
         $order->price_id = $request->price_id;
         $order->price_amount = $request->price_amount;
         $order->created_by = $id;
+        // Generate random key
+        $order->key = md5(microtime());
 
 
         $order->save();
@@ -65,6 +67,8 @@ class OrdersController extends Controller
 
         // Dues
         $order->dues()->createMany($request->dues);
+
+
 
         return ApiResponseController::response('Orden creada exitosamente', 201, $order);
 
@@ -172,4 +176,6 @@ class OrdersController extends Controller
 
         return ApiResponseController::response('Consulta exitosa', 200, $options);
     }
+
+
 }

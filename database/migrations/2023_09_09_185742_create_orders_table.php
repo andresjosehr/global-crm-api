@@ -40,6 +40,9 @@ return new class extends Migration
             $table->bigInteger('updated_by')->unsigned()->nullable();
             $table->foreign('updated_by')->references('id')->on('users');
 
+            $table->string('key')->nullable();
+            $table->boolean('terms_confirmed_by_student')->default(false);
+
             $table->timestamps();
         });
     }

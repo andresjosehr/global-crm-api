@@ -15,6 +15,7 @@ class Due extends Model
         'payment_method_id',
         'amount',
         'due_date',
+        'paid',
         'status',
     ];
 }
