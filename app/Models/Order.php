@@ -33,6 +33,11 @@ class Order extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    function invoice()
+    {
+        return $this->hasOne(Invoice::class);
+    }
+
     // Accesor for terms_confirmed_by_student boolean
     public function getTermsConfirmedByStudentAttribute($value)
     {

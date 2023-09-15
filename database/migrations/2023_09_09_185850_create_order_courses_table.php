@@ -28,6 +28,8 @@ return new class extends Migration
             $table->timestamp('start');
             $table->timestamp('end');
 
+            $table->string('sap_user')->nullable();
+
             $table->boolean('enabled')->default(false);
 
             $table->longText('observation')->nullable();

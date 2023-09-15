@@ -13,14 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('document_types', function (Blueprint $table) {
             $table->id();
-            $table->text('name');
-            $table->text('email');
-            $table->text('phone');
-            $table->bigInteger('document_type_id')->unsigned()->nullable();
-            $table->foreign('document_type_id')->references('id')->on('document_types');
-            $table->text('document');
+            $table->string('name');
+            $table->string('code')->nullable();
+            $table->string('description')->nullable();
+            $table->boolean('custom')->default(false);
             $table->bigInteger('country_id')->unsigned()->nullable();
             $table->foreign('country_id')->references('id')->on('countries');
             $table->timestamps();
@@ -34,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('document_types');
     }
 };

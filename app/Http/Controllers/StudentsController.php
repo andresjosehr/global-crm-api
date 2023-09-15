@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\DocumentType;
 use App\Models\Order;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -29,8 +30,8 @@ class StudentsController extends Controller
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
         })
-        ->orderByDesc('id')
-        ->paginate($perPage);
+            ->orderByDesc('id')
+            ->paginate($perPage);
 
         return ApiResponseController::response('Consulta Exitosa', 200, $users);
     }
@@ -72,7 +73,7 @@ class StudentsController extends Controller
      */
     public function show($id)
     {
-        if (!$student = Student::with('orders.courses', 'orders.currency', 'orders.dues', 'orders.user')->find($id)) {
+        if (!$student = Student::with('orders.courses', 'orders.currency', 'orders.dues', 'orders.user', 'orders.invoice')->find($id)) {
             return ApiResponseController::response('', 204);
         }
 
@@ -106,10 +107,28 @@ class StudentsController extends Controller
         }
 
         $student->name                = $request->input('name');
-        $student->country             = $request->input('country');
+        $student->country_id             = $request->input('country_id');
         $student->phone               = $request->input('phone');
-        $student->document            = $request->input('document');
+
         $student->email               = $request->input('email');
+
+
+
+        if ($request->input('document_type_id') == 'otro') {
+            // Check if exists
+            if (!DocumentType::where('name', $request->input('document_type_name'))->exists()) {
+                $documentType = new DocumentType();
+                $documentType->name = $request->input('document_type_name');
+                $documentType->custom = true;
+                $documentType->country_id = $request->input('country_id');
+                $documentType->save();
+                $student->document_type_id = $documentType->id;
+            }
+        } else {
+            $student->document_type_id     = $request->input('document_type_id');
+        }
+
+
         $student->save();
 
         return ApiResponseController::response('Usuario actualizado con exito', 200, $student);
@@ -127,7 +146,8 @@ class StudentsController extends Controller
     }
 
 
-    function checkTermsAccess(Request $request, $key){
+    function checkTermsAccess(Request $request, $key)
+    {
         $order = Order::where('key', $key)->where('terms_confirmed_by_student', 0)->first();
 
         if (!$order) {
@@ -138,10 +158,11 @@ class StudentsController extends Controller
     }
 
 
-    function getTermsInfo($key){
+    function getTermsInfo($key)
+    {
         $order = Order::where('key', $key)->where('terms_confirmed_by_student', false)->with('student', 'courses.course', 'dues', 'currency')->first();
 
-        if(!$order){
+        if (!$order) {
             return ApiResponseController::response('No se encontró la orden', 404);
         }
 
@@ -149,11 +170,37 @@ class StudentsController extends Controller
     }
 
 
-    function confirmTermsInfo($key){
+    function confirmTermsInfo(Request $request, $key)
+    {
         $order = Order::where('key', $key)->where('terms_confirmed_by_student', false)->first();
 
-        if(!$order){
+        if (!$order) {
             return ApiResponseController::response('No se encontró la orden', 404);
+        }
+
+
+        $student                       = Student::find($order->student->id);
+
+        $student->name                = $request->input('name');
+        $student->country_id             = $request->input('country_id');
+        $student->phone               = $request->input('phone');
+
+        $student->email               = $request->input('email');
+
+
+
+        if ($request->input('document_type_id') == 'otro') {
+            // Check if exists
+            if (!DocumentType::where('name', $request->input('document_type_name'))->exists()) {
+                $documentType = new DocumentType();
+                $documentType->name = $request->input('document_type_name');
+                $documentType->custom = true;
+                $documentType->country_id = $request->input('country_id');
+                $documentType->save();
+                $student->document_type_id = $documentType->id;
+            }
+        } else {
+            $student->document_type_id     = $request->input('document_type_id');
         }
 
         $order->terms_confirmed_by_student = true;
