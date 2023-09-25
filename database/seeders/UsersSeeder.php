@@ -57,8 +57,23 @@ class UsersSeeder extends Seeder
                 'email' => 'asesordeventas3@gmail.com',
                 'password' => bcrypt('secret'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+            ],
+            [
+                'name' => 'Tectico de instalación 1',
+                'email' => 'tecnicoinstalacion@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Tecnico de instalación')->first()->id,
+            ],
+            [
+                'name' => 'Tectico de instalación 2',
+                'email' => 'tecnicoinstalacion2@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Tecnico de instalación')->first()->id,
             ]
         ]);
+
+
+
 
     }
 }

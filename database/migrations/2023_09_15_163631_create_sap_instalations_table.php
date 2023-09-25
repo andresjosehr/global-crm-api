@@ -17,7 +17,8 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('order_id')->unsigned()->nullable();
             $table->foreign('order_id')->references('id')->on('orders');
-            $table->timestamp('instalation_date')->nullable();
+            $table->dateTime('start_datetime')->nullable();
+            $table->dateTime('end_datetime')->nullable();
             $table->string('status')->nullable();
             $table->bigInteger('staff_id')->unsigned()->nullable();
             $table->foreign('staff_id')->references('id')->on('users');

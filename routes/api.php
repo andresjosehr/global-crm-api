@@ -38,6 +38,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::resource('messages', 'App\Http\Controllers\MessagesController');
     Route::resource('document-types', 'App\Http\Controllers\DocumentTypesController');
+    Route::post('user/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
 
 	/* Add new routes here */
 });
@@ -45,6 +46,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 Route::get('auth/check-term-access/{key}', 'App\Http\Controllers\StudentsController@checkTermsAccess');
 Route::get('terms-info/{key}', 'App\Http\Controllers\StudentsController@getTermsInfo');
 Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController@confirmTermsInfo');
+
 
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
 Route::get('countries', 'App\Http\Controllers\CountriesController@index');

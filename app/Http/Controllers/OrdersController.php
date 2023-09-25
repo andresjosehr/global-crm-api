@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Price;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class OrdersController extends Controller
@@ -220,6 +221,9 @@ class OrdersController extends Controller
         $currencies = Currency::all();
         $paymentMethods = PaymentMethod::all();
         $documentTypes = DocumentType::all();
+        $user = User::whereHas('role', function ($query) {
+            $query->where('name', 'Tecnico de instalación');
+        })->get()->append(['unavailableTimes', 'bussyTimes']);
 
         $options = [
             'courses' => $courses,
@@ -227,6 +231,7 @@ class OrdersController extends Controller
             'currencies' => $currencies,
             'paymentMethods' => $paymentMethods,
             'documentTypes' => $documentTypes,
+            'staff' => $user
         ];
 
         return ApiResponseController::response('Consulta exitosa', 200, $options);

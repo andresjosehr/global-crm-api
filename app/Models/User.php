@@ -3,9 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -64,15 +67,15 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public static function checkPassword($password)
-	{
-		return Hash::check($password, $this->password);
-	}
+    {
+        return Hash::check($password, $this->password);
+    }
 
 
 
     public function role()
-	{
-		return $this->belongsTo(Role::class);
+    {
+        return $this->belongsTo(Role::class);
     }
 
 
@@ -82,4 +85,184 @@ class User extends Authenticatable implements JWTSubject
         return $modules;
     }
 
+    function sap_instalation()
+    {
+        return $this->hasMany(SapInstalation::class, 'staff_id');
+    }
+
+
+    public function getUnavailableTimesAttribute()
+    {
+        $availability = $this->availabilitySlots()
+            ->orderBy('day')
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy('day');
+
+        $unavailableTimes = [];
+
+        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+            if ($availability->has($day)) {
+                $unavailableTimes[$day] = [];
+
+                $previousEnd = Carbon::parse('00:00:00');
+
+                foreach ($availability[$day] as $slot) {
+                    $start = Carbon::parse($slot->start_time);
+                    $end = Carbon::parse($slot->end_time);
+
+                    if ($previousEnd->lt($start)) {
+                        $unavailableTimes[$day][] = [
+                            'start_time' => $previousEnd->toTimeString(),
+                            'end_time' => $start->toTimeString(),
+                        ];
+                    }
+
+                    $previousEnd = $end->gt($previousEnd) ? $end : $previousEnd;
+                }
+
+                if ($previousEnd->lt(Carbon::parse('23:59:59'))) {
+                    $unavailableTimes[$day][] = [
+                        'start_time' => $previousEnd->toTimeString(),
+                        'end_time' => Carbon::parse('23:59:59')->toTimeString(),
+                    ];
+                }
+            }
+        }
+
+        return $unavailableTimes;
+    }
+
+    public function getBussyTimesAttribute()
+    {
+        // Obtén las asignaciones de este usuario
+        $assignments = $this->hasMany(SapInstalation::class, 'staff_id')
+            ->select([
+                DB::raw('DATE(start_datetime) as date'),
+                DB::raw('TIME(start_datetime) as start_time'),
+                DB::raw('TIME(end_datetime) as end_time')
+            ])
+            ->get()
+            ->groupBy('date');
+
+        // Formatea los resultados
+        $busyTimes = [];
+        foreach ($assignments as $date => $times) {
+            // Agrupa los tiempos por bloques de media hora
+            $timeBlocks = $times->groupBy(function ($date) {
+                return $date->start_time . '-' . $date->end_time;
+            });
+
+            // Filtra los bloques de tiempo que tienen menos de 2 asignaciones
+            $filteredTimeBlocks = $timeBlocks->filter(function ($block) {
+                return count($block) >= 2;
+            });
+
+            // Si hay bloques de tiempo ocupados para esta fecha, los añadimos al array resultante
+            if (!$filteredTimeBlocks->isEmpty()) {
+                $busyTimes[$date] = $filteredTimeBlocks->map(function ($block) {
+                    return [
+                        'start_time' => $block->first()->start_time,
+                        'end_time' => $block->first()->end_time,
+                    ];
+                })->values()->toArray();
+            }
+        }
+
+        return $busyTimes;
+    }
+
+    public function getBussyTimesForCalculateAttribute()
+    {
+        // Obtén las asignaciones de este usuario
+        $assignments = $this->hasMany(SapInstalation::class, 'staff_id')
+            ->select([
+                DB::raw('DATE(start_datetime) as date'),
+                DB::raw('TIME(start_datetime) as start_time'),
+                DB::raw('TIME(end_datetime) as end_time')
+            ])
+            ->get()
+            ->groupBy('date');
+
+        // Formatea los resultados
+        $busyTimes = [];
+        foreach ($assignments as $date => $times) {
+
+            $busyTimes[$date] = $times->map(function ($block) {
+                return [
+                    'start_time' => $block->start_time,
+                    'end_time' => $block->end_time,
+                ];
+            })->values()->toArray();
+        }
+
+        return $busyTimes;
+    }
+
+
+    public function getAvailableTimesForDate($date, $datesBussy = [])
+    {
+        // Convertir la fecha a un objeto Carbon
+        $date = Carbon::parse($date);
+
+        // Obtener el nombre del día en inglés en minúscula para ese día
+        $dayName = strtolower($date->format('l'));
+
+        // Iniciar con todos los intervalos de 30 minutos del día como disponibles
+        $intervals = [];
+        for ($time = Carbon::parse('00:00:00'); $time < Carbon::parse('24:00:00'); $time->addMinutes(30)) {
+            $intervals[] = [
+                'start_time' => $time->toTimeString(),
+                'end_time' => (clone $time)->addMinutes(30)->toTimeString(),
+            ];
+        }
+
+        // Obtener los tiempos ocupados y no disponibles para ese día
+        $busyTimesForDay = data_get($this->append('bussyTimesForCalculate')->bussyTimesForCalculate, $date->format('Y-m-d'), []);
+        $unavailableTimesForDay = data_get($this->unavailableTimes, $dayName, []);
+
+        // return $this->append('bussyTimes')->bussyTimes;
+
+        // Adicionar los tiempos ocupados enviados desde el frontend
+        $additionalBusyTimes = data_get($datesBussy, $date->format('Y-m-d'), []);
+
+        // Fusionar y contar las ocurrencias de cada intervalo de tiempo
+        $mergedBusyTimes = array_merge(array_column($busyTimesForDay, 'start_time'), $additionalBusyTimes);
+        $timeOccurrences = array_count_values($mergedBusyTimes);
+
+        // Filtrar los intervalos de tiempo donde las ocurrencias son mayores o iguales a 2
+        $finalBusyTimes = array_filter($timeOccurrences, function ($occurrence) {
+            return $occurrence >= 2;
+        });
+
+        // Función para verificar si un intervalo de tiempo está ocupado o no disponible
+        $isIntervalUnavailable = function ($interval) use ($finalBusyTimes, $unavailableTimesForDay) {
+            $startTime = Carbon::parse($interval['start_time']);
+            $endTime = Carbon::parse($interval['end_time']);
+            if (isset($finalBusyTimes[$interval['start_time']])) {
+                return true;
+            }
+            foreach ($unavailableTimesForDay as $unavailableInterval) {
+                $unavailableStart = Carbon::parse($unavailableInterval['start_time']);
+                $unavailableEnd = Carbon::parse($unavailableInterval['end_time']);
+                if ($startTime->lt($unavailableEnd) && $endTime->gt($unavailableStart)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        // Filtrar los intervalos de tiempo para quedarse solo con los disponibles
+        $availableIntervals = array_filter($intervals, function ($interval) use ($isIntervalUnavailable) {
+            return !$isIntervalUnavailable($interval);
+        });
+
+        return array_values($availableIntervals);
+    }
+
+
+    public function availabilitySlots()
+    {
+        return $this->hasMany(StaffAvailabilitySlot::class);
+    }
 }
