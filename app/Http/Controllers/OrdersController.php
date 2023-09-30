@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\CertificationTest;
 use App\Models\Course;
 use App\Models\Currency;
 use App\Models\DocumentType;
@@ -71,6 +72,19 @@ class OrdersController extends Controller
         // Dues
         $order->dues()->createMany($request->dues);
 
+        foreach($order->courses as $course){
+            for($i = 0; $i < 5; $i++){
+                $certificationTest = new CertificationTest();
+                $certificationTest->description = "Examen de certificación " . ($i + 1);
+                $certificationTest->order_id = $order->id;
+                $certificationTest->order_course_id = $course->id;
+                $certificationTest->enabled = $i < 3;
+                $certificationTest->status = 'Sin realizar';
+                $certificationTest->premium = $i >= 3;
+                $certificationTest->save();
+            }
+        }
+
 
         $invoice = new Invoice();
         if ($request->invoice['tax_situation_proof_changed']) {
@@ -110,7 +124,7 @@ class OrdersController extends Controller
     public function show($id)
     {
         if (Order::where('id', $id)->exists()) {
-            $order = Order::with('courses', 'dues', 'student', 'currency', 'price')->find($id);
+            $order = Order::with('courses', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
             return ApiResponseController::response('Consulta exitosa', 200, $order);
         } else {
             return ApiResponseController::response('La orden no existe', 404);
@@ -158,6 +172,11 @@ class OrdersController extends Controller
             // Dues
             $order->dues()->delete();
             $order->dues()->createMany($request->dues);
+
+            // Certification Test Sync
+            $order->certificationTests()->delete();
+            $order->courses()->createMany($request->certification_tests);
+
 
             $invoice = Invoice::where('order_id', $order->id)->first();
 

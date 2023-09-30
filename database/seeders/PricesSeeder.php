@@ -1188,6 +1188,93 @@ class PricesSeeder extends Seeder
                 'amount' => 250,
                 'months' => 18,
                 'mode' => 'contado'
+            ],
+
+
+
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 20,
+                'months' => 1,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 40,
+                'months' => 2,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 60,
+                'months' => 3,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 80,
+                'months' => 4,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 100,
+                'months' => 5,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 95,
+                'months' => 6,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 110,
+                'months' => 7,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 120,
+                'months' => 8,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 130,
+                'months' => 9,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 140,
+                'months' => 10,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 150,
+                'months' => 11,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 160,
+                'months' => 12,
+                'mode' => ''
             ]
 
 

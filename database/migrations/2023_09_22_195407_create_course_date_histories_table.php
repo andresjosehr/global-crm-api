@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('course_date_histories', function (Blueprint $table) {
+        Schema::create('dates_history', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('order_course_id')->unsigned()->nullable();
             $table->foreign('order_course_id')->references('id')->on('order_courses');

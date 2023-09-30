@@ -26,6 +26,11 @@ class OrderCourse extends Model
         return $this->belongsTo(Course::class);
     }
 
+    public function certificationTests()
+    {
+        return $this->hasMany(CertificationTest::class);
+    }
+
     public function setStartAttribute($value)
     {
         $this->attributes['start'] = Carbon::parse($value)->format('Y-m-d');

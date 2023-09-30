@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('sap_user')->nullable();
 
             $table->boolean('enabled')->default(false);
+            $table->boolean('certification_status')->default(false);
 
             $table->longText('observation')->nullable();
 

@@ -13,16 +13,21 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sap_instalations', function (Blueprint $table) {
+        Schema::create('freezings', function (Blueprint $table) {
             $table->id();
+            $table->string('duration');
+
+            $table->date('freezing_start');
+            $table->date('freezing_end');
+
+            $table->date('payment_date')->nullable();
+
             $table->bigInteger('order_id')->unsigned()->nullable();
             $table->foreign('order_id')->references('id')->on('orders');
-            $table->dateTime('start_datetime')->nullable();
-            $table->dateTime('end_datetime')->nullable();
-            $table->string('status')->nullable();
-            $table->string('pc_type')->nullable();
-            $table->bigInteger('staff_id')->unsigned()->nullable();
-            $table->foreign('staff_id')->references('id')->on('users');
+
+            $table->bigInteger('order_course_id')->unsigned()->nullable();
+            $table->foreign('order_course_id')->references('id')->on('order_courses');
+
             $table->timestamps();
         });
     }
@@ -34,6 +39,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sap_instalations');
+        Schema::dropIfExists('freezings');
     }
 };

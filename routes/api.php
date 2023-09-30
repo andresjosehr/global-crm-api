@@ -43,6 +43,8 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 	/* Add new routes here */
 });
 
+Route::get('users/find-available-staff/{date}', 'App\Http\Controllers\UsersController@findAvailableStaff');
+
 Route::get('auth/check-term-access/{key}', 'App\Http\Controllers\StudentsController@checkTermsAccess');
 Route::get('terms-info/{key}', 'App\Http\Controllers\StudentsController@getTermsInfo');
 Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController@confirmTermsInfo');
