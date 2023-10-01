@@ -29,6 +29,7 @@ class StudentsSeeder extends Seeder
                     'name' => $faker->name,
                     'email' => $faker->email,
                     'phone' => $faker->phoneNumber,
+                    'classroom_user' => $faker->userName,
                     'document' => $faker->randomNumber(8),
                     'created_at' => now(),
                     'updated_at' => now()

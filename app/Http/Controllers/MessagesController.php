@@ -15,7 +15,7 @@ class MessagesController extends Controller
      */
     public function index()
     {
-        //
+        return ApiResponseController::response('Consulta Exitosa', 200, Message::all());
     }
 
     /**

@@ -19,7 +19,7 @@ class MessagesSeeder extends Seeder
         DB::table('messages')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        DB::table('messages')->insert([
+        $messages = [
             [
                 'name' => 'Confirmacion de compra',
                 'content' => 'CONFIRMACIÓN DE TU COMPRA
@@ -74,7 +74,143 @@ class MessagesSeeder extends Seeder
 
                 Sin más que agregar
                 Nuevamente bienvenido/a.'
+            ],
+            [
+                'name' => 'Inicio SAP',
+                'content' => "Hola, espero te encuentres bien.
+
+                *Te hemos enviado a tu correo tu usuario y contraseña para que puedas iniciar tu curso, así como una guía con el paso a paso para que puedas visualizar tu primer vídeo y el link de nuestra aula virtual.*
+
+                🚨⚠️ *SI EL CORREO NO LO ENCUENTRAS EN LA BANDEJA DE ENTRADA, POR FAVOR REVISA TU BANDEJA DE CORREOS NO DESEADOS O SPAM.*
+
+                Te recuerdo que tus clases son *pre-grabadas* y se encuentran cargadas en tu aula virtual y esta se encuentra habilitada 24/7, para que puedas avanzar a tu propio ritmo, *es decir que no hay horarios.*
+
+                *En tu aula virtual encontrarás el acceso directo a las sesiones en vivo, con tan solo un click;* estas sesiones son para aclarar dudas o consultas en tiempo real con los consultores, sobre lo que no haya quedado claro en los vídeos, es decir que no son clases.
+
+                *Te adjunto el cronograma de sesiones en vivo de este mes, también podrás descargarlo los primeros días de cada mes, desde tu aula virtual.*
+
+                A través de este WhatsApp, estaremos en contacto para cualquier inquietud que tengas o apoyo que requieras✍️.
+                _OJO: 👀 No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado_
+
+                *Nuestro HORARIO DE ATENCIÓN comprende de
+                Lunes a Viernes de 9am a 7:30pm (Hora Perú).
+                Sábados de 9am a 6pm (Hora Perú).
+                Te recordamos que los *DOMINGOS NO LABORAMOS.*"
+            ],
+            [
+                'name' => 'Inicio MS Project',
+                'content' => "Hola, espero te encuentres bien.
+
+                Te escribo para comentarte que te hemos enviado los accesos de tu *curso MS Project*, si no lo encuentras en la bandeja de entrada *por favor valida tu bandeja de SPAM*.
+
+                Adjunto a tu correo hay una *guía de ingreso*, para apoyarte hasta que visualices tu primer vídeo.
+
+                Recuerda que si tienes dudas o consultas, puedes comunicarte con nosotros por este medio."
+            ],
+            [
+                'name' => 'Inicio Excel Empresarial',
+                'description' => "Hola, espero te encuentres bien.
+
+                Te escribo para comentarte que te hemos enviado los accesos de tu *curso Excel Empresarial,* si no lo encuentras en la bandeja de entrada *por favor valida tu bandeja de SPAM.*
+
+                Adjunto a tu correo hay una *guía de ingreso,* para apoyarte hasta que visualices tu primer vídeo.
+
+                *Te pedimos que al finalizar tu curso no elimines los archivos de Excel que vayas creando, ya que los necesitarás para tu curso de Power BI.*
+
+                Recuerda que si tienes dudas o consultas, puedes comunicarte con nosotros por este medio."
+            ],
+            [
+                'name' => 'Inicio Power BI',
+                'content' => "Hola, espero te encuentres bien.
+
+                Te escribo para comentarte que te hemos enviado los accesos de tu *curso Power BI*, si no lo encuentras en la bandeja de entrada *por favor valida tu bandeja de SPAM*.
+
+                Adjunto a tu correo hay una *guía de ingreso*, para apoyarte hasta que visualices tu primer vídeo.
+
+                Recuerda que si tienes dudas o consultas, puedes comunicarte con nosotros por este medio."
+            ],
+            [
+                'name' => 'Agendar Instalación SAP',
+                'content' => "Buen día, me comunico para enviarle los horarios disponibles *(de acuerdo a su huso horario, es decir, la ciudad donde se encuentra)* para iniciar el proceso para agendar su instalación de SAP para el día: {{SAP_INSTALATION_DATE}}
+
+                {{HOURS}}
+
+                *De igual manera, por favor me responde las siguientes consultas:*
+                1. La computadora que va a usar para su capacitación e instalación, ¿utiliza sistema operativo Windows o MAC?
+
+                2. ¿Es personal o pertenece a la empresa en la que trabaja?
+
+                3. Y por último, ¿Tiene una versión de SAP instalada?
+                *Es importante que nos indique, ya que no puede haber dos versiones instaladas en el mismo ordenador.*"
+            ],
+            [
+                'name' => 'Horas de preferencia para instalación SAP',
+                'content' => "Por favor me indica el *horario de su preferencia, para continuar* con el proceso de agendamiento de su *instalación de SAP.*
+
+                {{HOURS}}
+
+                Quedo atenta a sus respuestas para poder enviarle la *guía de pre-instalación correspondiente,* de acuerdo a las preguntas realizadas.
+
+                ⚠️Sin la respuesta a todas las consultas y el horario de su preferencia, no se completará el agendamiento de SAP y sus accesos empezarán a correr desde su fecha de inicio."
+            ],
+            [
+                'name' => 'Guia Instalación SAP',
+                // *TRES (03)*}
+                // TeamViewer, WinRar y SAP GUI
+                'content' => "Por favor, debe tener descargados los *{{NUMBER}}* archivos que indica la guía, *antes de la hora agendada;* de lo contrario, el personal técnico procederá a *reagendar su instalación.* La PRÓXIMA CITA QUE TENGO DISPONIBLE ES EN DOS DÍAS HÁBILES A PARTIR DE LAS 9AM. *Y su licencia corre desde el día que enviamos los accesos.*
+
+                *El personal técnico se contactará por este medio, a la hora agendada.*
+
+                Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno. Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes para poder reprogramarlo. Gracias por su comprensión.
+
+                *LE RECUERDO QUE LA GUÍA CONTIENE {{NUMBER}} ARCHIVOS PARA DESCARGAR: {{PROGRAMS}}*"
+            ],
+            [
+                'name' => 'Instalacion SAP agendada',
+                'content' => "Se ha agendado su instalación. *Por favor tener los archivos* descargados *antes de su instalación,* los puede encontrar en la guía enviada anteriormente.
+
+                *Me indica si es que no la puede visualizar.*
+
+                El área técnica se comunicará por este medio (de forma escrita), y tienen un *tiempo de tolerancia de 30 minutos únicamente,* antes de pasar al siguiente alumno.
+
+                OJO: si por alguna razón debe *reprogramar* su instalación por una *tercera vez,* ya le estaría contando como instalación. Le recuerdo una vez más que solo dispone de *dos instalaciones gratuitas únicamente.*"
+            ],
+
+            [
+                'name' => 'Conserva Clave SAP',
+                'content' => "Por favor me indica si aún mantiene su usuario y contraseña SAP."
+            ],
+            [
+                'name' => 'Pantallazos SAP',
+                'content' => "En este caso, el técnico solo se conectaría a realizar la conexión de SAP de nuestro servidor en su versión de SAP.
+                Para continuar con el agendamiento, *necesitaría por favor un pantallazo de la versión de SAP que tiene actualmente,* para que nuestros técnicos confirmen que se pueda llevar a cabo la instalación. ¿Cuándo cree que la pueda enviar? Para evaluar si es necesario un cambio de la fecha de inicio."
+            ],
+            [
+                'name' => 'Restrincciones instalacion SAP',
+                'content' => "Necesitaría que consulte al área de IT de su empresa si su ordenador tiene alguna restricción, ya que al ser una computadora empresarial, podría tener restricciones y no permitirá que el técnico realice la instalación, puesto que él debe ingresar a su computadora y crear los parámetros de conexión, y al ser una computadora empresarial, cuando el técnico ingrese por TeamViewer no le permitirá crear la conexión. Y es probable que tampoco pueda descargar ningún programa de los que le vamos a enviar. Por favor valide con el área de IT de su empresa, y me comenta para seguir con el procedimiento de instalación. *Y por favor me indica cuándo tendría esta respuesta, para evaluar si mejor le cambiamos su fecha de inicio.*"
             ]
-        ]);
+
+
+        ];
+
+        foreach ($messages as &$message) {
+            // Verificar si el índice 'content' existe, en caso contrario, buscar 'description'
+            $key = isset($message['content']) ? 'content' : 'description';
+
+            // Separamos el contenido en párrafos
+            $paragraphs = explode("\n", $message[$key]);
+
+            // Eliminamos los espacios iniciales de cada párrafo
+            $trimmedParagraphs = array_map(function ($paragraph) {
+                return ltrim($paragraph);
+            }, $paragraphs);
+
+            // Volvemos a unir los párrafos
+            $message[$key] = implode("\n", $trimmedParagraphs);
+        }
+
+        unset($message);
+
+        DB::table('messages')->insert($messages);
     }
 }

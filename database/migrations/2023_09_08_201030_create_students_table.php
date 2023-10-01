@@ -21,6 +21,7 @@ return new class extends Migration
             $table->bigInteger('document_type_id')->unsigned()->nullable();
             $table->foreign('document_type_id')->references('id')->on('document_types');
             $table->text('document');
+            $table->text('classroom_user');
             $table->bigInteger('country_id')->unsigned()->nullable();
             $table->foreign('country_id')->references('id')->on('countries');
             $table->timestamps();
