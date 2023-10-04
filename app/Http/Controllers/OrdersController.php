@@ -59,29 +59,62 @@ class OrdersController extends Controller
         $order->price_id = $request->price_id;
         $order->price_amount = $request->price_amount;
         $order->created_by = $id;
+
         // Generate random key
         $order->key = md5(microtime());
 
 
         $order->save();
 
-        // Courses
-        $order->courses()->createMany($request->courses);
-        $order->courses()->createMany($request->free_courses);
+        // orderCourses
+        $order->orderCourses()->createMany($request->courses);
+        $order->orderCourses()->createMany($request->free_courses);
 
         // Dues
         $order->dues()->createMany($request->dues);
 
-        foreach($order->courses as $course){
-            for($i = 0; $i < 5; $i++){
-                $certificationTest = new CertificationTest();
-                $certificationTest->description = "Examen de certificación " . ($i + 1);
-                $certificationTest->order_id = $order->id;
-                $certificationTest->order_course_id = $course->id;
-                $certificationTest->enabled = $i < 3;
-                $certificationTest->status = 'Sin realizar';
-                $certificationTest->premium = $i >= 3;
-                $certificationTest->save();
+
+        $freeCourses = [6,7,8,9];
+
+        foreach ($order->orderCourses as $course) {
+
+            $course_id = $course->course_id;
+            $limit = array_search($course_id, $freeCourses) ? 3 : 5;
+
+            if ($course_id != 6) {
+                for ($i = 0; $i < $limit; $i++) {
+                    if ($i < $limit-1) {
+                        $name = "Examen de certificación " . ($i + 1);
+                    } else {
+                        $name = "Ponderación";
+                    }
+
+                    $certificationTest = new CertificationTest();
+                    $certificationTest->description = $name;
+                    $certificationTest->order_id = $order->id;
+                    $certificationTest->order_course_id = $course->id;
+                    $certificationTest->enabled = $i < 3;
+                    $certificationTest->status = 'Sin realizar';
+                    $certificationTest->premium = array_search($course_id, $freeCourses) ? false : $i >= 3;
+                    $certificationTest->save();
+                }
+            }
+
+            if($course_id==6){
+                $cert=['BASICO','INTERMEDIO','AVANZADO'];
+                foreach($cert as $c){
+                    for($i=0;$i<3;$i++){
+                        $name = $i < 3 ? "Examen de certificación " . $c . " ". ($i + 1) : "Ponderación";
+                        $certificationTest = new CertificationTest();
+                        $certificationTest->description = $c;
+                        $certificationTest->order_id = $order->id;
+                        $certificationTest->order_course_id = $course->id;
+                        $certificationTest->enabled = true;
+                        $certificationTest->status = 'Sin realizar';
+                        $certificationTest->premium = false;
+                        $certificationTest->save();
+                    }
+                }
             }
         }
 
@@ -124,7 +157,7 @@ class OrdersController extends Controller
     public function show($id)
     {
         if (Order::where('id', $id)->exists()) {
-            $order = Order::with('courses', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
+            $order = Order::with('orderCourses.course', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
             return ApiResponseController::response('Consulta exitosa', 200, $order);
         } else {
             return ApiResponseController::response('La orden no existe', 404);
@@ -165,9 +198,9 @@ class OrdersController extends Controller
             $order->save();
 
             // Courses
-            $order->courses()->delete();
-            $order->courses()->createMany($request->courses);
-            $order->courses()->createMany($request->free_courses);
+            $order->orderCourses()->delete();
+            $order->orderCourses()->createMany($request->courses);
+            $order->orderCourses()->createMany($request->free_courses);
 
             // Dues
             $order->dues()->delete();
@@ -175,7 +208,7 @@ class OrdersController extends Controller
 
             // Certification Test Sync
             $order->certificationTests()->delete();
-            $order->courses()->createMany($request->certification_tests);
+            $order->certificationTests()->createMany($request->certification_tests);
 
 
             $invoice = Invoice::where('order_id', $order->id)->first();

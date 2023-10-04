@@ -21,9 +21,12 @@ return new class extends Migration
             $table->bigInteger('order_id')->unsigned()->nullable();
             $table->foreign('order_id')->references('id')->on('orders');
 
+
+            $table->string('classroom_status')->default('Cursando');
+
             $table->string('license')->nullable();
 
-            $table->string('course_type')->nullable();
+            $table->string('type')->nullable();
 
             $table->timestamp('start');
             $table->timestamp('end');

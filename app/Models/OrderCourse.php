@@ -16,6 +16,7 @@ class OrderCourse extends Model
         'license',
         'course_type',
         'start',
+        'type',
         'enabled',
         'end',
         'observation',
