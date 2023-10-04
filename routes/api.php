@@ -29,7 +29,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::resource('cars', 'App\Http\Controllers\CarsController');
 	Route::get('get-all-cars', 'App\Http\Controllers\CarsController@getAll');
 
-    Route::post('user/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
+    Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
 	Route::resource('students', 'App\Http\Controllers\StudentsController');
     Route::resource('orders', 'App\Http\Controllers\OrdersController');
     Route::get('student-orders/get-options', 'App\Http\Controllers\OrdersController@getOptions');
