@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Country;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -25,12 +26,18 @@ class StudentsSeeder extends Seeder
 
             // Insert 100 students
             for ($i = 0; $i < 100; $i++) {
+
+                // Random country
+                $country = Country::with('cities')->inRandomOrder()->first();
+
                 DB::table('students')->insert([
                     'name' => $faker->name,
                     'email' => $faker->email,
                     'phone' => $faker->phoneNumber,
                     'classroom_user' => $faker->userName,
                     'document' => $faker->randomNumber(8),
+                    'country_id' => $country->id,
+                    'city_id' => $country->cities->random()->id,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);

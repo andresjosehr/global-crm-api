@@ -24,6 +24,8 @@ return new class extends Migration
             $table->text('classroom_user')->nullable();
             $table->bigInteger('country_id')->unsigned()->nullable();
             $table->foreign('country_id')->references('id')->on('countries');
+            $table->bigInteger('city_id')->unsigned()->nullable();
+            $table->foreign('city_id')->references('id')->on('cities');
             $table->timestamps();
         });
     }
