@@ -32,6 +32,29 @@ class OrderCourse extends Model
         return $this->hasMany(CertificationTest::class);
     }
 
+    public function freezings()
+    {
+        return $this->hasMany(Freezing::class);
+    }
+
+    public function extensions()
+    {
+        return $this->hasMany(Extension::class);
+    }
+
+    public function sapInstalations()
+    {
+        return $this->hasMany(SapInstalation::class);
+    }
+
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+
+
     public function setStartAttribute($value)
     {
         $this->attributes['start'] = Carbon::parse($value)->format('Y-m-d');

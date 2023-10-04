@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('extensions', function (Blueprint $table) {
             $table->id();
             $table->string('months');
-            $table->integer('price');
 
 
             $table->bigInteger('order_id')->unsigned()->nullable();
@@ -26,7 +25,16 @@ return new class extends Migration
             $table->foreign('order_course_id')->references('id')->on('order_courses');
 
 
-            $table->date('payment_date')->nullable();
+            $table->bigInteger('price_id')->unsigned()->nullable();
+            $table->foreign('price_id')->references('id')->on('prices');
+
+            $table->integer('price')->nullable();
+
+            $table->bigInteger('currency_id')->unsigned()->nullable();
+            $table->foreign('currency_id')->references('id')->on('currencies');
+
+            $table->bigInteger('payment_method_id')->unsigned()->nullable();
+            $table->foreign('payment_method_id')->references('id')->on('payment_methods');
 
 
             $table->timestamps();

@@ -38,6 +38,11 @@ class Order extends Model
         return $this->hasOne(Invoice::class);
     }
 
+
+    function price(){
+        return $this->belongsTo(Price::class);
+    }
+
     // Accesor for terms_confirmed_by_student boolean
     public function getTermsConfirmedByStudentAttribute($value)
     {

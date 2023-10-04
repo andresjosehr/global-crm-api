@@ -13,13 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('dates_history', function (Blueprint $table) {
+        Schema::create('cities', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('order_course_id')->unsigned()->nullable();
-            $table->foreign('order_course_id')->references('id')->on('order_courses');
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
-            $table->date('type')->nullable();
+            $table->string('name');
+            $table->bigInteger('country_id')->unsigned()->nullable();
+            $table->foreign('country_id')->references('id')->on('countries');
             $table->timestamps();
         });
     }
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('course_date_histories');
+        Schema::dropIfExists('cities');
     }
 };

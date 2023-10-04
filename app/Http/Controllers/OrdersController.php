@@ -145,6 +145,10 @@ class OrdersController extends Controller
 
         $invoice->save();
 
+
+        // Get id
+        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'orderCourses.sapInstalations', 'dues', 'student', 'currency', 'price')->find($order->id);
+
         return ApiResponseController::response('Orden creada exitosamente', 201, $order);
     }
 

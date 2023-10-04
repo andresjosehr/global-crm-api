@@ -56,7 +56,9 @@ class StudentsController extends Controller
     {
         $student                       = new Student();
         $student->name                = $request->input('name');
-        $student->country             = $request->input('country');
+        $student->country_id           = $request->input('country_id');
+        $student->document_type_id           = $request->input('document_type_id');
+
         $student->phone               = $request->input('phone');
         $student->document            = $request->input('document');
         $student->email               = $request->input('email');
@@ -73,7 +75,7 @@ class StudentsController extends Controller
      */
     public function show($id)
     {
-        if (!$student = Student::with('orders.orderCourses.course', 'orders.orderCourses.certificationTests', 'orders.currency', 'orders.dues', 'orders.user', 'orders.invoice')->find($id)) {
+        if (!$student = Student::with('orders.orderCourses.course', 'orders.orderCourses.certificationTests', 'orders.orderCourses.sapInstalations', 'orders.orderCourses.freezings', 'orders.currency', 'orders.dues', 'orders.user', 'orders.invoice')->find($id)) {
             return ApiResponseController::response('', 204);
         }
 

@@ -53,5 +53,12 @@ class DocumentTypesSeeder extends Seeder
                 ]);
             }
         }
+
+        DB::table('document_types')->insert([
+            'country_id' => null,
+            'name' => 'Otro (Especifique)',
+            'code' => 'Otro',
+            'description' => 'Cualquier otro tipo de documento',
+        ]);
     }
 }

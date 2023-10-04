@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('status');
             $table->boolean('enabled');
             $table->boolean('premium');
+            $table->bigInteger('average')->unsigned()->nullable();
 
             $table->bigInteger('order_id')->unsigned()->nullable();
             $table->foreign('order_id')->references('id')->on('orders');

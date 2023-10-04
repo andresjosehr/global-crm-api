@@ -17,11 +17,11 @@ return new class extends Migration
             $table->id();
             $table->text('name');
             $table->text('email');
-            $table->text('phone');
+            $table->text('phone')->nullable();
             $table->bigInteger('document_type_id')->unsigned()->nullable();
             $table->foreign('document_type_id')->references('id')->on('document_types');
             $table->text('document');
-            $table->text('classroom_user');
+            $table->text('classroom_user')->nullable();
             $table->bigInteger('country_id')->unsigned()->nullable();
             $table->foreign('country_id')->references('id')->on('countries');
             $table->timestamps();
