@@ -9,6 +9,7 @@ use App\Models\Currency;
 use App\Models\DocumentType;
 use App\Models\Invoice;
 use App\Models\Order;
+use App\Models\OrderCourse;
 use App\Models\PaymentMethod;
 use App\Models\Price;
 use App\Models\User;
@@ -74,7 +75,7 @@ class OrdersController extends Controller
         $order->dues()->createMany($request->dues);
 
 
-        $freeCourses = [6,7,8,9];
+        $freeCourses = [6, 7, 8, 9];
 
         foreach ($order->orderCourses as $course) {
 
@@ -83,7 +84,7 @@ class OrdersController extends Controller
 
             if ($course_id != 6) {
                 for ($i = 0; $i < $limit; $i++) {
-                    if ($i < $limit-1) {
+                    if ($i < $limit - 1) {
                         $name = "Examen de certificación " . ($i + 1);
                     } else {
                         $name = "Ponderación";
@@ -100,11 +101,11 @@ class OrdersController extends Controller
                 }
             }
 
-            if($course_id==6){
-                $cert=['BASICO','INTERMEDIO','AVANZADO'];
-                foreach($cert as $c){
-                    for($i=0;$i<3;$i++){
-                        $name = $i < 3 ? "Examen de certificación " . $c . " ". ($i + 1) : "Ponderación";
+            if ($course_id == 6) {
+                $cert = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
+                foreach ($cert as $c) {
+                    for ($i = 0; $i < 3; $i++) {
+                        $name = $i < 3 ? "Examen de certificación " . $c . " " . ($i + 1) : "Ponderación";
                         $certificationTest = new CertificationTest();
                         $certificationTest->description = $c;
                         $certificationTest->order_id = $order->id;
@@ -267,6 +268,51 @@ class OrdersController extends Controller
         $order->delete();
 
         return ApiResponseController::response('Registro eliminado con exito', 200);
+    }
+
+
+    public function updateTrakingInfo(Request $request, $id)
+    {
+        if (!$order = Order::find($id)) {
+            return ApiResponseController::response('No se encontro el registro', 204);
+        }
+
+
+        foreach($request->courses as $orderCourse){
+
+            $orderCourseDB = OrderCourse::find($orderCourse['id']);
+
+            // Sincronizar certificationTests
+            $this->syncRelation($orderCourseDB->certificationTests(), $orderCourse['certification_tests']);
+
+            // Sincronizar freezings
+            $this->syncRelation($orderCourseDB->freezings(), $orderCourse['freezings']);
+
+            // Sincronizar extensions
+            $this->syncRelation($orderCourseDB->extensions(), $orderCourse['extensions']);
+
+            // Sincronizar sapInstalations
+            $this->syncRelation($orderCourseDB->sapInstalations(), $orderCourse['sap_instalations']);
+        }
+
+
+        $order = Order::with('orderCourses.course', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
+        return ApiResponseController::response('Orden actualizada exitosamente', 200, $order);
+    }
+
+    private function syncRelation($relation, $data)
+    {
+        // Filtrar los registros existentes y los nuevos
+        $existing = array_filter($data, fn ($item) => isset($item['id']) && $item['id'] != null);
+        $new = array_filter($data, fn ($item) => !isset($item['id']) || $item['id'] == null);
+
+        // Actualizar registros existentes
+        foreach ($existing as $item) {
+            $relation->where('id', $item['id'])->update($item);
+        }
+
+        // Crear nuevos registros
+        $relation->createMany($new);
     }
 
     function getOptions()

@@ -8,4 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Extension extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        "id",
+        "months",
+        "order_id",
+        "order_course_id",
+        "price_id",
+        "price",
+        "currency_id",
+        "payment_method_id",
+    ];
 }
