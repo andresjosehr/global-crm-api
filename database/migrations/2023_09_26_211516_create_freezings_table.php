@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('freezings', function (Blueprint $table) {
             $table->id();
             $table->string('duration');
-
-            $table->date('freezing_start');
-            $table->date('freezing_end');
+            $table->date('start_date');
+            $table->date('finish_date');
+            $table->date('return_date');
 
             $table->date('payment_date')->nullable();
 
@@ -27,6 +27,8 @@ return new class extends Migration
 
             $table->bigInteger('order_course_id')->unsigned()->nullable();
             $table->foreign('order_course_id')->references('id')->on('order_courses');
+
+            $table->string('remain_license');
 
             $table->timestamps();
         });

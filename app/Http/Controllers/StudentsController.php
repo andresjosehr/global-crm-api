@@ -75,7 +75,7 @@ class StudentsController extends Controller
      */
     public function show($id)
     {
-        if (!$student = Student::with('orders.orderCourses.course', 'orders.orderCourses.certificationTests', 'orders.orderCourses.sapInstalations', 'orders.orderCourses.freezings', 'orders.currency', 'orders.dues', 'orders.user', 'orders.invoice')->find($id)) {
+        if (!$student = Student::with('orders.orderCourses.course', 'orders.orderCourses.extensions', 'orders.orderCourses.certificationTests', 'orders.orderCourses.sapInstalations', 'orders.orderCourses.freezings', 'orders.orderCourses.dateHistory', 'orders.currency', 'orders.dues', 'orders.user', 'orders.invoice')->find($id)) {
             return ApiResponseController::response('', 204);
         }
 

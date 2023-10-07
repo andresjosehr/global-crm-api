@@ -13,6 +13,7 @@ use App\Models\OrderCourse;
 use App\Models\PaymentMethod;
 use App\Models\Price;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class OrdersController extends Controller
@@ -68,8 +69,7 @@ class OrdersController extends Controller
         $order->save();
 
         // orderCourses
-        $order->orderCourses()->createMany($request->courses);
-        $order->orderCourses()->createMany($request->free_courses);
+        $order->orderCourses()->createMany($request->order_courses);
 
         // Dues
         $order->dues()->createMany($request->dues);
@@ -276,9 +276,7 @@ class OrdersController extends Controller
         if (!$order = Order::find($id)) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
-
-
-        foreach($request->courses as $orderCourse){
+        foreach ($request->courses as $orderCourse) {
 
             $orderCourseDB = OrderCourse::find($orderCourse['id']);
 
@@ -291,29 +289,61 @@ class OrdersController extends Controller
             // Sincronizar extensions
             $this->syncRelation($orderCourseDB->extensions(), $orderCourse['extensions']);
 
+            $i = 0;
+            foreach($orderCourse['sap_instalations'] as $sapInstalation) {
+                $dateTime = explode('T', $sapInstalation['date'])[0];
+                $dateTime = $dateTime . ' ' . $sapInstalation['time'];
+                $orderCourse['sap_instalations'][$i]['start_datetime'] = Carbon::parse($dateTime)->format('Y-m-d H:i:s');
+                $orderCourse['sap_instalations'][$i]['end_datetime'] = Carbon::parse($dateTime)->addMinutes(30)->format('Y-m-d H:i:s');
+                $i++;
+            }
+
             // Sincronizar sapInstalations
             $this->syncRelation($orderCourseDB->sapInstalations(), $orderCourse['sap_instalations']);
         }
 
 
-        $order = Order::with('orderCourses.course', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
+        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.sapInstalations', 'orderCourses.freezings', 'orderCourses.extensions', 'orderCourses.dateHistory')->find($id);
         return ApiResponseController::response('Orden actualizada exitosamente', 200, $order);
     }
 
     private function syncRelation($relation, $data)
     {
+        $model = $relation->getModel();
+        $fillableColumns = $model->getFillable();
+
         // Filtrar los registros existentes y los nuevos
         $existing = array_filter($data, fn ($item) => isset($item['id']) && $item['id'] != null);
         $new = array_filter($data, fn ($item) => !isset($item['id']) || $item['id'] == null);
+
+        $new = array_map(function ($item) use ($fillableColumns) {
+            return array_intersect_key($item, array_flip($fillableColumns));
+        }, $new);
+
+        $fillableColumns[] = 'id';
+        $existing = array_map(function ($item) use ($fillableColumns) {
+            return array_intersect_key($item, array_flip($fillableColumns));
+        }, $existing);
+
+
 
         // Actualizar registros existentes
         foreach ($existing as $item) {
             $relation->where('id', $item['id'])->update($item);
         }
 
+        // Obtener los nombres de las columnas "fillable"
+
+
+        // Filtrar las propiedades de los nuevos registros
+
+
         // Crear nuevos registros
         $relation->createMany($new);
+
+        return $new;
     }
+
 
     function getOptions()
     {

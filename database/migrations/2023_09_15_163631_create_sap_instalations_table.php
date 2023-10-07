@@ -46,7 +46,9 @@ return new class extends Migration
             $table->bigInteger('staff_id')->unsigned()->nullable();
             $table->foreign('staff_id')->references('id')->on('users');
 
-            $table->boolean('observation')->nullable();
+            $table->longText('observation')->nullable();
+
+            $table->boolean('payment_enabled')->default(false);
 
             $table->timestamps();
         });

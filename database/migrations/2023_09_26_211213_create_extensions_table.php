@@ -30,6 +30,8 @@ return new class extends Migration
 
             $table->integer('price')->nullable();
 
+            $table->date('payment_date')->nullable();
+
             $table->bigInteger('currency_id')->unsigned()->nullable();
             $table->foreign('currency_id')->references('id')->on('currencies');
 
