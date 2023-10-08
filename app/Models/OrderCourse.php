@@ -64,11 +64,15 @@ class OrderCourse extends Model
 
     public function setStartAttribute($value)
     {
-        $this->attributes['start'] = Carbon::parse($value)->format('Y-m-d');
+        if($value){
+            $this->attributes['start'] = Carbon::parse($value)->format('Y-m-d');
+        }
     }
 
     public function setEndAttribute($value)
     {
-        $this->attributes['end'] = Carbon::parse($value)->format('Y-m-d');
+        if($value){
+            $this->attributes['end'] = Carbon::parse($value)->format('Y-m-d');
+        }
     }
 }

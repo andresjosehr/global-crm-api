@@ -80,7 +80,7 @@ class OrdersController extends Controller
         foreach ($order->orderCourses as $course) {
 
             $course_id = $course->course_id;
-            $limit = array_search($course_id, $freeCourses) ? 3 : 5;
+            $limit = array_search($course_id, $freeCourses) ? 4 : 6;
 
             if ($course_id != 6) {
                 for ($i = 0; $i < $limit; $i++) {
@@ -104,10 +104,10 @@ class OrdersController extends Controller
             if ($course_id == 6) {
                 $cert = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
                 foreach ($cert as $c) {
-                    for ($i = 0; $i < 3; $i++) {
-                        $name = $i < 3 ? "Examen de certificación " . $c . " " . ($i + 1) : "Ponderación";
+                    for ($i = 0; $i < 4; $i++) {
+                        $name = $i < 3 ? $c . " " . ($i + 1) : "Ponderación ". $c;
                         $certificationTest = new CertificationTest();
-                        $certificationTest->description = $c;
+                        $certificationTest->description = $name;
                         $certificationTest->order_id = $order->id;
                         $certificationTest->order_course_id = $course->id;
                         $certificationTest->enabled = true;
@@ -203,17 +203,13 @@ class OrdersController extends Controller
             $order->save();
 
             // Courses
-            $order->orderCourses()->delete();
-            $order->orderCourses()->createMany($request->courses);
-            $order->orderCourses()->createMany($request->free_courses);
+
+            // $order->orderCourses()->createMany($request->courses);
+            // $order->orderCourses()->createMany($request->free_courses);
+            $this->syncRelation($order->orderCourses(), $request->order_courses);
 
             // Dues
-            $order->dues()->delete();
-            $order->dues()->createMany($request->dues);
-
-            // Certification Test Sync
-            $order->certificationTests()->delete();
-            $order->certificationTests()->createMany($request->certification_tests);
+            $this->syncRelation($order->dues(), $request->dues);
 
 
             $invoice = Invoice::where('order_id', $order->id)->first();
@@ -276,7 +272,7 @@ class OrdersController extends Controller
         if (!$order = Order::find($id)) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
-        foreach ($request->courses as $orderCourse) {
+        foreach ($request->order_courses as $orderCourse) {
 
             $orderCourseDB = OrderCourse::find($orderCourse['id']);
 
@@ -312,31 +308,29 @@ class OrdersController extends Controller
         $model = $relation->getModel();
         $fillableColumns = $model->getFillable();
 
-        // Filtrar los registros existentes y los nuevos
-        $existing = array_filter($data, fn ($item) => isset($item['id']) && $item['id'] != null);
-        $new = array_filter($data, fn ($item) => !isset($item['id']) || $item['id'] == null);
 
+        $new = array_filter($data, fn ($item) => !isset($item['id']) || $item['id'] == null);
         $new = array_map(function ($item) use ($fillableColumns) {
             return array_intersect_key($item, array_flip($fillableColumns));
         }, $new);
 
         $fillableColumns[] = 'id';
+        $existing = array_filter($data, fn ($item) => isset($item['id']) && $item['id'] != null);
         $existing = array_map(function ($item) use ($fillableColumns) {
             return array_intersect_key($item, array_flip($fillableColumns));
         }, $existing);
 
 
 
-        // Actualizar registros existentes
         foreach ($existing as $item) {
-            $relation->where('id', $item['id'])->update($item);
+            $existingModel = $model->newQuery()->find($item['id']);
+            if ($existingModel) {
+                $existingModel->fill($item);
+                $existingModel->save();
+            }
         }
 
-        // Obtener los nombres de las columnas "fillable"
-
-
-        // Filtrar las propiedades de los nuevos registros
-
+        // Filtrar las propiedades de los nuevos registro
 
         // Crear nuevos registros
         $relation->createMany($new);

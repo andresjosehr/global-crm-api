@@ -28,8 +28,8 @@ return new class extends Migration
 
             $table->string('type')->nullable();
 
-            $table->timestamp('start');
-            $table->timestamp('end');
+            $table->date('start')->nullable();
+            $table->date('end')->nullable();
 
             $table->string('sap_user')->nullable();
 
