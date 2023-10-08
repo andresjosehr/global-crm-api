@@ -15,7 +15,7 @@ class Extension extends Model
         "order_id",
         "order_course_id",
         "price_id",
-        "price",
+        "price_amount",
         "currency_id",
         "payment_method_id",
     ];

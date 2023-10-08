@@ -28,7 +28,7 @@ return new class extends Migration
             $table->bigInteger('price_id')->unsigned()->nullable();
             $table->foreign('price_id')->references('id')->on('prices');
 
-            $table->integer('price')->nullable();
+            $table->integer('price_amount')->nullable();
 
             $table->date('payment_date')->nullable();
 
