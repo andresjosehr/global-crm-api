@@ -78,6 +78,7 @@ class OrdersController extends Controller
         $freeCourses = [6, 7, 8, 9];
 
         foreach ($order->orderCourses as $course) {
+            $premium = true;
 
             $course_id = $course->course_id;
             $limit = array_search($course_id, $freeCourses) ? 4 : 6;
@@ -86,8 +87,10 @@ class OrdersController extends Controller
                 for ($i = 0; $i < $limit; $i++) {
                     if ($i < $limit - 1) {
                         $name = "Examen de certificación " . ($i + 1);
+                        $premium = array_search($course_id, $freeCourses) ? false : $i >= 3;
                     } else {
                         $name = "Ponderación";
+                        $premium = true;
                     }
 
                     $certificationTest = new CertificationTest();
@@ -96,7 +99,7 @@ class OrdersController extends Controller
                     $certificationTest->order_course_id = $course->id;
                     $certificationTest->enabled = $i < 3;
                     $certificationTest->status = 'Sin realizar';
-                    $certificationTest->premium = array_search($course_id, $freeCourses) ? false : $i >= 3;
+                    $certificationTest->premium = $premium;
                     $certificationTest->save();
                 }
             }
@@ -106,13 +109,14 @@ class OrdersController extends Controller
                 foreach ($cert as $c) {
                     for ($i = 0; $i < 4; $i++) {
                         $name = $i < 3 ? $c . " " . ($i + 1) : "Ponderación ". $c;
+                        $premium = $i < 3 ? false : true;
                         $certificationTest = new CertificationTest();
                         $certificationTest->description = $name;
                         $certificationTest->order_id = $order->id;
                         $certificationTest->order_course_id = $course->id;
                         $certificationTest->enabled = true;
                         $certificationTest->status = 'Sin realizar';
-                        $certificationTest->premium = false;
+                        $certificationTest->premium = $premium;
                         $certificationTest->save();
                     }
                 }
