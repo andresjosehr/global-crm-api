@@ -188,6 +188,151 @@ class MessagesSeeder extends Seeder
             [
                 'name' => 'Restrincciones instalacion SAP',
                 'content' => "Necesitaría que consulte al área de IT de su empresa si su ordenador tiene alguna restricción, ya que al ser una computadora empresarial, podría tener restricciones y no permitirá que el técnico realice la instalación, puesto que él debe ingresar a su computadora y crear los parámetros de conexión, y al ser una computadora empresarial, cuando el técnico ingrese por TeamViewer no le permitirá crear la conexión. Y es probable que tampoco pueda descargar ningún programa de los que le vamos a enviar. Por favor valide con el área de IT de su empresa, y me comenta para seguir con el procedimiento de instalación. *Y por favor me indica cuándo tendría esta respuesta, para evaluar si mejor le cambiamos su fecha de inicio.*"
+            ],
+            [
+                'name' => 'Bienvenida cuotas 1 curso',
+                'content' => '¡Hola! 🤓
+                {{STUDENT_NAME}}
+
+                Te saludamos del área académica de *Global Tech Academy*, para darte la bienvenida a tu curso de:
+                {{PAID_COURSES}}
+
+                Has realizado el pago de:
+                {{PAYMENTS_PAID}}
+
+
+                Y tus próximos pagos han quedado de la siguiente manera:
+                {{PAYMENTS_PENDING}}
+
+                Siendo tu fecha de inicio de clases el:
+                {{START_DATE}}	Siempre y cuando hayas mantenido las fechas puntuales en los primeros pagos indicados anteriormente.
+
+                *Recuerda que te matriculaste con un precio PROMOCIONAL, el cual está sujeto a tus pagos dentro de las fechas acordadas por ti mismo.*
+
+                PUNTOS A TENER EN CUENTA:
+                ✅ *Te enviaremos un correo con tus accesos el día de tu fecha de inicio.*
+                ✅ *La instalación se realizará el mismo día de la fecha de inicio,* y será agendada con unos días de anticipación, por lo tanto es *importante tu pago puntual.*
+                ✅ El no cumplir con el agendamiento de la instalación, no te eximirá de los pagos acordados previamente, ni del inicio de tu licencia SAP.
+                ✅ *El tiempo de licencia y aula virtual de tu curso, es de:*
+                {{LICENSE}}
+                ✅ Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico. Las condiciones para rendirlo, se encuentran en tu aula virtual.
+                ✅ Tus *cursos gratuitos* los podrás *habilitar* una vez hayas completado tus pagos, y los tiempos de cada uno se han detallado en tu *confirmación de compra.*
+                ✅ Te recuerdo que al 5to día de retraso, tus accesos serán bloqueados.
+                ✅ Te recuerdo que a partir del 2do día de retraso, empieza a correr la mora indicada en tu ficha de matrícula. Evita los retrasos o podrías perder el precio promocional.
+                ✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio *previamente acordada:*
+                Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes,
+                no te eximirá de los pagos acordados previamente.
+
+                {{FREE_COURSES}}
+
+                A través de este WhatsApp, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️
+                OJO: 👀 *_No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado_*
+
+
+                *Nuestro horario de atención comprende* ⏰📅
+                Lunes a Viernes de 9am a 7:30pm (Hora Perú 🇵🇪 )
+                Sabados de 9am a 6pm (Hora Perú 🇵🇪 )
+                Los *DOMINGOS no laboramos*
+
+
+                ¡Bienvenido/a a la familia Global Tech Academy! 🤩
+                _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_'
+            ],
+            [
+                'name' => 'Bienvenida cuotas varios cursos',
+                'content' => '¡Hola!
+                {{STUDENT_NAME}}
+
+                Te saludamos del área académica de *Global Tech Academy*, para darte la bienvenida a tus cursos:
+                {{PAID_COURSES}}
+
+
+                Has realizado el pago de:
+                {{PAYMENTS_PAID}}
+
+
+                Y tu(s) próximo(s) pagos han quedado de la siguiente manera:
+                {{PAYMENTS_PENDING}}
+
+
+                Siendo tu fecha de inicio de clases el:
+                {{START_DATE}}	Siempre y cuando hayas mantenido las fechas puntuales en los primeros pagos indicados anteriormente.
+
+                *Recuerda que te matriculaste con un precio PROMOCIONAL, el cual está sujeto a tus pagos dentro de las fechas acordadas por ti mismo, para que puedas mantener el precio acordado*.
+
+                PUNTOS A TENER EN CUENTA:
+                ✅ *Te enviaremos un correo con tus accesos el día de tu fecha de inicio.*
+                ✅ *La instalación se realizará el mismo día de la fecha de inicio,* y será agendada con unos días de anticipación, por lo tanto es *importante tu pago puntual.*
+                ✅ El no cumplir con el agendamiento de la instalación, no te eximirá de los pagos acordados previamente, ni del inicio de tu licencia SAP.
+                ✅ *El tiempo de licencia y aula virtual de tu curso, es de:* {{LICENSE}} Conmutados desde el inicio de cada curso.
+                ✅ Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico. Las condiciones para rendirlo, se encuentran en tu aula virtual.
+                ✅ Tus *cursos gratuitos* los podrás *habilitar* una vez hayas completado tus pagos, y los tiempos de cada uno se han detallado en tu *confirmación de compra.*
+                ✅ Te recuerdo que al 5to día de retraso, tus accesos serán bloqueados.
+                ✅ Te recuerdo que a partir del 2do día de retraso, empieza a correr la mora indicada en tu ficha de matrícula. Evita los retrasos o podrías perder el precio promocional.
+                ✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio *previamente acordada:*
+                Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes,
+                no te eximirá de los pagos acordados previamente.
+
+                Además, recuerda que como obsequio tendrás acceso a los siguientes cursos:
+                CURSOS GRATIS
+
+                A través de este WhatsApp, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️
+                OJO: 👀 *_No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado_*
+
+
+                *Nuestro horario de atención comprende* ⏰📅
+                Lunes a Viernes de 9am a 7:30pm (Hora Perú 🇵🇪 )
+                Sabados de 9am a 6pm (Hora Perú 🇵🇪 )
+                Los *DOMINGOS no laboramos*
+
+                ¡Bienvenido/a a la familia Global Tech Academy! 🤩
+                _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_										'
+            ],
+            [
+                'name' => 'Bienvenida SAP Integral',
+                'content' => '¡Hola! 🤓
+                {{STUDENT_NAME}}
+
+                Te saludamos del área académica de *Global Tecnologías Academy,* para darte la bienvenida a tu curso de:
+                SAP INTEGRAL
+
+                Has realizado el pago de:
+                {{PAYMENTS_PAID}}
+
+                Y tus próximos pagos han quedado de la siguiente manera:
+                {{PAYMENTS_PENDING}}
+
+                Siendo tu fecha de inicio de clases el:
+                {{START_DATE}}	Siempre y cuando hayas mantenido las fechas puntuales en los primeros pagos indicados anteriormente.
+
+                *Recuerda que te matriculaste con un precio PROMOCIONAL, el cual está sujeto a tus pagos dentro de las fechas acordadas por ti mismo.*
+
+                PUNTOS A TENER EN CUENTA:
+                ✅ *Te enviaremos un correo con tus accesos el día de tu fecha de inicio.*
+                ✅ *La instalación se realizará el mismo día de la fecha de inicio,* y será agendada con unos días de anticipación, por lo tanto es *importante tu pago puntual.*
+                ✅ El no cumplir con el agendamiento de la instalación, no te eximirá de los pagos acordados previamente, ni del inicio de tu licencia SAP.
+                ✅ *El tiempo de licencia y aula virtual de tu curso, es de:* {{LICENSE}}
+                ✅ Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico. Las condiciones para rendirlo, se encuentran en tu aula virtual.
+                ✅ Tus *cursos gratuitos* los podrás *habilitar* una vez hayas completado tus pagos, y los tiempos de cada uno se han detallado en tu *confirmación de compra.*
+                ✅ Te recuerdo que al 5to día de retraso, tus accesos serán bloqueados.
+                ✅ Te recuerdo que a partir del 2do día de retraso, empieza a correr la mora indicada en tu ficha de matrícula. Evita los retrasos o podrías perder el precio promocional.
+                ✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio *previamente acordada:*
+                Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes,
+                no te eximirá de los pagos acordados previamente.
+
+                Además, recuerda que como obsequio tendrás acceso a los siguientes cursos:
+                {{FREE_COURSES}}
+
+                A través de este WhatsApp, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️
+                OJO: 👀 *_No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado_*
+
+                *Nuestro horario de atención comprende* ⏰📅
+                Lunes a Viernes de 9am a 7:30pm (Hora Perú 🇵🇪 )
+                Sabados de 9am a 6pm (Hora Perú 🇵🇪 )
+                Los *DOMINGOS no laboramos*
+
+                ¡Bienvenido/a a la familia Global Tech Academy! 🤩
+                _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_'
             ]
 
 

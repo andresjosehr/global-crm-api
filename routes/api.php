@@ -39,10 +39,12 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::resource('orders-courses', 'App\Http\Controllers\OrdersCoursesController');
 
     Route::resource('messages', 'App\Http\Controllers\MessagesController');
-    Route::resource('document-types', 'App\Http\Controllers\DocumentTypesController');
+
 
 	/* Add new routes here */
 });
+
+Route::resource('document-types', 'App\Http\Controllers\DocumentTypesController');
 
 Route::get('users/find-available-staff/{date}', 'App\Http\Controllers\UsersController@findAvailableStaff');
 
@@ -54,3 +56,4 @@ Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
 Route::get('countries', 'App\Http\Controllers\CountriesController@index');
 Route::get('test', 'App\Http\Controllers\TestController@index');
+Route::get('mail', 'App\Http\Controllers\MailsController@index');
