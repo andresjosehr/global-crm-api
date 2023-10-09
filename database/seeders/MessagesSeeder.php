@@ -333,6 +333,125 @@ class MessagesSeeder extends Seeder
 
                 ¡Bienvenido/a a la familia Global Tech Academy! 🤩
                 _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_'
+            ],
+
+
+            [
+                'name' => 'Bienvenida al contado 1 curso',
+                'description' => '¡Hola! 🤓
+                {{STUDENT_NAME}}
+
+                Te saludamos del área académica de *Global Tech Academy,* para darte la bienvenida a tu curso de:
+                {{PAID_COURSES}}
+
+                Siendo tu fecha de inicio de clases el:
+                {{START_DATE}}
+
+                PUNTOS A TENER EN CUENTA:
+                ✅ *Te enviaremos un correo con tus accesos el día de tu fecha de inicio.*
+                ✅ *La instalación se realizará el mismo día de la fecha de inicio,* y será agendada con unos días de anticipación.
+                ✅ El no cumplir con el agendamiento de la instalación, no te eximirá del inicio de tu licencia SAP.
+                ✅ *El tiempo de licencia y aula virtual de tu curso, es de:* {{LICENSE}}
+                ✅ Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico. Las condiciones para rendirlo, se encuentran en tu aula virtual.
+                ✅ De tener inconvenientes para avanzar en tu curso, podemos congelarlo por única vez, por un máximo de 3 meses (únicamente SAP). Tus *cursos gratuitos* los podrás *habilitar* una vez hayas completado tus pagos, y los tiempos de cada uno se han detallado en tu *confirmación de compra.*
+                ✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio *previamente acordada:*
+                ✅ Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes,no te eximirá del tiempo de aula y licencia que dispones.
+                ✅ Si finaliza el tiempo de tu aula virtual y licencia SAP, y no logras culminar el contenido para certificarte, podrás obtener más tiempo, por un pago adicional.
+
+
+
+                {{FREE_COURSES}}
+                *SI DESEAS INICIAR EL MISMO DÍA DE SAP, CON ESTOS CURSOS, DEBES INDICARME EN ESTE MOMENTO.*
+
+                A través de este WhatsApp, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️
+                OJO: 👀 *_No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado_*
+
+
+                *Nuestro horario de atención comprende* ⏰📅
+                Lunes a Viernes de 9am a 7:30pm (Hora Perú 🇵🇪 )
+                Sabados de 9am a 6pm (Hora Perú 🇵🇪 )
+                Los *DOMINGOS no laboramos*
+
+                ¡Bienvenido/a a la familia Global Tech Academy! 🤩
+                _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_			'
+            ],
+            [
+                'name' => 'Bienvenida al contado mas de un curso',
+                'content' => '¡Hola!
+                {{STUDENT_NAME}}
+
+                Te saludamos del área académica de *Global Tech Academy*, para darte la bienvenida a tus cursos de:
+                {{PAID_COURSES}}
+
+
+                Siendo tu fecha de inicio de clases el:
+                {{COURSES_DATE}}
+
+                PUNTOS A TENER EN CUENTA:
+                ✅ *Te enviaremos un correo con tus accesos el día de tu fecha de inicio.*
+                ✅ *La instalación se realizará el mismo día de la fecha de inicio,* y será agendada con unos días de anticipación.
+                ✅ El no cumplir con el agendamiento de la instalación, no te eximirá del inicio de tu licencia SAP.
+                ✅ *El tiempo de licencia y aula virtual de tu curso, es de:*
+                TIEMPO DE LICENCIA		Conmutados desde el inicio de cada curso.
+                ✅ Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico. Las condiciones para rendirlo, se encuentran en tu aula virtual.
+                ✅ De tener inconvenientes para avanzar en tu curso, podemos congelarlo por única vez, por un máximo de 3 meses en total para todos los cursos en conjunto (únicamente SAP). Tus *cursos gratuitos* los podrás *habilitar* una vez hayas completado tus pagos, y los tiempos de cada uno se han detallado en tu *confirmación de compra.*
+                ✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio *previamente acordada:*
+                ✅ Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes,no te eximirá del tiempo de aula y licencia que dispones.
+                ✅ Si finaliza el tiempo de tu aula virtual y licencia SAP, y no logras culminar el contenido para certificarte, podrás obtener más tiempo, por un pago adicional.
+
+
+
+                {{FREE_COURSES}}
+
+                *SI DESEAS INICIAR EL MISMO DÍA DE SAP, CON ESTOS CURSOS, DEBES INDICARME EN ESTE MOMENTO.*
+
+                A través de este WhatsApp, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️
+                OJO: 👀 *_No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado_*
+
+
+                *Nuestro horario de atención comprende* ⏰📅
+                Lunes a Viernes de 9am a 7:30pm (Hora Perú 🇵🇪 )
+                Sabados de 9am a 6pm (Hora Perú 🇵🇪 )
+                Los *DOMINGOS no laboramos*
+
+                ¡Bienvenido/a a la familia Global Tech Academy! 🤩
+                _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_																				'
+            ],
+            [
+                'name' => 'Bienvenida al contado cursos gratis',
+                'content' => '¡Hola! 🤓
+                {{STUDENT_NAME}}
+
+                Te saludamos del área académica de *Global Tech Academy,* para darte la bienvenida a tu curso de:
+                {{FREE_COURSE}}
+
+                Siendo tu fecha de inicio de clases el:
+                {{START_DATE}}
+
+                PUNTOS A TENER EN CUENTA:
+                ✅ *Te enviaremos un correo con tus accesos el día de tu fecha de inicio.*
+                ✅ *El tiempo de aula virtual de tu curso, es de:* {{LICENSE}}
+                ✅ Dentro de este tiempo, debes realizar todo el contenido y realizar el/los cuestionario/os para poder certificarte.
+                ✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio *previamente acordada:*
+                ✅ Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes, no te eximirá del tiempo de aula que dispones.
+                ✅ Si finaliza el tiempo de tu aula virtual, y no logras culminar el contenido para certificarte, podrás obtener más tiempo, por un pago adicional.
+
+
+
+                {{FREE_COURSES}}
+                *SI DESEAS INICIAR EL MISMO DÍA DE TU CURSO PRINCIPAL, CON ESTOS CURSOS, DEBES INDICARME EN ESTE MOMENTO.*
+
+                A través de este WhatsApp, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️
+                OJO: 👀 *_No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado_*
+
+
+                *Nuestro horario de atención comprende* ⏰📅
+                Lunes a Viernes de 9am a 7:30pm (Hora Perú 🇵🇪 )
+                Sabados de 9am a 6pm (Hora Perú 🇵🇪 )
+                Los *DOMINGOS no laboramos*
+
+                ¡Bienvenido/a a la familia Global Tech Academy! 🤩
+                _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_'
             ]
 
 
