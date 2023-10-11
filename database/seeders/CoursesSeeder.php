@@ -20,16 +20,19 @@ class CoursesSeeder extends Seeder
 		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         DB::table('courses')->insert([
-            [ 'name' => 'SAP PP', 'type' => 'sap'],
-            [ 'name' => 'SAP MM', 'type' => 'sap'],
-            [ 'name' => 'SAP PM', 'type' => 'sap'],
-            [ 'name' => 'SAP HCM', 'type' => 'sap'],
-            [ 'name' => 'SAP INTEGRAL', 'type' => 'sap'],
+            [ 'name' => 'SAP PP Planificación de la Producción', 'short_name' => 'SAP PP', 'type' => 'paid'],
+            [ 'name' => 'SAP MM Logística y Materiales','short_name' => 'SAP MM', 'type' => 'paid'],
+            [ 'name' => 'SAP Mantenimiento de Planta','short_name' => 'SAP PM', 'type' => 'paid'],
+            [ 'name' => 'SAP HCM Recursos Humanos','short_name' => 'SAP HCM', 'type' => 'paid'],
+            [ 'name' => 'Integral SAP USER','short_name' => 'SAP INTEGRAL', 'type' => 'paid'],
 
-            [ 'name' => 'EXCEL', 'type' => ''],
-            [ 'name' => 'POWERBI', 'type' => ''],
-            [ 'name' => 'POWERBI AVANZADO', 'type' => ''],
-            [ 'name' => 'MS PROJECT', 'type' => ''],
+            [ 'name' => 'Excel Empresarial', 'short_name' => 'EXCEL', 'type' => 'free'],
+            [ 'name' => 'Fundamentos de Power BI', 'short_name' => 'POWERBI', 'type' => ''],
+            [ 'name' => 'Power BI para el Análisis de Datos', 'short_name' => 'POWERBI AVANZADO', 'type' => 'free'],
+            [ 'name' => 'Fundamentos de MS Project 2019', 'short_name' => 'MS PROJECT', 'type' => 'free'],
+
+            [ 'name' => 'SAP FI Finanzas y Contabilidad','short_name' => 'SAP FI', 'type' => 'paid'],
+
         ]);
     }
 }

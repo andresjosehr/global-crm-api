@@ -15,11 +15,13 @@
    </head>
    <body lang="es-US" link="#000080" vlink="#800000" dir="ltr">
       <p style="line-height: 100%; margin-bottom: 0.5cm">
-         <img src="https://zmdownload.zoho.com/zm/ImageDisplay?na=6271576000000008002&amp;nmsgId=1696700594521110001&amp;f=1.png&amp;mode=inline&amp;cid=0.28869203040.8974008954180559312.18043c166ad__inline__img__src&amp;" name="Imagen1" align="bottom" width="100%" height="auto" border="0"/>
+
+
+      <img src="{{ asset('images/mail-header.png') }}" name="Imagen1" align="bottom" width="100%" height="auto" border="0"/>
       </p>
       <p style="margin-bottom: 0cm"><font color="#000000"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt"><span style="background: #ffffff">Estimado(a):</span></font></font></font></p>
       <p style="margin-bottom: 0cm"><font color="#000000"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt"><span style="background: #ffffff">Luisa
-         Paola Benalcázar Romero&nbsp;</span></font></font></font>
+         {{STUDENT_NAME}}</span></font></font></font>
       </p>
       <p style="margin-bottom: 0cm"><font color="#000000"><span style="background: #ffffff">&nbsp;</span></font></p>
       <p style="margin-bottom: 0cm"><font color="#000000"><span style="background: #ffffff">&nbsp;</span></font></p>
@@ -32,8 +34,8 @@
       </p>
       <ul>
          <li>
-            <p><font color="#000000"><span style="background: #ffffff">&nbsp;</span></font><font color="#000000"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt"><b><span style="background: #ffffff">SAP
-               PM ( Mantenimiento de Planta)</span></b></font></font></font>
+            <p><font color="#000000"><span style="background: #ffffff">&nbsp;</span></font><font color="#000000"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt"><b><span style="background: #ffffff">
+            {{COURSE_NAME}}</span></b></font></font></font>
             </p>
       </ul>
       <p style="margin-bottom: 0cm"><font color="#000000"><span style="background: #ffffff">&nbsp;</span></font></p>
@@ -43,15 +45,15 @@
       <ul>
          <li>
             <p style="margin-bottom: 0cm"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Fecha
-               de inicio:10/05/2023</font></font>
+               de inicio: {{ORIGINAL_START_DATE}}</font></font>
             </p>
          <li>
             <p style="line-height: 100%; margin-bottom: 0cm"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Fecha
-               de fin:</font></font><span style="display: inline-block; border-top: none; border-bottom: 1px dashed #555555; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0cm"><font size="3" style="font-size: 12pt"><font face="Trebuchet MS, sans-serif">10/11/2023</span></font></font>
+               de fin: {{ORIGINAL_END_DATE}}</font></font><span style="display: inline-block; border-top: none; border-bottom: 1px dashed #555555; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0cm"><font size="3" style="font-size: 12pt"><font face="Trebuchet MS, sans-serif">10/11/2023</span></font></font>
             </p>
          <li>
             <p><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Tiempo
-               de licencia y aula virtual inicial:6 MESES&nbsp;</font></font>
+               de licencia y aula virtual inicial: {{LICENSE}} &nbsp;</font></font>
             </p>
       </ul>
       <p style="margin-bottom: 0cm">&nbsp;</p>
@@ -63,11 +65,11 @@
       <ul>
          <li>
             <p style="margin-bottom: 0cm"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Tiempo
-               a congelar:1 MES</font></font>
+               a congelar: {{FREEZING_DURATION}}</font></font>
             </p>
          <li>
             <p><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Tiempo
-               disponible para volver a congelar: 2 MESES</font></font>
+               disponible para volver a congelar: {{FREEZING_AVAILABLE_DURATION}}</font></font>
             </p>
       </ul>
       <p style="margin-bottom: 0cm">&nbsp;</p>
@@ -79,15 +81,15 @@
       <ul>
          <li>
             <p style="line-height: 100%; margin-bottom: 0cm"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Fecha
-               de inicio:&nbsp;</font></font><span style="display: inline-block; border-top: none; border-bottom: 1px dashed #555555; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0cm"><font size="3" style="font-size: 12pt"><font face="Trebuchet MS, sans-serif">07/11/2023</span></font></font>
+               de inicio:&nbsp;</font></font><span style="display: inline-block; border-top: none; border-bottom: 1px dashed #555555; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0cm"><font size="3" style="font-size: 12pt"><font face="Trebuchet MS, sans-serif">{{RETURN_DATE}}</span></font></font>
             </p>
          <li>
             <p style="line-height: 100%; margin-bottom: 0cm"><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Fecha
-               de fin:</font></font><span style="display: inline-block; border-top: none; border-bottom: 1px dashed #555555; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0cm"><font size="3" style="font-size: 12pt"><font face="Trebuchet MS, sans-serif">10/12/2023</span></font></font>
+               de fin:</font></font><span style="display: inline-block; border-top: none; border-bottom: 1px dashed #555555; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0cm"><font size="3" style="font-size: 12pt"><font face="Trebuchet MS, sans-serif">{{FINISH_DATE}}</span></font></font>
             </p>
          <li>
             <p><font face="Trebuchet MS, sans-serif"><font size="3" style="font-size: 12pt">Tiempo
-               de licencia y aula virtual restante:1 MESES y 3 DIAS</font></font>
+               de licencia y aula virtual restante: {{REMAIN_LICENSE}}</font></font>
             </p>
       </ul>
       <p align="justify" style="margin-bottom: 0cm">&nbsp;</p>
@@ -97,7 +99,8 @@
          obsequio que tienes disponibles:</span></b></font></font></font>
       </p>
       <p align="justify" style="margin-bottom: 0cm">&nbsp;</p>
-      <table width="633" cellpadding="0" cellspacing="0">
+      {{FREE_COURSES}}
+      <!-- <table width="633" cellpadding="0" cellspacing="0">
          <tr valign="top">
             <td width="170" style="border: 1.00pt solid #000000; padding: 0.05cm 0.19cm">
                <p align="center">
@@ -177,7 +180,7 @@
                </p>
             </td>
          </tr>
-      </table>
+      </table> -->
       <p align="center" style="margin-bottom: 0cm; background: #ffffff; text-decoration: none">
          <font color="#000000">&nbsp;</font>
       </p>
@@ -272,7 +275,7 @@
       </p>
       <p style="margin-bottom: 0cm"><br/>
       </p>
-      <p style="margin-bottom: 0cm"><img src="https://zmdownload.zoho.com/zm/ImageDisplay?na=6271576000000008002&amp;nmsgId=1696700594521110001&amp;f=2.png&amp;mode=inline&amp;cid=0.28869226610.5974102674139877220.18b0b3c787f__inline__img__src&amp;" name="Imagen2" align="bottom" width="150" height="149" border="0"/>
+      <p style="margin-bottom: 0cm"><img src="{{ asset('images/mail-signature.png') }}" name="Imagen2" align="bottom" width="150" height="149" border="0"/>
          <br/>
          Coordinación
          Académica

@@ -155,15 +155,17 @@ class MessagesSeeder extends Seeder
             ],
             [
                 'name' => 'Guia Instalación SAP',
-                // *TRES (03)*}
-                // TeamViewer, WinRar y SAP GUI
+
                 'content' => "Por favor, debe tener descargados los *{{NUMBER}}* archivos que indica la guía, *antes de la hora agendada;* de lo contrario, el personal técnico procederá a *reagendar su instalación.* La PRÓXIMA CITA QUE TENGO DISPONIBLE ES EN DOS DÍAS HÁBILES A PARTIR DE LAS 9AM. *Y su licencia corre desde el día que enviamos los accesos.*
 
                 *El personal técnico se contactará por este medio, a la hora agendada.*
 
                 Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno. Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes para poder reprogramarlo. Gracias por su comprensión.
 
-                *LE RECUERDO QUE LA GUÍA CONTIENE {{NUMBER}} ARCHIVOS PARA DESCARGAR: {{PROGRAMS}}*"
+                *LE RECUERDO QUE LA GUÍA CONTIENE {{NUMBER}} ARCHIVOS PARA DESCARGAR: {{PROGRAMS}}*
+
+                *Adicionalmente tambien puede descargar consultar la guia de instalacion en el siguiente link:* {{GUIDE_LINK}}"
+
             ],
             [
                 'name' => 'Instalacion SAP agendada',

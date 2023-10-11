@@ -19,7 +19,7 @@ class CoursesPricesSeeder extends Seeder
 		DB::table('course_prices')->truncate();
 		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        foreach(DB::table('courses')->where('type', 'sap')->get() as $course) {
+        foreach(DB::table('courses')->where('type', 'paid')->get() as $course) {
             foreach(DB::table('prices')->get() as $price) {
 
                 if(strpos($price->description, 'Dos') !== false || strpos($price->description, 'Tres') !== false || strpos($price->description, 'Cuatro') !== false || strpos($price->description, 'Cinco') !== false || strpos($price->description, 'Seis') !== false) {

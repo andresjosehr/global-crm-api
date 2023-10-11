@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('extensions', function (Blueprint $table) {
             $table->id();
-            $table->string('months');
+            $table->integer('months');
 
 
             $table->bigInteger('order_id')->unsigned()->nullable();

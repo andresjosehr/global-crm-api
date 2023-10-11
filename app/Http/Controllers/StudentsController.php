@@ -162,7 +162,7 @@ class StudentsController extends Controller
 
     function getTermsInfo($key)
     {
-        $order = Order::where('key', $key)->where('terms_confirmed_by_student', false)->with('student', 'orderCourses.course', 'dues', 'currency')->first();
+        $order = Order::where('key', $key)->where('terms_confirmed_by_student', false)->with('student', 'orderCourses.course', 'dues', 'currency', 'student')->first();
 
         if (!$order) {
             return ApiResponseController::response('No se encontró la orden', 404);

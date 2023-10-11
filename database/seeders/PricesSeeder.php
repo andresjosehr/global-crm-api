@@ -1197,48 +1197,105 @@ class PricesSeeder extends Seeder
 
 
 
-
-
-
-
-
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 25,
+                'amount' => 20,
                 'months' => 1,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 40,
                 'months' => 2,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 60,
+                'months' => 3,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 80,
+                'months' => 4,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 100,
+                'months' => 5,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 95,
+                'months' => 6,
+                'mode' => ''
+            ],
+
+
+            // 20USD
+            // 40USD
+            // 60USD
+            // 80USD
+            // 100USD
+            // 95USD
+            // 110USD
+            // 120USD
+            // 130USD
+            // 140USD
+            // 150USD
+            // 160USD
+
+
+
+
+
+
+            [
+                'description' => 'Extension Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 25,
+                'months' => 1,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 40,
+                'months' => 2,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 51,
                 'months' => 3,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 81,
                 'months' => 4,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 96,
                 'months' => 5,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 115,
                 'months' => 6,
@@ -1250,42 +1307,42 @@ class PricesSeeder extends Seeder
 
 
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 90,
                 'months' => 1,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 150,
                 'months' => 2,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 210,
                 'months' => 3,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 320,
                 'months' => 4,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 380,
                 'months' => 5,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 450,
                 'months' => 6,
@@ -1296,42 +1353,42 @@ class PricesSeeder extends Seeder
 
 
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 90000,
                 'months' => 1,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 150000,
                 'months' => 2,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 200000,
                 'months' => 3,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 320000,
                 'months' => 4,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 380000,
                 'months' => 5,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 450000,
                 'months' => 6,
@@ -1343,42 +1400,42 @@ class PricesSeeder extends Seeder
 
 
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
                 'amount' => 490,
                 'months' => 1,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
                 'amount' => 810,
                 'months' => 2,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
                 'amount' => 1000,
                 'months' => 3,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
                 'amount' => 1655,
                 'months' => 4,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
                 'amount' => 1980,
                 'months' => 5,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
                 'amount' => 2350,
                 'months' => 6,
@@ -1387,42 +1444,42 @@ class PricesSeeder extends Seeder
 
 
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 20000,
                 'months' => 1,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 30000,
                 'months' => 2,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 45000,
                 'months' => 3,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 74300,
                 'months' => 4,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 88200,
                 'months' => 5,
                 'mode' => ''
             ],
             [
-                'description' => 'Extension',
+                'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 103700,
                 'months' => 6,
