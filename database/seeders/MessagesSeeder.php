@@ -131,7 +131,7 @@ class MessagesSeeder extends Seeder
             ],
             [
                 'name' => 'Agendar Instalación SAP',
-                'content' => "Buen día, me comunico para enviarle los horarios disponibles *(de acuerdo a su huso horario, es decir, la ciudad donde se encuentra)* para iniciar el proceso para agendar su instalación de SAP para el día: {{SAP_INSTALATION_DATE}}
+                'content' => "Buen día, me comunico para enviarle los horarios disponibles *(de acuerdo a su huso horario: {{LOCATION}} )* para iniciar el proceso para agendar su instalación de SAP para el día: {{SAP_INSTALATION_DATE}}
 
                 {{HOURS}}
 
@@ -147,8 +147,6 @@ class MessagesSeeder extends Seeder
                 'name' => 'Horas de preferencia para instalación SAP',
                 'content' => "Por favor me indica el *horario de su preferencia, para continuar* con el proceso de agendamiento de su *instalación de SAP.*
 
-                {{HOURS}}
-
                 Quedo atenta a sus respuestas para poder enviarle la *guía de pre-instalación correspondiente,* de acuerdo a las preguntas realizadas.
 
                 ⚠️Sin la respuesta a todas las consultas y el horario de su preferencia, no se completará el agendamiento de SAP y sus accesos empezarán a correr desde su fecha de inicio."
@@ -160,7 +158,7 @@ class MessagesSeeder extends Seeder
 
                 *El personal técnico se contactará por este medio, a la hora agendada.*
 
-                Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno. Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes para poder reprogramarlo. Gracias por su comprensión.
+                Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno. Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes (dentro de mi horario laboral) para poder reprogramarlo. Gracias por su comprensión.
 
                 *LE RECUERDO QUE LA GUÍA CONTIENE {{NUMBER}} ARCHIVOS PARA DESCARGAR: {{PROGRAMS}}*
 
@@ -169,7 +167,7 @@ class MessagesSeeder extends Seeder
             ],
             [
                 'name' => 'Instalacion SAP agendada',
-                'content' => "Se ha agendado su instalación. *Por favor tener los archivos* descargados *antes de su instalación,* los puede encontrar en la guía enviada anteriormente.
+                'content' => "Se ha agendado su instalación para el {{SAP_INSTALATION_DATE}} a las {{TIME}}  {{LOCATION}}. *Por favor tener los archivos* descargados *antes de su instalación,* los puede encontrar en la guía enviada anteriormente.
 
                 *Me indica si es que no la puede visualizar.*
 

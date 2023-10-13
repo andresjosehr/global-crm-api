@@ -198,6 +198,7 @@ class StudentsController extends Controller
                 $documentType->name = $request->input('document_type_name');
                 $documentType->custom = true;
                 $documentType->country_id = $request->input('country_id');
+                $documentType->city_id = $request->input('city_id');
                 $documentType->save();
                 $student->document_type_id = $documentType->id;
             }
