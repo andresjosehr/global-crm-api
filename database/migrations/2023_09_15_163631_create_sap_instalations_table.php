@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('start_datetime')->nullable();
             $table->dateTime('end_datetime')->nullable();
             $table->string('operating_system')->nullable();
+            $table->string('sap_user')->nullable();
             $table->string('pc_type')->nullable();
             $table->string('status')->nullable();
 

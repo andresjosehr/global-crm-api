@@ -167,7 +167,7 @@ class MessagesSeeder extends Seeder
             ],
             [
                 'name' => 'Instalacion SAP agendada',
-                'content' => "Se ha agendado su instalación para el {{SAP_INSTALATION_DATE}} a las {{TIME}}  {{LOCATION}}. *Por favor tener los archivos* descargados *antes de su instalación,* los puede encontrar en la guía enviada anteriormente.
+                'content' => "Se ha agendado su instalación para el {{SAP_INSTALATION_DATE}} a las {{TIME}} hora {{LOCATION}}. *Por favor tener los archivos* descargados *antes de su instalación,* los puede encontrar en la guía enviada anteriormente.
 
                 *Me indica si es que no la puede visualizar.*
 
