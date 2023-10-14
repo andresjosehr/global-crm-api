@@ -49,6 +49,7 @@ return new class extends Migration
 
             $table->longText('observation')->nullable();
 
+            $table->boolean('previus_sap_instalation')->default(false);
             $table->boolean('payment_enabled')->default(false);
 
             $table->timestamps();

@@ -109,9 +109,9 @@ class StudentsController extends Controller
         }
 
         $student->name                = $request->input('name');
-        $student->country_id             = $request->input('country_id');
+        $student->country_id          = $request->input('country_id');
+        $student->city_id             = $request->input('city_id') ?? null;
         $student->phone               = $request->input('phone');
-
         $student->email               = $request->input('email');
 
 
@@ -184,10 +184,13 @@ class StudentsController extends Controller
         $student                       = Student::find($order->student->id);
 
         $student->name                = $request->input('name');
-        $student->country_id             = $request->input('country_id');
+        $student->country_id          = $request->input('country_id');
         $student->phone               = $request->input('phone');
-
+        $student->phone               = $request->input('phone');
+        $student->city_id             = $request->input('city_id');
         $student->email               = $request->input('email');
+
+        $student->save();
 
 
 
@@ -197,10 +200,9 @@ class StudentsController extends Controller
                 $documentType = new DocumentType();
                 $documentType->name = $request->input('document_type_name');
                 $documentType->custom = true;
-                $documentType->country_id = $request->input('country_id');
-                $documentType->city_id = $request->input('city_id');
-                $documentType->save();
+
                 $student->document_type_id = $documentType->id;
+                $documentType->save();
             }
         } else {
             $student->document_type_id     = $request->input('document_type_id');

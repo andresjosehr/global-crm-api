@@ -19,6 +19,7 @@ class SapInstalation extends Model
         "pc_type",
         "status",
         "order_course_id",
+        'previus_sap_instalation',
         "instalation_type",
         "price_id",
         "price",
@@ -44,5 +45,11 @@ class SapInstalation extends Model
     public function getPaymentEnabledAttribute($value)
     {
         return $value ? true : false;
+    }
+
+    // Accesor for terms_confirmed_by_student boolean
+    public function getPreviusSapInstalationAttribute($value)
+    {
+        return $value == 1 ? true : false;
     }
 }

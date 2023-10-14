@@ -34,6 +34,7 @@ class DocumentTypesSeeder extends Seeder
             ],
             'Chile' => [
                 ['name' => 'RUN', 'code' => 'RUN', 'description' => 'Rol Único Nacional'],
+                ['name' => 'RUT', 'code' => 'RUT', 'description' => 'Rol Único Tributario'],
             ],
             'México' => [
                 ['name' => 'CURP', 'code' => 'CURP', 'description' => 'Clave Única de Registro de Población'],
