@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CertificationTest;
 use App\Models\Course;
 use App\Models\Currency;
+use App\Models\DatesHistory;
 use App\Models\DocumentType;
 use App\Models\Invoice;
 use App\Models\Order;
@@ -18,6 +19,22 @@ use Illuminate\Http\Request;
 
 class OrdersController extends Controller
 {
+
+    public $months = [
+        '1 mes' => 1,
+        '2 meses' => 2,
+        '3 meses' => 3,
+        '4 meses' => 4,
+        '5 meses' => 5,
+        '6 meses' => 6,
+        '7 meses' => 7,
+        '8 meses' => 8,
+        '9 meses' => 9,
+        '10 meses' => 10,
+        '11 meses' => 11,
+        '12 meses' => 12,
+    ];
+
     /**
      * Display a listing of the resource.
      *
@@ -54,13 +71,14 @@ class OrdersController extends Controller
         $order = new \App\Models\Order();
 
 
-        $order->student_id = $request->student_id;
-        $order->currency_id = $request->currency_id;
-        $order->enrollment_sheet = $request->enrollment_sheet;
-        $order->payment_mode = $request->payment_mode;
-        $order->price_id = $request->price_id;
-        $order->price_amount = $request->price_amount;
-        $order->created_by = $id;
+        $order->student_id        = $request->student_id;
+        $order->currency_id       = $request->currency_id;
+        $order->enrollment_sheet  = $request->enrollment_sheet;
+        $order->payment_mode      = $request->payment_mode;
+        $order->price_id          = $request->price_id;
+        $order->free_courses_date = $request->free_courses_date;
+        $order->price_amount      = $request->price_amount;
+        $order->created_by        = $id;
 
         // Generate random key
         $order->key = md5(microtime());
@@ -68,8 +86,47 @@ class OrdersController extends Controller
 
         $order->save();
 
-        // orderCourses
-        $order->orderCourses()->createMany($request->order_courses);
+
+        if($request->free_courses_date == 'Misma fecha de curso SAP'){
+            // Get minor date in paid courses
+            $paidCourses = array_values(array_filter($request->order_courses, function ($item) {
+                return $item['type'] == 'paid';
+            }));
+
+            // Get less start date
+            $lessStartDate = array_reduce($paidCourses, function ($carry, $item) {
+                if ($carry == null) {
+                    return $item['start'];
+                } else {
+                    return $item['start'] < $carry ? $item['start'] : $carry;
+                }
+            });
+
+            $orderCourses = $request->order_courses;  // Copiar el valor a una variable
+
+            $i=0;
+            foreach ($orderCourses as $orderCourse) {
+                if($orderCourse['type'] == 'free') {
+                    $orderCourses[$i]['start'] = $lessStartDate;
+                    $orderCourses[$i]['end'] = Carbon::parse($lessStartDate)->addMonths($this->months[$orderCourse['license']])->format('Y-m-d');
+                }
+                $i++;
+            }
+        }
+
+
+        foreach ($orderCourses as $orderCourse) {
+            $oc = $order->orderCourses()->create($orderCourse);
+            DatesHistory::create([
+                'order_course_id' => $oc->id,
+                'order_id' => $order->id,
+                'start_date' => $orderCourse['start'],
+                'end_date' => $orderCourse['end'],
+                'type' => 'Primero'
+            ]);
+        }
+
+
 
         // Dues
         $order->dues()->createMany($request->dues);
@@ -135,24 +192,24 @@ class OrdersController extends Controller
             $invoice->tax_situation_proof = $fileName;
         }
 
-        $invoice->requested = $request->invoice['requested'];
-        $invoice->ruc = $request->invoice['ruc'];
+        $invoice->requested     = $request->invoice['requested'];
+        $invoice->ruc           = $request->invoice['ruc'];
         $invoice->business_name = $request->invoice['business_name'];
-        $invoice->email = $request->invoice['email'];
+        $invoice->email         = $request->invoice['email'];
         $invoice->tax_situation = $request->invoice['tax_situation'];
-        $invoice->tax_regime = $request->invoice['tax_regime'];
-        $invoice->address = $request->invoice['address'];
-        $invoice->postal_code = $request->invoice['postal_code'];
-        $invoice->cellphone = $request->invoice['cellphone'];
-        $invoice->cfdi_use = $request->invoice['cfdi_use'];
-        $invoice->type = $request->invoice['type'];
-        $invoice->order_id = $order->id;
+        $invoice->tax_regime    = $request->invoice['tax_regime'];
+        $invoice->address       = $request->invoice['address'];
+        $invoice->postal_code   = $request->invoice['postal_code'];
+        $invoice->cellphone     = $request->invoice['cellphone'];
+        $invoice->cfdi_use      = $request->invoice['cfdi_use'];
+        $invoice->type          = $request->invoice['type'];
+        $invoice->order_id      = $order->id;
 
         $invoice->save();
 
 
         // Get id
-        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'orderCourses.sapInstalations', 'dues', 'student', 'currency', 'price')->find($order->id);
+        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'orderCourses.sapInstalations', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
 
         return ApiResponseController::response('Orden creada exitosamente', 201, $order);
     }
@@ -280,6 +337,10 @@ class OrdersController extends Controller
 
             $orderCourseDB = OrderCourse::find($orderCourse['id']);
 
+            $orderCourseDB->end = $orderCourse['end'];
+
+            $orderCourseDB->save();
+
             // Sincronizar certificationTests
             $this->syncRelation($orderCourseDB->certificationTests(), $orderCourse['certification_tests']);
 
@@ -334,12 +395,26 @@ class OrdersController extends Controller
             }
         }
 
-        // Filtrar las propiedades de los nuevos registro
 
         // Crear nuevos registros
-        $relation->createMany($new);
+        $record = $relation->createMany($new);
 
-        return $new;
+        $modelName = explode('\\', get_class($model));
+        $modelName = $modelName[count($modelName) - 1];
+        if(($modelName == 'Extension' || $modelName == 'Freezing') && count($new) > 0) {
+            $orderCourse = OrderCourse::find($new[0]['order_course_id']);
+            $data = [
+                'order_course_id' => $new[0]['order_course_id'],
+                'order_id' => $new[0]['order_id'],
+                'start_date' => $orderCourse->start,
+                'end_date' => $modelName == 'Freezing' ? $new[0]['finish_date'] : $orderCourse->end,
+                'type' => $modelName == 'Freezing' ? 'Congelación' : 'Extension'
+            ];
+            $data[strtolower($modelName) . '_id'] = $record[0]['id'];
+            DatesHistory::create($data);
+        }
+
+        return [$new, $modelName];
     }
 
 
@@ -365,5 +440,10 @@ class OrdersController extends Controller
         ];
 
         return ApiResponseController::response('Consulta exitosa', 200, $options);
+    }
+
+    public function datesHistory($id){
+        $datesHistory = DatesHistory::with('course')->where('order_course_id', $id)->orderBy('created_at', 'ASC')->get();
+        return ApiResponseController::response('Consulta exitosa', 200, $datesHistory);
     }
 }

@@ -57,7 +57,7 @@ class StudentsController extends Controller
         $student                       = new Student();
         $student->name                = $request->input('name');
         $student->country_id           = $request->input('country_id');
-        $student->document_type_id           = $request->input('document_type_id');
+        $student->document_type_id     = $request->input('document_type_id');
 
         $student->phone               = $request->input('phone');
         $student->document            = $request->input('document');

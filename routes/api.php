@@ -31,6 +31,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
+    Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
 	Route::resource('students', 'App\Http\Controllers\StudentsController');
     Route::resource('orders', 'App\Http\Controllers\OrdersController');
     Route::get('student-orders/get-options', 'App\Http\Controllers\OrdersController@getOptions');

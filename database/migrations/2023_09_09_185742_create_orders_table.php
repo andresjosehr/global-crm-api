@@ -26,6 +26,8 @@ return new class extends Migration
 
             $table->string('payment_mode');
 
+            $table->string('free_courses_date');
+
             $table->bigInteger('price_id')->unsigned()->nullable();
             $table->foreign('price_id')->references('id')->on('prices');
 

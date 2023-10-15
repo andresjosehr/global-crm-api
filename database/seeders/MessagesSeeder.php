@@ -452,6 +452,32 @@ class MessagesSeeder extends Seeder
 
                 ¡Bienvenido/a a la familia Global Tech Academy! 🤩
                 _Éste es el único número autorizado del que recibirá información, por favor guárdalo como contacto_'
+            ],
+            [
+                'name' => 'Congelación',
+                'content' => 'Estimado,
+                Nos has solicitado poner en pausa tu curso: {{COURSE_NAME}}. El cual tiene actualmente la siguiente información:
+
+                Fecha de inicio: {{START_DATE}}
+                Fecha de fin: {{END_DATE}}
+                Tiempo de licencia y aula virtual inicial: {{LICENSE}}
+
+                Dispones de la posibilidad de congelar tu curso por 3 meses, y nos has solicitado congelarlo por:
+
+                Tiempo a congelar: {{DURATION}}
+                Tiempo disponible para volver a congelar: {{REMAIN_FREEZING}}
+
+                De acuerdo a lo anterior, las nuevas fechas de inicio y fin de tu aula virtual y licencia SAP serían las siguientes:
+
+                *Fecha de inicio:* {{RETURN_DATE}}
+                *Fecha de fin:* {{FINISH_DATE}}
+                *Tiempo de licencia y aula virtual restante:*  {{REMAIN_LICENSE}}
+
+                CONSIDERACIONES:
+
+                Al congelar tu curso, se mantendrá tu avance realizado hasta la fecha, pero no tendrás acceso a tu aula virtual, ni a tu usuario SAP.
+
+                Debes mantener la conexión a nuestro servidor y recordar la clave de SAP que creaste, de lo contrario tendrías que pagar por el desbloqueo del usuario y si consumiste tus instalaciones gratuitas, pagar por una nueva instalación. '
             ]
 
 
