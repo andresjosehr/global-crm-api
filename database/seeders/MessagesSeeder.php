@@ -154,15 +154,21 @@ class MessagesSeeder extends Seeder
             [
                 'name' => 'Guia Instalación SAP',
 
-                'content' => "Por favor, debe tener descargados los *{{NUMBER}}* archivos que indica la guía, *antes de la hora agendada;* de lo contrario, el personal técnico procederá a *reagendar su instalación.* La PRÓXIMA CITA QUE TENGO DISPONIBLE ES EN DOS DÍAS HÁBILES A PARTIR DE LAS 9AM. *Y su licencia corre desde el día que enviamos los accesos.*
+                'content' => "Por favor ingrese al siguiente link para encontrar la GUÍA DE PRE INSTALACIÓN SAP:
+
+                {{GUIDE_LINK}}
+
+                Encontrará *{{NUMBER}}* enlaces, los cuales debe tener descargados antes de la hora agendada; de lo contrario, el personal técnico procederá a reagendar su instalación.
+
+                La PRÓXIMA CITA QUE TENGO DISPONIBLE ES EN DOS DÍAS HÁBILES A PARTIR DE LAS 9AM. Y su licencia corre desde el día que enviamos los accesos.
 
                 *El personal técnico se contactará por este medio, a la hora agendada.*
 
-                Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno. Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes (dentro de mi horario laboral) para poder reprogramarlo. Gracias por su comprensión.
+                Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno.
 
-                *LE RECUERDO QUE LA GUÍA CONTIENE {{NUMBER}} ARCHIVOS PARA DESCARGAR: {{PROGRAMS}}*
+                Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes (dentro de mi horario laboral) para poder reprogramarlo. Gracias por su comprensión.
 
-                *Adicionalmente tambien puede descargar consultar la guia de instalacion en el siguiente link:* {{GUIDE_LINK}}"
+                *LE RECUERDO QUE LA GUÍA CONTIENE {{NUMBER}} ARCHIVOS PARA DESCARGAR: {{PROGRAMS}}*. El último puede demorar hasta 3h en descargarse, tomar previsiones."
 
             ],
             [
