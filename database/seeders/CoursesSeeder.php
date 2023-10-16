@@ -27,7 +27,7 @@ class CoursesSeeder extends Seeder
             [ 'name' => 'Integral SAP USER','short_name' => 'SAP INTEGRAL', 'type' => 'paid'],
 
             [ 'name' => 'Excel Empresarial', 'short_name' => 'EXCEL', 'type' => 'free'],
-            [ 'name' => 'Fundamentos de Power BI', 'short_name' => 'POWERBI', 'type' => ''],
+            [ 'name' => 'Fundamentos de Power BI', 'short_name' => 'POWERBI BASICO', 'type' => 'free'],
             [ 'name' => 'Power BI para el Análisis de Datos', 'short_name' => 'POWERBI AVANZADO', 'type' => 'free'],
             [ 'name' => 'Fundamentos de MS Project 2019', 'short_name' => 'MS PROJECT', 'type' => 'free'],
 

@@ -86,7 +86,7 @@ class OrdersController extends Controller
 
         $order->save();
 
-
+        $orderCourses = $request->order_courses;  // Copiar el valor a una variable
         if($request->free_courses_date == 'Misma fecha de curso SAP'){
             // Get minor date in paid courses
             $paidCourses = array_values(array_filter($request->order_courses, function ($item) {
@@ -102,7 +102,7 @@ class OrdersController extends Controller
                 }
             });
 
-            $orderCourses = $request->order_courses;  // Copiar el valor a una variable
+
 
             $i=0;
             foreach ($orderCourses as $orderCourse) {

@@ -33,7 +33,6 @@ class DocumentTypesSeeder extends Seeder
                 ['name' => 'DNI', 'code' => 'DNI', 'description' => 'Documento Nacional de Identidad'],
             ],
             'Chile' => [
-                ['name' => 'RUN', 'code' => 'RUN', 'description' => 'Rol Único Nacional'],
                 ['name' => 'RUT', 'code' => 'RUT', 'description' => 'Rol Único Tributario'],
             ],
             'México' => [
