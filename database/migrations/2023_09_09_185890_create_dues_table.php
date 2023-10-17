@@ -22,6 +22,8 @@ return new class extends Migration
             $table->boolean('paid')->default(false)->nullable();
             $table->bigInteger('payment_method_id')->unsigned()->nullable();
             $table->foreign('payment_method_id')->references('id')->on('payment_methods');
+            $table->bigInteger('currency_id')->unsigned()->nullable();
+            $table->foreign('currency_id')->references('id')->on('currencies');
             $table->integer('position')->nullable();
 
             $table->timestamps();

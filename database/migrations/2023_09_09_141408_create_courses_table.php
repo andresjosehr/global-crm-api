@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('short_name');
             $table->string('description')->nullable();
             $table->string('type');
+            $table->integer('wp_post_id')->nullable();
             $table->timestamps();
         });
     }

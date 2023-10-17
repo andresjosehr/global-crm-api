@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
-use App\Models\Price;
-use App\Models\User;
+use App\Models\Student;
 use Illuminate\Http\Request;
 
 class TestController extends Controller
@@ -16,7 +14,7 @@ class TestController extends Controller
      */
     public function index()
     {
-        return User::where('email', 'tecnicoinstalacion@gmail.com')->first()->append('unavailable_times', 'bussy_times');
+        return Student::with('wpLearnpressUserItems')->get();
 
     }
 

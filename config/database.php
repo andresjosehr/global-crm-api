@@ -74,7 +74,7 @@ return [
             'unix_socket' => env('WPRESS_DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => 'wp_',
+            'prefix' => env('WPRESS_DB_PREFIX', ''),
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
