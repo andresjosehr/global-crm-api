@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Wordpress\WpLearnpressUserItem;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -75,4 +76,25 @@ class OrderCourse extends Model
             $this->attributes['end'] = Carbon::parse($value)->format('Y-m-d');
         }
     }
+
+
+    public function attachCertificationTestCourse($user_id){
+
+        $wp_certification_tests = WpLearnpressUserItem::whereHas('item', function($q){
+                                            $q->where('post_title', 'LIKE', '%Certificación%');
+                                        })
+                                        ->where('user_id', $user_id)
+                                        ->where('ref_id', $this->course->wp_post_id)
+                                        ->where('item_type', 'lp_quiz')
+                                        ->orderBy('start_time', 'ASC')
+                                        ->get();
+
+
+        foreach($wp_certification_tests as $key => $wp_certification_test){
+            $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
+        }
+
+        return $this;
+    }
+
 }

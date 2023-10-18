@@ -14,7 +14,18 @@ class TestController extends Controller
      */
     public function index()
     {
-        return Student::with('wpLearnpressUserItems')->get();
+        $student = Student::with('orders.orderCourses.certificationTests', 'orders.orderCourses.course')->get()->map(function ($s) {return $s->attachCertificationTest(); });
+
+        // Filter
+        $student = $student->filter(function ($s) {
+            return $s->orders->filter(function ($o) {
+                return $o->orderCourses->filter(function ($oc) {
+                    return $oc->course->certification_test;
+                });
+            });
+        });
+
+        return $student;
 
     }
 

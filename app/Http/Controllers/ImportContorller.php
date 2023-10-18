@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\CertificationTest;
 use App\Models\Currency;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -71,10 +72,11 @@ class ImportContorller extends Controller
         DB::table('orders')->truncate();
         DB::table('order_courses')->truncate();
         DB::table('dues')->truncate();
+        DB::table('certification_tests')->truncate();
         // enable foreign key check for this connection after truncating tables
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        foreach($users as $user){
+        foreach ($users as $user) {
             $student                 = new \App\Models\Student();
             $student->name           = $user['name'];
             $student->phone          = $user['phone'];
@@ -90,10 +92,10 @@ class ImportContorller extends Controller
             $order->currency_id  = isset($user['payments'][0]['currency_id']) ? $user['payments'][0]['currency_id'] : null;
             $order->save();
 
-            foreach($user['courses'] as $course){
+            foreach ($user['courses'] as $course) {
                 // Get diff in months
                 $license = null;
-                if($course['start'] && $course['end']){
+                if ($course['start'] && $course['end']) {
                     $start = Carbon::createFromFormat('Y-m-d', $course['start']);
                     $end   = Carbon::createFromFormat('Y-m-d', $course['end']);
                     $diff  = $start->diffInMonths($end);
@@ -111,7 +113,7 @@ class ImportContorller extends Controller
                 $orderCourse->save();
             }
 
-            foreach($user['payments'] as $payment){
+            foreach ($user['payments'] as $payment) {
                 $due              = new \App\Models\Due();
                 $due->order_id    = $order->id;
                 $due->currency_id = $payment['currency_id'];
@@ -119,10 +121,39 @@ class ImportContorller extends Controller
                 $due->date        = $payment['date'];
                 $due->save();
             }
+
+            $freeCourses = [6, 7, 8, 9];
+
+            $order = \App\Models\Order::with('orderCourses')->find($order->id);
+            foreach ($order->orderCourses as $course) {
+                $course_id = $course->course_id;
+
+                $limit = ($course_id == 6) ? 12 : (in_array($course_id, $freeCourses) ? 4 : 6);
+
+                for ($i = 0; $i < $limit; $i++) {
+                    $certificationTest = new CertificationTest();
+                    $certificationTest->order_id = $order->id;
+                    $certificationTest->order_course_id = $course->id;
+                    $certificationTest->status = 'Sin realizar';
+
+                    if ($course_id == 6) {
+                        $levelIndex = intdiv($i, 4);
+                        $certLevels = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
+                        $certificationTest->description = $i % 4 < 3 ? "$certLevels[$levelIndex] " . (($i % 4) + 1) : "Ponderación $certLevels[$levelIndex]";
+                        $certificationTest->enabled = true;
+                        $certificationTest->premium = $i % 4 >= 3;
+                    } else {
+                        $certificationTest->description = $i < $limit - 1 ? "Examen de certificación " . ($i + 1) : "Ponderación";
+                        $certificationTest->enabled = $i < 3;
+                        $certificationTest->premium = ($i >= $limit - 1) || (in_array($course_id, $freeCourses) ? $i >= 3 : true);
+                    }
+
+                    $certificationTest->save();
+                }
+            }
         }
 
         return "Exito";
-
     }
 
     public function getSheetsData()
@@ -322,7 +353,7 @@ class ImportContorller extends Controller
         $allPayments = [];
         $currenciesDB = Currency::all()->pluck('id', 'iso_code')->toArray();
 
-        $paymentMethods=[];
+        $paymentMethods = [];
         foreach ($data as $key => $student) {
             $payments = [];
             $fields = ['RESERVA' => 'FECHA'];

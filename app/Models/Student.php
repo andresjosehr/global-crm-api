@@ -46,4 +46,21 @@ class Student extends Model
         //         $query->where('wp_post_id', 'ref_id');
         //     });
     }
+
+    public function attachCertificationTest()
+    {
+        if(!$this->orders){
+            return $this;
+        }
+
+        foreach ($this->orders as $i => $order) {
+            if(!$order->orderCourses || !$this->wp_user){
+                continue;
+            }
+            foreach ($order->orderCourses as $k => $order_course) {
+                $this->orders[$i]->orderCourses[$k]->attachCertificationTestCourse($this->wp_user->ID);
+            }
+        }
+        return $this;
+    }
 }

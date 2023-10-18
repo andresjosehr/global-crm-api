@@ -27,4 +27,7 @@ class Course extends Model
     {
         return $this->hasOne(WpLearnpressUserItem::class, 'ref_id', 'wp_post_id');
     }
+
+
 }
+

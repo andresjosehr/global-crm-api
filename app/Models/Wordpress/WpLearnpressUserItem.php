@@ -11,5 +11,14 @@ class WpLearnpressUserItem extends Model
 
     protected $connection = 'wordpress';
 
-    protected $table = 'leanpress_user_items';
+    protected $table = 'learnpress_user_items';
+
+
+    public function course(){
+        return $this->belongsTo(WpPost::class, 'ref_id', 'ID');
+    }
+
+    public function item(){
+        return $this->belongsTo(WpPost::class, 'item_id', 'ID');
+    }
 }

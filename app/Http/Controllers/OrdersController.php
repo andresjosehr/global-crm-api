@@ -224,6 +224,7 @@ class OrdersController extends Controller
     {
         if (Order::where('id', $id)->exists()) {
             $order = Order::with('orderCourses.course', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
+            $order=$order->attachCertificationTest($order->student_id);
             return ApiResponseController::response('Consulta exitosa', 200, $order);
         } else {
             return ApiResponseController::response('La orden no existe', 404);

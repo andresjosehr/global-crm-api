@@ -48,4 +48,18 @@ class Order extends Model
     {
         return $value == 1 ? true : false;
     }
+
+
+    public function attachCertificationTest($user_id)
+    {
+            $student = Student::with('wp_user')->find($user_id);
+
+            if(!$this->orderCourses || !$this->wp_user){
+                return $this;
+            }
+            foreach ($this->orderCourses as $k => $order_course) {
+                $this->orderCourses[$k]->attachCertificationTestCourse($student->wp_user->ID);
+            }
+        return $this;
+    }
 }
