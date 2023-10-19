@@ -92,6 +92,8 @@ class OrderCourse extends Model
 
         foreach($wp_certification_tests as $key => $wp_certification_test){
             $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
+            $this->certificationTests[$key]->start_time = $wp_certification_test->start_time;
+            $this->certificationTests[$key]->wp_certification = $wp_certification_test;
         }
 
         return $this;

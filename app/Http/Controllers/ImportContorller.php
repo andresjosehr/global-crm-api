@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\CertificationTest;
 use App\Models\Currency;
+use App\Models\Invoice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Google_Client;
@@ -92,6 +93,23 @@ class ImportContorller extends Controller
             $order->currency_id  = isset($user['payments'][0]['currency_id']) ? $user['payments'][0]['currency_id'] : null;
             $order->save();
 
+
+            $invoice = new Invoice();
+            $invoice->requested     = false;
+            $invoice->ruc           = null;
+            $invoice->business_name = null;
+            $invoice->email         = null;
+            $invoice->tax_situation = null;
+            $invoice->tax_regime    = null;
+            $invoice->address       = null;
+            $invoice->postal_code   = null;
+            $invoice->cellphone     = null;
+            $invoice->cfdi_use      = null;
+            $invoice->type          = null;
+            $invoice->order_id      = $order->id;
+
+            $invoice->save();
+
             foreach ($user['courses'] as $course) {
                 // Get diff in months
                 $license = null;
@@ -152,6 +170,7 @@ class ImportContorller extends Controller
                 }
             }
         }
+
 
         return "Exito";
     }
