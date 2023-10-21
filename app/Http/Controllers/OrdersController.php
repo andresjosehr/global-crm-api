@@ -109,6 +109,10 @@ class OrdersController extends Controller
                 if($orderCourse['type'] == 'free') {
                     $orderCourses[$i]['start'] = $lessStartDate;
                     $orderCourses[$i]['end'] = Carbon::parse($lessStartDate)->addMonths($this->months[$orderCourse['license']])->format('Y-m-d');
+                    // Check if end date is sunday, if true, add one day
+                    if(Carbon::parse($orderCourses[$i]['end'])->dayOfWeek == 0){
+                        $orderCourses[$i]['end'] = Carbon::parse($orderCourses[$i]['end'])->addDay()->format('Y-m-d');
+                    }
                 }
                 $i++;
             }
@@ -254,12 +258,13 @@ class OrdersController extends Controller
         if (Order::where('id', $id)->exists()) {
             $order = Order::find($id);
 
-            $order->student_id = $request->student_id;
-            $order->currency_id = $request->currency_id;
-            $order->enrollment_sheet = $request->enrollment_sheet;
-            $order->payment_mode = $request->payment_mode;
-            $order->price_id = $request->price_id;
-            $order->price_amount = $request->price_amount;
+            $order->student_id                 = $request->student_id;
+            $order->currency_id                = $request->currency_id;
+            $order->enrollment_sheet           = $request->enrollment_sheet;
+            $order->comunication_type          = $request->comunication_type;
+            $order->payment_mode               = $request->payment_mode;
+            $order->price_id                   = $request->price_id;
+            $order->price_amount               = $request->price_amount;
             $order->terms_confirmed_by_student = $request->terms_confirmed_by_student;
 
             $order->save();
@@ -286,17 +291,17 @@ class OrdersController extends Controller
                 $invoice->tax_situation_proof = $fileName;
             }
 
-            $invoice->requested = $request->invoice['requested'];
-            $invoice->ruc = $request->invoice['ruc'];
+            $invoice->requested     = $request->invoice['requested'];
+            $invoice->ruc           = $request->invoice['ruc'];
             $invoice->business_name = $request->invoice['business_name'];
-            $invoice->email = $request->invoice['email'];
+            $invoice->email         = $request->invoice['email'];
             $invoice->tax_situation = $request->invoice['tax_situation'];
-            $invoice->tax_regime = $request->invoice['tax_regime'];
-            $invoice->address = $request->invoice['address'];
-            $invoice->postal_code = $request->invoice['postal_code'];
-            $invoice->cellphone = $request->invoice['cellphone'];
-            $invoice->cfdi_use = $request->invoice['cfdi_use'];
-            $invoice->type = $request->invoice['type'];
+            $invoice->tax_regime    = $request->invoice['tax_regime'];
+            $invoice->address       = $request->invoice['address'];
+            $invoice->postal_code   = $request->invoice['postal_code'];
+            $invoice->cellphone     = $request->invoice['cellphone'];
+            $invoice->cfdi_use      = $request->invoice['cfdi_use'];
+            $invoice->type          = $request->invoice['type'];
 
             $invoice->save();
 

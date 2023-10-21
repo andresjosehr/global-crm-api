@@ -163,7 +163,7 @@ class ImportContorller extends Controller
                     } else {
                         $certificationTest->description = $i < $limit - 1 ? "Examen de certificación " . ($i + 1) : "Ponderación";
                         $certificationTest->enabled = $i < 3;
-                        $certificationTest->premium = ($i >= $limit - 1) || (in_array($course_id, $freeCourses) ? $i >= 3 : true);
+                        $certificationTest->premium = $i >= 3;
                     }
 
                     $certificationTest->save();

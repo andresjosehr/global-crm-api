@@ -153,6 +153,28 @@ class PaymentMethodsSeeder extends Seeder
                 "name" => "NIUBIZ",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
             ],
+            [
+                "name" => "INTERBANK",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+            ],
+
+
+            // Bolivia
+            [
+                "name" => "PAYPAL",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'BOB')->first()->id,
+            ],
+            [
+                "name" => "NIUBIZ",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'BOB')->first()->id,
+            ],
+
+            [
+                "name" => "WESTERN UNION",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'BOB')->first()->id,
+            ],
+
+            # Metodos de pago no cargados
         ]);
     }
 }

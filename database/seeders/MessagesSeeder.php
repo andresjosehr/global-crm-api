@@ -343,6 +343,10 @@ class MessagesSeeder extends Seeder
 
 
             [
+                'name' => 'Bienvenida (2)',
+                'description' => 'Adicionalmente le consulto: ¿Desea que nuestra comunicación sea únicamente por este medio o está de acuerdo con llamadas? También me puede indicar si desea ambas vías o sólo una. Quedo al pendiente de su respuesta.'
+            ],
+            [
                 'name' => 'Bienvenida al contado 1 curso',
                 'description' => '¡Hola! 🤓
                 {{STUDENT_NAME}}

@@ -26,6 +26,8 @@ return new class extends Migration
 
             $table->string('payment_mode');
 
+            $table->string('comunication_type')->nullable();
+
             $table->string('free_courses_date')->nullable();
 
             $table->bigInteger('price_id')->unsigned()->nullable();
