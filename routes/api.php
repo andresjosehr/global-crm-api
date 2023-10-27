@@ -25,6 +25,9 @@ Route::prefix('auth')->group(function (){
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 });
 
+Route::get('messages/extension', 'App\Http\Controllers\Messages\FreeCourseExtensions@index');
+Route::get('messages/ponderacion', 'App\Http\Controllers\Messages\FreeCoursesWeightedController@index');
+
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
     Route::resource('cars', 'App\Http\Controllers\CarsController');
 	Route::get('get-all-cars', 'App\Http\Controllers\CarsController@getAll');
@@ -58,3 +61,10 @@ Route::get('import', 'App\Http\Controllers\ImportContorller@index');
 Route::get('countries', 'App\Http\Controllers\CountriesController@index');
 Route::get('test', 'App\Http\Controllers\TestController@index');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
+
+
+
+Route::prefix('processes')->group(function (){
+    Route::get('update-courses-status', 'App\Http\Controllers\Processes\CourseStatusController@index');
+    Route::get('update-test-status', 'App\Http\Controllers\Processes\TestStatusController@index');
+});
