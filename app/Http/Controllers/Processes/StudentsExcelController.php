@@ -345,6 +345,10 @@ class StudentsExcelController extends Controller
                         }
                     }
 
+                    if (!($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end))) {
+                        $data[$i]['courses'][$j]['certifaction_test'] = '';
+                    }
+
                     $data[$i]['courses'][$j]['quizzes'] = $quizzes;
                 }
 
@@ -438,6 +442,10 @@ class StudentsExcelController extends Controller
 
                     if ($data[$i]['courses'][$j]['lesson_progress'] == 'COMPLETADO') {
                         $data[$i]['courses'][$j]['course_status'] = 'COMPLETA';
+                    }
+
+                    if (!($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end))) {
+                        $data[$i]['courses'][$j]['certifaction_test'] = '';
                     }
                 }
             }
