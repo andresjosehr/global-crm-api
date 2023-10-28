@@ -31,6 +31,7 @@ class TestStatusController extends Controller
 
         $data = new StudentsExcelController();
         $students = $data->index();
+        // return json_encode($students);
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
@@ -90,13 +91,13 @@ class TestStatusController extends Controller
         }, $students);
 
 
-        // return json_encode($studentsFitered);
         $studentsFitered = array_filter($studentsFitered, function ($student) {
             return count($student['courses']) > 0 && $student['wp_user_id'];
         });
         $studentsFitered = array_values($studentsFitered);
 
 
+        // return json_encode($studentsFitered);
 
 
 
@@ -142,11 +143,16 @@ class TestStatusController extends Controller
             }
         }
 
+        // return json_encode($data);
+
+
         // Group by sheet_id
         $data = array_reduce($data, function ($carry, $item) {
             $carry[$item['sheet_id']][] = $item;
             return $carry;
         }, []);
+
+        // return json_encode($data);
 
 
 

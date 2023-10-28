@@ -102,6 +102,7 @@ class StudentsExcelController extends Controller
 
                 if (strpos($course_name, 'SAP') !== false) {
 
+                    $enable = [];
                     $start = null;
                     $end = null;
 
@@ -134,15 +135,19 @@ class StudentsExcelController extends Controller
                         $end = $student['FIN'];
                     }
 
-                    $courses[] = [
-                        'course_id' => $course_db->id,
-                        'sap_user'  => $student['USUARIO SAP'],
-                        'name'       => $course_db->name,
-                        'start'     => $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
-                        'end'       => $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
-                        'wp_post_id' => $course_db->wp_post_id,
-                        'type'      => 'paid'
-                    ];
+
+                    if (in_array($course_name, $enable) || count($enable) == 0) {
+                        $courses[] = [
+                            'course_id'  => $course_db->id,
+                            'sap_user'   => $student['USUARIO SAP'],
+                            'name'       => $course_db->name,
+                            'start'      => $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
+                            'end'        => $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
+                            'wp_post_id' => $course_db->wp_post_id,
+                            'type'       => 'paid',
+                            '$string'    => $string
+                        ];
+                    }
                 }
 
                 // If not include SAP courses
