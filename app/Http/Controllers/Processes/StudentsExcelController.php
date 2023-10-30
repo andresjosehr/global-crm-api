@@ -165,13 +165,15 @@ class StudentsExcelController extends Controller
 
                     try {
                         $courses[] = [
-                            'course_id' => $course_db->id,
-                            'sap_user'  => $student['USUARIO SAP'],
+                            'course_id'  => $course_db->id,
+                            'sap_user'   => $student['USUARIO SAP'],
                             'name'       => $course_db->name,
-                            'start'     => $student[$dates[$course_db->id]['start']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['start']])->format('Y-m-d') : null,
-                            'end'       => $student[$dates[$course_db->id]['end']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['end']])->format('Y-m-d') : null,
+                            'start'      => $student[$dates[$course_db->id]['start']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['start']])->format('Y-m-d') : null,
+                            'end'        => $student[$dates[$course_db->id]['end']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['end']])->format('Y-m-d') : null,
                             'wp_post_id' => $course_db->wp_post_id,
-                            'type'      => 'free'
+                            'column1'     => $dates[$course_db->id]['start'],
+                            'column2'     => $dates[$course_db->id]['end'],
+                            'type'       => 'free'
                         ];
                     } catch (\Throwable $th) {
                         $courses[] = [
@@ -180,6 +182,11 @@ class StudentsExcelController extends Controller
                             'sap_user'   => $student['USUARIO SAP'],
                             'start'      => null,
                             'end'        => null,
+                            '_column1'   => $dates[$course_db->id]['start'],
+                            '_column2'   => $dates[$course_db->id]['end'],
+                            '_value1'    => $student[$dates[$course_db->id]['start']],
+                            '_value2'    => $student[$dates[$course_db->id]['end']],
+                            'error'      => json_encode($th->getMessage()),
                             'wp_post_id' => $course_db->wp_post_id,
                             'type'       => 'free'
                         ];
@@ -235,6 +242,11 @@ class StudentsExcelController extends Controller
             ->select('quizzes.ID', 'sections.section_course_id')
             ->join('learnpress_section_items as section_items', 'section_items.item_id', '=', 'quizzes.ID')
             ->join('learnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
+            ->join('postmeta as pm', function ($join) {
+                $join->on('pm.post_id', '=', 'quizzes.ID')
+                    ->where('pm.meta_key', '=', 'examen_de_certificacion')
+                    ->where('pm.meta_value', '=', '1');
+            })
             ->where('quizzes.post_type', 'lp_quiz')
             ->where('quizzes.post_title', 'like', '%CERTIFICACION%')
             ->orderBy('sections.section_course_id')
@@ -259,21 +271,21 @@ class StudentsExcelController extends Controller
 
             if (!$data[$i]['wp_user_id']) {
                 $col = '';
-                if($data[$i]['USUARIO AULA']){
+                if ($data[$i]['USUARIO AULA']) {
                     $col = 'USUARIO AULA';
-                } elseif($data[$i]['MSP USUARIO AULA']){
+                } elseif ($data[$i]['MSP USUARIO AULA']) {
                     $col = 'MSP USUARIO AULA';
-                } elseif($data[$i]['PBI USUARIO AULA']){
+                } elseif ($data[$i]['PBI USUARIO AULA']) {
                     $col = 'PBI USUARIO AULA';
-                } elseif($data[$i]['EXC USUARIO AULA']){
+                } elseif ($data[$i]['EXC USUARIO AULA']) {
                     $col = 'EXC USUARIO AULA';
                 }
 
-                if($col){
+                if ($col) {
                     $data[$i]['wp_user_id'] = isset($users_db2[$student[$col]]) ? $users_db2[$student[$col]] : null;
                 }
 
-                if(!$data[$i]['wp_user_id']){
+                if (!$data[$i]['wp_user_id']) {
                     continue;
                 }
             }
@@ -287,7 +299,7 @@ class StudentsExcelController extends Controller
                         ->whereHas('item', function ($q) {
                             $q->where('post_title', 'not like', '%webinar%');
                         })
-                        ->get()->count();
+                        ->get()->unique('item_id')->values()->count();
 
                     $quizzes = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                         ->where('ref_id', $course['wp_post_id'])
@@ -319,11 +331,11 @@ class StudentsExcelController extends Controller
                         $data[$i]['courses'][$j]['course_status'] = $data[$i]['courses'][$j]['lesson_progress'] == 'COMPLETADO' ? 'COMPLETA' : 'CURSANDO';
                     } elseif ($now->greaterThan($end)) {
                         $data[$i]['courses'][$j]['course_status'] = $data[$i]['courses'][$j]['lesson_progress'] == 'COMPLETADO' ? 'COMPLETA' : 'NO CULMINÓ';
-                    } elseif ($now->greaterThan($start)) {
-                        $data[$i]['courses'][$j]['course_status'] = 'POR HABILITAR';
                     } elseif ($now->lessThan($start)) {
-                        $data[$i]['courses'][$j]['course_status'] = '';
-                    } elseif (!$course['start'] && !$course['end']) {
+                        $data[$i]['courses'][$j]['course_status'] = 'POR HABILITAR';
+                    }
+
+                    if ($course['start']==null && $course['end']==null) {
                         $data[$i]['courses'][$j]['course_status'] = '';
                     }
 
@@ -437,11 +449,9 @@ class StudentsExcelController extends Controller
                         $data[$i]['courses'][$j]['course_status'] = $data[$i]['courses'][$j]['lesson_progress'] == 'COMPLETADO' ? 'COMPLETA' : 'CURSANDO';
                     } elseif ($now->greaterThan($end)) {
                         $data[$i]['courses'][$j]['course_status'] = $data[$i]['courses'][$j]['lesson_progress'] == 'COMPLETADO' ? 'COMPLETA' : 'NO CULMINÓ';
-                    } elseif ($now->greaterThan($start)) {
-                        $data[$i]['courses'][$j]['course_status'] = 'POR HABILITAR';
                     } elseif ($now->lessThan($start)) {
-                        $data[$i]['courses'][$j]['course_status'] = '';
-                    } elseif (!$course['start'] && !$course['end']) {
+                        $data[$i]['courses'][$j]['course_status'] = 'POR HABILITAR';
+                    }  elseif (!$course['start'] && !$course['end']) {
                         $data[$i]['courses'][$j]['course_status'] = '';
                     }
 

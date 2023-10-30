@@ -111,7 +111,7 @@ class CourseStatusController extends Controller
         });
         $studentsFitered = array_values($studentsFitered);
 
-        // return $studentsFitered;
+        // return json_encode($studentsFitered);
 
         $data = [];
         foreach ($studentsFitered as $student) {
