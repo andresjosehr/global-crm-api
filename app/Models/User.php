@@ -80,10 +80,28 @@ class User extends Authenticatable implements JWTSubject
 
 
     public function getModules()
-    {
-        $modules = $this->role->modules;
-        return $modules;
-    }
+{
+    $modules = $this->role->modules;
+
+    $parentModules = $modules->filter(function ($module) {
+        return is_null($module->parent_id);
+    });
+
+    $childModules = $modules->filter(function ($module) {
+        return !is_null($module->parent_id);
+    });
+
+    $organizedModules = $parentModules->map(function ($parentModule) use ($childModules) {
+        $parentModule->childs = $childModules->filter(function ($childModule) use ($parentModule) {
+            return $childModule->parent_id == $parentModule->id;
+        })->values();  // Reset array keys
+
+        return $parentModule;
+    });
+
+    return $organizedModules;
+}
+
 
     function sap_instalation()
     {

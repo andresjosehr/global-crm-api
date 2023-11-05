@@ -30,5 +30,6 @@ class DatabaseSeeder extends Seeder
         $this->call(DocumentTypesSeeder::class);
         $this->call(StaffAvailabilitySlotsSeeder::class);
         $this->call(SapInstalationsSeeder::class);
+        $this->call(SheetsSeeder::class);
     }
 }

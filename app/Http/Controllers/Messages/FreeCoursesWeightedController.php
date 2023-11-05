@@ -157,7 +157,7 @@ class FreeCoursesWeightedController extends Controller
             }
         }
 
-        // self::updateSheets($studentsFiltered);
+        self::updateSheets($studentsFiltered);
 
         return $studentsFiltered;
     }

@@ -64,7 +64,17 @@ Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 
 
+Route::prefix('sales')->group(function (){
+    Route::post('import-data', 'App\Http\Controllers\SalesController@importData');
+    Route::get('get-leads', 'App\Http\Controllers\SalesController@getLeads');
+    Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
+});
+
 Route::prefix('processes')->group(function (){
     Route::get('update-courses-status', 'App\Http\Controllers\Processes\CourseStatusController@index');
     Route::get('update-test-status', 'App\Http\Controllers\Processes\TestStatusController@index');
+});
+
+Route::prefix('mails')->group(function (){
+    Route::get('send-unfreezings-emails', 'App\Http\Controllers\Mails\FreezingsController@index');
 });

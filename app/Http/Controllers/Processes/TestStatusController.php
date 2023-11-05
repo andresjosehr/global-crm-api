@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Processes;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Processes\StudentsExcelController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class TestStatusController extends Controller
         ini_set('memory_limit', -1);
 
         $data = new StudentsExcelController();
-        $students = $data->index();
+        $students = $data->index('test');
         // return json_encode($students);
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
@@ -75,21 +76,42 @@ class TestStatusController extends Controller
 
             // replace course in courses
             $student['courses'] = array_map(function ($c) {
-                if (!$c['end'] && !$c['start']) {
-                    if ($c['course_id'] == 6) {
+
+                $now = Carbon::now()->setTimezone('America/Lima');
+                $end = Carbon::parse($c['end'] . ' 23:59:59')->setTimezone('America/Lima')->setTime(23, 59, 59);
+
+                if ($now->greaterThan($end) && $c['certifaction_test'] == '3 Intentos pendientes') {
+                    $c['certifaction_test'] = 'No Aplica';
+                }
+
+                if ($c['course_id'] == 6) {
+
+                    if ($c['nivel_basico']['certifaction_test'] == '3 Intentos pendientes' && $now->greaterThan($end)) {
+                        $c['nivel_basico']['certifaction_test'] = 'No Aplica';
+                    }
+                    if ($c['nivel_intermedio']['certifaction_test'] == '3 Intentos pendientes' && $now->greaterThan($end)) {
+                        $c['nivel_intermedio']['certifaction_test'] = 'No Aplica';
+                    }
+                    if ($c['nivel_avanzado']['certifaction_test'] == '3 Intentos pendientes' && $now->greaterThan($end)) {
+                        $c['nivel_avanzado']['certifaction_test'] = 'No Aplica';
+                    }
+
+
+                    if (!$c['end'] && !$c['start']) {
                         $c['nivel_basico']['certifaction_test'] = '';
                         $c['nivel_intermedio']['certifaction_test'] = '';
                         $c['nivel_avanzado']['certifaction_test'] = '';
-                    } else {
-                        $c['certifaction_test'] = '';
                     }
+                    $c['certifaction_test'] = '';
                 }
+
                 return $c;
             }, $student['courses']);
 
             return $student;
         }, $students);
 
+        // return json_encode($studentsFitered);
 
         $studentsFitered = array_filter($studentsFitered, function ($student) {
             return count($student['courses']) > 0 && $student['wp_user_id'];
@@ -107,11 +129,12 @@ class TestStatusController extends Controller
             foreach ($student['courses'] as $course) {
                 if ($course['type'] === 'paid') {
                     $data[] = [
-                        'sheet_id' => $student['sheet_id'],
+                        'sheet_id'          => $student['sheet_id'],
                         'course_row_number' => $student['course_row_number'],
-                        'column' => "M",
-                        'email' => $student['CORREO'],
-                        'certifaction_test' => $course['certifaction_test'],
+                        'column'            => "M",
+                        'email'             => $student['CORREO'],
+                        'tab_id'            => $student['course_tab_id'],
+                        'value'             => $course['certifaction_test'],
                     ];
                 }
 
@@ -120,11 +143,12 @@ class TestStatusController extends Controller
                         $levels = ['nivel_basico' => 'V', 'nivel_intermedio' => 'Y', 'nivel_avanzado' => 'AB'];
                         foreach ($levels as $name => $column) {
                             $data[] = [
-                                'sheet_id' => $student['sheet_id'],
+                                'sheet_id'          => $student['sheet_id'],
                                 'course_row_number' => $student['course_row_number'],
-                                'column' => $column,
-                                'email' => $student['CORREO'],
-                                'certifaction_test' => $course[$name]['certifaction_test'],
+                                'column'            => $column,
+                                'email'             => $student['CORREO'],
+                                'tab_id'            => $student['course_tab_id'],
+                                'value'             => $course[$name]['certifaction_test'],
                             ];
                         }
                     }
@@ -132,87 +156,28 @@ class TestStatusController extends Controller
                     if ($course['course_id'] != 6) {
                         $cols = [7 => 'AJ', 8 => 'AJ', 9 => 'AR'];
                         $data[] = [
-                            'sheet_id' => $student['sheet_id'],
+                            'sheet_id'          => $student['sheet_id'],
                             'course_row_number' => $student['course_row_number'],
-                            'column' => $cols[$course['course_id']],
-                            'email' => $student['CORREO'],
-                            'certifaction_test' => $course['certifaction_test'],
+                            'column'            => $cols[$course['course_id']],
+                            'email'             => $student['CORREO'],
+                            'tab_id'            => $student['course_tab_id'],
+                            'value'             => $course['certifaction_test'],
                         ];
                     }
                 }
             }
         }
 
-        // return json_encode($data);
 
+        $google_sheet = new GoogleSheetController();
 
-        // Group by sheet_id
-        $data = array_reduce($data, function ($carry, $item) {
-            $carry[$item['sheet_id']][] = $item;
-            return $carry;
-        }, []);
+        $data = $google_sheet->transformData($data);
+        $data = $google_sheet->prepareRequests($data);
 
-        // return json_encode($data);
+        $google_sheet->updateGoogleSheet($data);
 
-
-
-
-
-
-
-
-        $client = new Google_Client();
-
-        // Load credentials from the storage
-        $credentialsPath = storage_path('app/public/credentials.json');
-
-        if (file_exists($credentialsPath)) {
-            $client->setAuthConfig($credentialsPath);
-        } else {
-            throw new Exception('Missing Google Service Account credentials file.');
-        }
-
-        $client->setApplicationName("Client_Library_Examples");
-        $client->setScopes([
-            'https://www.googleapis.com/auth/drive',
-            'https://www.googleapis.com/auth/spreadsheets'
-        ]);
-        $client->setAccessType('offline');
-
-        $this->service = new Google_Service_Sheets($client);
-
-
-        foreach ($data as $sheet_id => $updates) {
-            $requests = [];
-
-            // Obtener el ID de la hoja (pestaña) usando el mapeo
-            $sheetTabId = $this->sheets[$sheet_id];
-
-            foreach ($updates as $update) {
-                $range = 'CURSOS!' . $update['column'] . $update['course_row_number'];
-                $requests[] = new Google_Service_Sheets_Request([
-                    'updateCells' => [
-                        'range' => [
-                            'sheetId'          => $sheetTabId,                             // Usar el ID de la hoja (pestaña) aquí
-                            'startRowIndex'    => $update['course_row_number'] - 1,
-                            'endRowIndex'      => $update['course_row_number'],
-                            'startColumnIndex' => self::columnLetterToNumber($update['column']),
-                            'endColumnIndex'   => self::columnLetterToNumber($update['column']) + 1,
-                        ],
-                        'rows' => [
-                            ['values' => [new Google_Service_Sheets_CellData(['userEnteredValue' => ['stringValue' => $update['certifaction_test']]])]]
-                        ],
-                        'fields' => 'userEnteredValue'
-                    ]
-                ]);
-            }
-
-            $batchUpdateRequest = new Google_Service_Sheets_BatchUpdateSpreadsheetRequest(['requests' => $requests]);
-            $response = $this->service->spreadsheets->batchUpdate($sheet_id, $batchUpdateRequest);
-        }
-
-
-        return json_encode($data);
+        // return "Exito";
+        return json_encode(["Exito" => $studentsFitered]);
     }
 
     public function columnLetterToNumber($columnLabel)

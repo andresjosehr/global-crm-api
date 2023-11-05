@@ -13,16 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('modules', function (Blueprint $table) {
+        Schema::create('sheets', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->string('icon');
-            $table->string('path');
+            $table->string('sheet_id');
+            $table->integer('base_tab_id');
+            $table->integer('course_tab_id');
+            $table->longText('link');
             $table->string('type');
-            $table->bigInteger('parent_id')->unsigned()->nullable();
-			$table->foreign('parent_id')->references('id')->on('modules');
-});
+            $table->timestamps();
+        });
     }
 
     /**
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('modules');
+        Schema::dropIfExists('sheets');
     }
 };

@@ -23,11 +23,15 @@ class ModulesRolesSeeder extends Seeder
 
         $modules = Module::all();
 
-        DB::table('modules_roles')->insert([
-            [
-                'module_id' => self::module('Alumnos'),
+        // All modules to Administrador
+        foreach ($modules as $module) {
+            DB::table('modules_roles')->insert([
+                'module_id' => $module->id,
                 'role_id'   => self::role('Administrador'),
-            ],
+            ]);
+        }
+
+        DB::table('modules_roles')->insert([
             [
                 'module_id' => self::module('Alumnos'),
                 'role_id'   => self::role('Asesor de ventas'),

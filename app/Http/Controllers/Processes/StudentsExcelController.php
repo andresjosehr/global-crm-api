@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Processes;
 
 use App\Http\Controllers\Controller;
+use App\Models\Sheet;
 use App\Models\Wordpress\WpLearnpressUserItem;
 use App\Models\Wordpress\WpUser;
 use Carbon\Carbon;
@@ -47,7 +48,7 @@ class StudentsExcelController extends Controller
     ];
 
 
-    public function index()
+    public function index($sheet_type = 'test')
     {
         // memory_limit
         ini_set('memory_limit', '2048M');
@@ -56,7 +57,7 @@ class StudentsExcelController extends Controller
 
         self::createGoogleServiceInstance();
 
-        $data = self::getSheetsData();
+        $data = self::getSheetsData($sheet_type);
         // return $data;
         $data = self::formatCourses($data);
         $data = self::formatProgress($data);
@@ -137,16 +138,30 @@ class StudentsExcelController extends Controller
 
 
                     if (in_array($course_name, $enable) || count($enable) == 0) {
-                        $courses[] = [
-                            'course_id'  => $course_db->id,
-                            'sap_user'   => $student['USUARIO SAP'],
-                            'name'       => $course_db->name,
-                            'start'      => $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
-                            'end'        => $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
-                            'wp_post_id' => $course_db->wp_post_id,
-                            'type'       => 'paid',
-                            '$string'    => $string
-                        ];
+                        try {
+                            $courses[] = [
+                                'course_id'  => $course_db->id,
+                                'sap_user'   => $student['USUARIO SAP'],
+                                'name'       => $course_db->name,
+                                'start'      => $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
+                                'end'        => $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
+                                'wp_post_id' => $course_db->wp_post_id,
+                                'type'       => 'paid',
+                                '$string'    => $string
+                            ];
+                        } catch (\Throwable $th) {
+                            $courses[] = [
+                                'course_id'  => $course_db->id,
+                                'name'       => $course_db->name,
+                                'sap_user'   => $student['USUARIO SAP'],
+                                'start'      => null,
+                                'end'        => null,
+                                'error'      => json_encode($th->getMessage()),
+                                'wp_post_id' => $course_db->wp_post_id,
+                                'type'       => 'paid',
+                                '$string'    => $string
+                            ];
+                        }
                     }
                 }
 
@@ -184,8 +199,6 @@ class StudentsExcelController extends Controller
                             'end'        => null,
                             '_column1'   => $dates[$course_db->id]['start'],
                             '_column2'   => $dates[$course_db->id]['end'],
-                            '_value1'    => $student[$dates[$course_db->id]['start']],
-                            '_value2'    => $student[$dates[$course_db->id]['end']],
                             'error'      => json_encode($th->getMessage()),
                             'wp_post_id' => $course_db->wp_post_id,
                             'type'       => 'free'
@@ -218,7 +231,7 @@ class StudentsExcelController extends Controller
             ->orderBy('sections.section_course_id')
             ->orderBy('sections.section_name')
             ->orderBy('section_items.item_order', 'ASC')
-            ->get();
+            ->get()->unique('ID')->values();
 
         // Agrupar las lecciones por el ID del curso
         $groupedLessons = $lessons->groupBy('section_course_id');
@@ -285,9 +298,9 @@ class StudentsExcelController extends Controller
                     $data[$i]['wp_user_id'] = isset($users_db2[$student[$col]]) ? $users_db2[$student[$col]] : null;
                 }
 
-                if (!$data[$i]['wp_user_id']) {
-                    continue;
-                }
+                // if (!$data[$i]['wp_user_id']) {
+                //     continue;
+                // }
             }
 
             foreach ($student['courses'] as $j => $course) {
@@ -335,8 +348,8 @@ class StudentsExcelController extends Controller
                         $data[$i]['courses'][$j]['course_status'] = 'POR HABILITAR';
                     }
 
-                    if ($course['start']==null && $course['end']==null) {
-                        $data[$i]['courses'][$j]['course_status'] = '';
+                    if ($course['start'] == null && $course['end'] == null) {
+                        $data[$i]['courses'][$j]['course_status'] = 'POR HABILITAR';
                     }
 
                     if ($data[$i]['courses'][$j]['lesson_progress'] == 'COMPLETADO') {
@@ -349,16 +362,18 @@ class StudentsExcelController extends Controller
                     })->count() == 0 ? null : 'Aprobado';
 
 
-                    if (count($quizzes) == 0) {
-                        $data[$i]['courses'][$j]['certifaction_test'] = "Intentos Pendientes";
-                    }
 
                     if ($data[$i]['courses'][$j]['certifaction_test'] == null) {
-                        if (count($quizzes) == 3) {
+                        if (count($quizzes) == 0) {
+                            $data[$i]['courses'][$j]['certifaction_test'] = "3 Intentos pendientes";
+                        } elseif (count($quizzes) == 1) {
+                            $data[$i]['courses'][$j]['certifaction_test'] = "2 Intentos pendientes";
+                        } elseif (count($quizzes) == 2) {
+                            $data[$i]['courses'][$j]['certifaction_test'] = "1 Intento pendiente";
+                        } elseif (count($quizzes) == 3) {
                             $data[$i]['courses'][$j]['certifaction_test'] = "Sin Intentos Gratis";
-                        }
-                        if (count($quizzes) != 3) {
-                            $data[$i]['courses'][$j]['certifaction_test'] = "Reprobado";
+                        } else {
+                            $data[$i]['courses'][$j]['certifaction_test'] = "Sin intentos Gratis";
                         }
                     }
 
@@ -416,16 +431,17 @@ class StudentsExcelController extends Controller
                             return $quiz->graduation == 'passed';
                         })->count() == 0 ? null : 'Aprobado';
 
-                        if (count($quizzes) == 0) {
-                            $data[$i]['courses'][$j][$key]['certifaction_test'] = "Intentos Pendientes";
-                        }
-
                         if ($data[$i]['courses'][$j][$key]['certifaction_test'] == null) {
-                            if (count($quizzes) == 3) {
+                            if (count($quizzes) == 0) {
+                                $data[$i]['courses'][$j][$key]['certifaction_test'] = "3 Intentos pendientes";
+                            } elseif (count($quizzes) == 1) {
+                                $data[$i]['courses'][$j][$key]['certifaction_test'] = "2 Intentos pendientes";
+                            } elseif (count($quizzes) == 2) {
+                                $data[$i]['courses'][$j][$key]['certifaction_test'] = "1 Intento pendiente";
+                            } elseif (count($quizzes) == 3) {
                                 $data[$i]['courses'][$j][$key]['certifaction_test'] = "Sin Intentos Gratis";
-                            }
-                            if (count($quizzes) != 3) {
-                                $data[$i]['courses'][$j][$key]['certifaction_test'] = "Reprobado";
+                            } else {
+                                $data[$i]['courses'][$j][$key]['certifaction_test'] = "Sin intentos Gratis";
                             }
                         }
                     }
@@ -451,7 +467,7 @@ class StudentsExcelController extends Controller
                         $data[$i]['courses'][$j]['course_status'] = $data[$i]['courses'][$j]['lesson_progress'] == 'COMPLETADO' ? 'COMPLETA' : 'NO CULMINÓ';
                     } elseif ($now->lessThan($start)) {
                         $data[$i]['courses'][$j]['course_status'] = 'POR HABILITAR';
-                    }  elseif (!$course['start'] && !$course['end']) {
+                    } elseif (!$course['start'] && !$course['end']) {
                         $data[$i]['courses'][$j]['course_status'] = '';
                     }
 
@@ -469,31 +485,16 @@ class StudentsExcelController extends Controller
         return $data;
     }
 
-    public function getSheetsData()
+    public function getSheetsData($sheet_type = 'test')
     {
-        // Test
-        $sheets = [
-            "1CKiL-p7PhL2KxnfM7G2SXcffto7OGH7yM8BT3AiBWd8", // https://docs.google.com/spreadsheets/d/1CKiL-p7PhL2KxnfM7G2SXcffto7OGH7yM8BT3AiBWd8/edit#gid=810305363
-            "1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo", // https://docs.google.com/spreadsheets/d/1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo/edit#gid=810305363
-            "10IYPXewqQL1WoVXx0b3vp-BOCbIBu0zZMVdbBAdSPec", // https://docs.google.com/spreadsheets/d/10IYPXewqQL1WoVXx0b3vp-BOCbIBu0zZMVdbBAdSPec/edit#gid=810305363
-            "1GgPmMaJelAlH7V-ovHNKN9GQfqprE2Lq6eOFQfhGWNA", // https://docs.google.com/spreadsheets/d/1GgPmMaJelAlH7V-ovHNKN9GQfqprE2Lq6eOFQfhGWNA/edit#gid=810305363
-        ];
-
-
-        // Prod
-        // $sheets = [
-        //     "1_CBoJ5JyCjtMeOA1KIniWNqvDNxQUTDwMwV-qAYtedI", // https://docs.google.com/spreadsheets/d/1_CBoJ5JyCjtMeOA1KIniWNqvDNxQUTDwMwV-qAYtedI/edit#gid=810305363
-        //     "17D-T9Gfs4DW4M-4TVabmWtuyosqrDaSuv7iH-Quc3eA", // https://docs.google.com/spreadsheets/d/17D-T9Gfs4DW4M-4TVabmWtuyosqrDaSuv7iH-Quc3eA/edit#gid=810305363
-        //     "1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo", // https://docs.google.com/spreadsheets/d/1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo/edit#gid=810305363
-        //     "14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs", // https://docs.google.com/spreadsheets/d/14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs/edit#gid=810305363
-        // ];
+        $sheets = Sheet::where('type', $sheet_type)->get();
 
 
         $data = [];
         foreach ($sheets as $sheet) {
             $ranges = ['BASE!A1:ZZZ1000', 'CURSOS!A1:ZZZ1000'];
 
-            $response = $this->service->spreadsheets_values->batchGet($sheet, ['ranges' => $ranges]);
+            $response = $this->service->spreadsheets_values->batchGet($sheet->sheet_id, ['ranges' => $ranges]);
 
             $baseSheet = $response[0]->getValues();
             $coursesSheet = $response[1]->getValues();
@@ -539,11 +540,13 @@ class StudentsExcelController extends Controller
                         $courseRow['CORREO'] = str_replace(' ', '', $courseRow['CORREO']);
                         if ($email == $courseRow['CORREO']) {
                             // Merge base and course rows for the same 'CORREO'
-                            $mergedRow = array_merge($baseRow, $courseRow);
-                            $mergedRow['base_row_number'] = $baseRow['row_number'];
+                            $mergedRow                      = array_merge($baseRow, $courseRow);
+                            $mergedRow['base_row_number']   = $baseRow['row_number'];
                             $mergedRow['course_row_number'] = $courseRow['row_number'];
-                            $mergedRow['sheet_id'] = $sheet;
-                            $data[] = $mergedRow;
+                            $mergedRow['sheet_id']          = $sheet->sheet_id;
+                            $mergedRow['course_tab_id']     = $sheet->course_tab_id;
+                            $mergedRow['base_tab_id']       = $sheet->base_tab_id;
+                            $data[]                         = $mergedRow;
                         }
                     }
                 }
