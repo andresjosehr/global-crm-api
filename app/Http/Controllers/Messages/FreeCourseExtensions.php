@@ -140,7 +140,7 @@ class FreeCourseExtensions extends Controller
 
 
         // return [count($students), count($studentsFiltered)];
-        // return $studentsFiltered;
+        return json_encode($studentsFiltered);
 
 
         foreach ($studentsFiltered as $i => $student) {

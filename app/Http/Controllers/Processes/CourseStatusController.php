@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Processes;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use App\Models\Wordpress\WpUser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Google_Client;
@@ -30,6 +31,7 @@ class CourseStatusController extends Controller
     {
         $data = new StudentsExcelController();
         $students = $data->index('test');
+        // return json_encode($students);
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
@@ -112,19 +114,35 @@ class CourseStatusController extends Controller
         });
         $studentsFitered = array_values($studentsFitered);
 
-
-        $studentsFitered = array_map(function ($student) {
-            $courses = array_map(function ($course) {
+        $studentsNotFound = [];
+        $studentsFitered = array_map(function ($student) use (&$studentsNotFound) {
+            $courses = array_map(function ($course) use ($student, &$studentsNotFound) {
                 if (!$course['end'] && !$course['start']) {
+                    $id = $course['course_id'];
+                    $col = [1 => 'CERTIFICADO', 2 => 'CERTIFICADO', 3 => 'CERTIFICADO', 4 => 'CERTIFICADO', 5 => 'CERTIFICADO', 10 => 'CERTIFICADO', 6 => 'EXC CERTIF. AVA', 7 => 'PBI CERTIFICADO', 8 => 'PBI CERTIFICADO', 9 => 'MSP CERTIFICADO'];
+                    if ($id == 6) {
+                    }
+
                     $course['course_status'] = 'POR HABILITAR';
+
+                    if ($student[$col[$id]] == 'NO APLICA') {
+                        $course['course_status'] = 'NO CULMINÓ';
+                    }
+                    if ($student[$col[$id]] == 'EMITIDO') {
+                        $course['course_status'] = 'COMPLETA';
+                    }
                 }
+
                 return $course;
             }, $student['courses']);
+
+
             $student['courses'] = $courses;
             return $student;
         }, $studentsFitered);
 
-        // return json_encode($studentsFitered);
+        // return json_encode($studentsNotFound);
+
 
         $data = [];
         foreach ($studentsFitered as $student) {
@@ -160,7 +178,8 @@ class CourseStatusController extends Controller
         return json_encode(["Exito" => $studentsFitered]);
     }
 
-    public function columnLetterToNumber($columnLabel) {
+    public function columnLetterToNumber($columnLabel)
+    {
         $number = 0;
         $length = strlen($columnLabel);
         for ($i = 0; $i < $length; $i++) {

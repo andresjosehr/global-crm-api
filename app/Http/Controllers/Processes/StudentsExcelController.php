@@ -87,6 +87,14 @@ class StudentsExcelController extends Controller
             $courses_names = array_map('strtoupper', $courses_names);
 
             $courses = [];
+
+            $sapNumber = 0;
+            foreach ($courses_names as $course_name) {
+                if (in_array($course_name, ['PP', 'MM', 'PM', 'HCM', 'FI', 'INTEGRAL', 'SAP PP', 'SAP MM', 'SAP PM', 'SAP HCM', 'SAP FI', 'SAP INTEGRAL'])) {
+                    $sapNumber++;
+                }
+            }
+
             foreach ($courses_names as $course_name) {
 
                 if (in_array($course_name, ['PP', 'MM', 'PM', 'HCM', 'FI', 'INTEGRAL'])) {
@@ -107,37 +115,44 @@ class StudentsExcelController extends Controller
                     $start = null;
                     $end = null;
 
-                    $string = '';
-                    if (strpos($student['ESTADO'], 'HABILITADO ') !== false) {
-                        $string = 'HABILITADO ';
-                    }
-                    if (strpos($student['ESTADO'], 'AL DIA/ CUOTAS ') !== false) {
-                        $string = 'AL DIA/ CUOTAS ';
-                    }
-                    if (strpos($student['ESTADO'], 'CONTADO ') !== false) {
-                        $string = 'CONTADO ';
-                    }
 
-                    if ($string) {
-                        $enable = explode($string, $student['ESTADO'])[1];
-                        $enable = explode('/', $enable)[0];
-                        $enable = explode(' PENDIENTE', $enable)[0];
-                        $enable = explode(' ', $enable);
-                        $enable = array_map(function ($item) {
-                            return 'SAP ' . trim($item);
-                        }, $enable);
 
-                        if (in_array($course_name, $enable)) {
-                            $start = $student['INICIO'];
-                            $end = $student['FIN'];
+                    $start = $student['INICIO'];
+                    $end = $student['FIN'];
+
+                    if ($sapNumber > 1) {
+                        $string = '';
+                        if (strpos($student['ESTADO'], 'HABILITADO ') !== false) {
+                            $string = 'HABILITADO ';
                         }
-                    } else {
-                        $start = $student['INICIO'];
-                        $end = $student['FIN'];
+                        if (strpos($student['ESTADO'], 'AL DIA/ CUOTAS ') !== false) {
+                            $string = 'AL DIA/ CUOTAS ';
+                        }
+                        if (strpos($student['ESTADO'], 'CONTADO ') !== false) {
+                            $string = 'CONTADO ';
+                        }
+
+                        if ($string) {
+                            $enable = explode($string, $student['ESTADO'])[1];
+                            $enable = explode('/', $enable)[0];
+                            $enable = explode(' PENDIENTE', $enable)[0];
+                            $enable = explode(' ', $enable);
+                            $enable = array_map(function ($item) {
+                                return 'SAP ' . trim($item);
+                            }, $enable);
+
+                            if (in_array($course_name, $enable)) {
+                                $start = $student['INICIO'];
+                                $end = $student['FIN'];
+                            } else {
+                                $start = null;
+                                $end = null;
+                            }
+                        }
                     }
 
 
-                    if (in_array($course_name, $enable) || count($enable) == 0) {
+                    if (in_array($course_name, $enable) || $sapNumber == 1) {
                         try {
                             $courses[] = [
                                 'course_id'  => $course_db->id,
@@ -186,8 +201,8 @@ class StudentsExcelController extends Controller
                             'start'      => $student[$dates[$course_db->id]['start']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['start']])->format('Y-m-d') : null,
                             'end'        => $student[$dates[$course_db->id]['end']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['end']])->format('Y-m-d') : null,
                             'wp_post_id' => $course_db->wp_post_id,
-                            'column1'     => $dates[$course_db->id]['start'],
-                            'column2'     => $dates[$course_db->id]['end'],
+                            'column1'    => $dates[$course_db->id]['start'],
+                            'column2'    => $dates[$course_db->id]['end'],
                             'type'       => 'free'
                         ];
                     } catch (\Throwable $th) {
@@ -218,7 +233,12 @@ class StudentsExcelController extends Controller
     public function formatProgress($data)
     {
 
-        $users_db = WpUser::select('ID', 'user_email')->get()->pluck('ID', 'user_email')->toArray();
+        $users_db = WpUser::select('ID', 'user_email')
+             ->get()
+             ->mapWithKeys(function ($user) {
+                 return [strtolower($user->user_email) => $user->ID];
+             })
+             ->toArray();
         $users_db2 = WpUser::select('ID', 'user_login')->get()->pluck('ID', 'user_login')->toArray();
 
         // Realizar la consulta
@@ -296,6 +316,10 @@ class StudentsExcelController extends Controller
 
                 if ($col) {
                     $data[$i]['wp_user_id'] = isset($users_db2[$student[$col]]) ? $users_db2[$student[$col]] : null;
+                }
+
+                if(!$data[$i]['wp_user_id']){
+                    $data[$i]['wp_user_id'] = isset($users_db[$student['CORREO']]) ? $users_db[$student['CORREO']] : null;
                 }
 
                 // if (!$data[$i]['wp_user_id']) {
@@ -377,7 +401,7 @@ class StudentsExcelController extends Controller
                         }
                     }
 
-                    if (!($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end))) {
+                    if ($now->lessThanOrEqualTo($start)) {
                         $data[$i]['courses'][$j]['certifaction_test'] = '';
                     }
 
