@@ -45,7 +45,13 @@
         </p>
         <p align="center" style="line-height: 100%; margin-bottom: 0.5cm;">
             <font face="trebuchet ms, arial, helvetica, sans-serif, sans-serif">
-                <font size="6" style="font-size: 24pt;"><b>SAP MM (Logística y Materiales)</b></font>
+                <font size="6" style="font-size: 24pt;"><b>
+                    @foreach ($student['courses'] as $course)
+                                @if ($course['access'] == 'CORREO CONGELAR')
+                                    {{$course['name']}}
+                                @endif
+                            @endforeach
+                    </b></font>
             </font>
         </p>
         <p style="margin-bottom: 0cm;">
@@ -97,7 +103,11 @@
         <p style="margin-bottom: 0cm;">
             <font color="#000000">
                 <font face="Trebuchet MS, sans-serif">
-                    <font size="3" style="font-size: 12pt;"><span style="background: #ffffff;">50 HORAS TEÓRICO-PRÁCTICAS CERTIFICADAS COMO KEY USER (USUARIO EXPERTO) SAP MM.</span></font>
+                    <font size="3" style="font-size: 12pt;"><span style="background: #ffffff;">50 HORAS TEÓRICO-PRÁCTICAS CERTIFICADAS COMO KEY USER (USUARIO EXPERTO) @foreach ($student['courses'] as $course)
+                        @if ($course['access'] == 'CORREO CONGELAR')
+                            {{$course['name']}}
+                        @endif
+                    @endforeach</span></font>
                 </font>
             </font>
         </p>
