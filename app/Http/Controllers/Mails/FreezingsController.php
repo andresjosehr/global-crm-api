@@ -52,7 +52,7 @@ class FreezingsController extends Controller
                 $start = Carbon::parse($course['start'])->setTimezone('America/Lima')->startOfDay(); // Ajustamos al inicio del día
                 $tomorrow = $now->copy()->startOfDay(); // Ajustamos al inicio del día
                 // Add one day to tomorrow
-                $tomorrow->addDay();
+                // $tomorrow->addDay();
 
                 // Check if start is tomorrow
                 if (!$start->isSameDay($tomorrow)) {
