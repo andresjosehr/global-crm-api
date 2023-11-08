@@ -70,10 +70,10 @@ class FreezingsController extends Controller
 
 
         // return ZohoToken::where('token', '<>', '')->first();
+
+
         self::sendMails($students);
-
-
-        // self::updateExcel($students);
+        self::updateExcel($students);
 
         return json_encode($students);
     }

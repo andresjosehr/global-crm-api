@@ -73,6 +73,7 @@ Route::prefix('sales')->group(function (){
 Route::prefix('processes')->group(function (){
     Route::get('update-courses-status', 'App\Http\Controllers\Processes\CourseStatusController@index');
     Route::get('update-test-status', 'App\Http\Controllers\Processes\TestStatusController@index');
+    Route::get('update-excel-mails', 'App\Http\Controllers\Processes\UpdateExcelMails@index');
 });
 
 Route::prefix('mails')->group(function (){
