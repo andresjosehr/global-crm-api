@@ -31,95 +31,18 @@ class CourseStatusController extends Controller
     {
         $data = new StudentsExcelController();
         $students = $data->index('test');
-        // return json_encode($students);
+
+
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
             }
 
-            if ($student['AULA SAP'] == 'ABANDONÓ') {
-                $courses = array_filter($student['courses'], function ($course) {
-                    return $course['type'] == 'free';
-                });
-                $courses = array_values($courses);
-                $student['courses'] = $courses;
-            }
 
-            $freeCourses = ['EXCEL' => 6, 'PBI' => 8, 'MS PROJECT' => 9];
-            $status      = ['NO APLICA', 'ABANDONÓ'];
-            foreach ($freeCourses as $column => $id) {
-
-                // Check if $id exists in courses
-                $course = array_filter($student['courses'], function ($course) use ($id) {
-                    return $course['course_id'] == $id;
-                });
-
-                $course = array_values($course);
-
-                if (count($course) == 0) {
-                    continue;
-                }
-
-                if (in_array($student[$column], $status)) {
-                    // remove course with id 6
-                    $courses = array_filter($student['courses'], function ($course) use ($id) {
-                        return $course['course_id'] != $id;
-                    });
-
-                    $courses = array_values($courses);
-                    $student['courses'] = $courses;
-                    continue;
-                }
-
-                $course = $course[0];
-                $sap_status = '';
-
-                $course_sap = array_filter($student['courses'], function ($course) {
-                    return $course['type'] == 'paid';
-                });
-                $course_sap = array_values($course_sap);
-
-                if (count($course_sap) > 0) {
-                    $sap_status = $course_sap[0]['course_status'];
-                } else {
-                    $sap_status = $student['AULA SAP'];
-                }
-
-                if ($sap_status == 'CURSANDO' && $student['EXAMEN'] != 'Aprobado' && $course['course_status'] == 'CURSANDO') {
-                    $course['course_status'] = 'CURSANDO SIN CREDLY';
-                } elseif ($student['EXAMEN'] == 'Aprobado' && $course['course_status'] == 'CURSANDO') {
-                    $course['course_status'] = 'CURSANDO';
-                } elseif ($sap_status == 'CURSANDO' && $student['EXAMEN'] != 'Aprobado' && $course['course_status'] == 'COMPLETA') {
-                    $course['course_status'] = 'COMPLETA SIN CREDLY';
-                } elseif ($student['EXAMEN'] == 'Aprobado' && $course['course_status'] == 'COMPLETA') {
-                    $course['course_status'] = 'COMPLETA';
-                }
-
-                // replace course in courses
-                $courses = array_map(function ($c) use ($course) {
-                    if ($c['course_id'] == $course['course_id']) {
-                        $c['course_status'] = $course['course_status'];
-                    }
-                    return $c;
-                }, $student['courses']);
-
-                $student['courses'] = $courses;
-            }
-            return $student;
-        }, $students);
-
-
-        $studentsFitered = array_filter($studentsFitered, function ($student) {
-            return count($student['courses']) > 0 && $student['wp_user_id'];
-        });
-        $studentsFitered = array_values($studentsFitered);
-
-        $studentsNotFound = [];
-        $studentsFitered = array_map(function ($student) use (&$studentsNotFound) {
-            $courses = array_map(function ($course) use ($student, &$studentsNotFound) {
+            $col = [1 => 'CERTIFICADO', 2 => 'CERTIFICADO', 3 => 'CERTIFICADO', 4 => 'CERTIFICADO', 5 => 'CERTIFICADO', 10 => 'CERTIFICADO', 6 => 'EXC CERTIF. AVA', 7 => 'PBI CERTIFICADO', 8 => 'PBI CERTIFICADO', 9 => 'MSP CERTIFICADO'];
+            $courses = array_map(function ($course) use ($student, $col) {
                 if (!$course['end'] && !$course['start']) {
                     $id = $course['course_id'];
-                    $col = [1 => 'CERTIFICADO', 2 => 'CERTIFICADO', 3 => 'CERTIFICADO', 4 => 'CERTIFICADO', 5 => 'CERTIFICADO', 10 => 'CERTIFICADO', 6 => 'EXC CERTIF. AVA', 7 => 'PBI CERTIFICADO', 8 => 'PBI CERTIFICADO', 9 => 'MSP CERTIFICADO'];
                     if ($id == 6) {
                     }
 
@@ -133,15 +56,70 @@ class CourseStatusController extends Controller
                     }
                 }
 
+                if($course['type']=='paid' && $student['ACCESOS']=='CORREO CONGELAR'){
+                    $course['course_status'] = 'POR HABILITAR';
+                }
+
                 return $course;
             }, $student['courses']);
 
+            $paidCourses = array_filter($courses, function ($course) {
+                return $course['type'] == 'paid';
+            });
+            $freeCourses = array_filter($courses, function ($course) {
+                return $course['type'] == 'free';
+            });
 
-            $student['courses'] = $courses;
+            $freeCourses = array_values($freeCourses);
+            $paidCourses = array_values($paidCourses);
+
+            $freeCourses = array_map(function ($course) use ($student, $col) {
+                if (($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO']!='EMITIDO') && $course['course_status'] == 'CURSANDO') {
+                    $course['course_status'] = 'CURSANDO SIN CREDLY';
+                }
+                elseif (!($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO']!='EMITIDO') && $course['course_status'] == 'CURSANDO') {
+                    $course['course_status'] = 'CURSANDO';
+                }
+                elseif (($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO']!='EMITIDO') && $course['course_status'] == 'COMPLETA') {
+                    $course['course_status'] = 'COMPLETA SIN CREDLY';
+                }
+                elseif (!($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO']!='EMITIDO') && $course['course_status'] == 'CURSANDO') {
+                    $course['course_status'] = 'COMPLETA';
+                }
+                elseif($course['course_status'] == 'POR HABILITAR'){
+                    if ($student[$col[$course['course_id']]] == 'EMITIDO' ) {
+                        $course['course_status'] = 'COMPLETA';
+                    }
+                    elseif ($student[$col[$course['course_id']]] == 'EMITIDO SIN CREDLY' ) {
+                        $course['course_status'] = 'COMPLETA SIN CREDLY';
+                    }
+                    elseif ($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO']!='EMITIDO' && $student[$col[$course['course_id']]] == 'REPROBADO') {
+                        $course['course_status'] = 'COMPLETA SIN CREDLY';
+                    }
+                    elseif (!($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO']!='EMITIDO') && $student[$col[$course['course_id']]] == 'REPROBADO') {
+                        $course['course_status'] = 'COMPLETA';
+                    }
+                }
+
+
+                return $course;
+
+            }, $freeCourses);
+
+
+            $student['courses'] = array_merge($paidCourses, $freeCourses);
+
             return $student;
-        }, $studentsFitered);
+        }, $students);
 
-        return json_encode($studentsFitered);
+
+        $studentsFitered = array_filter($studentsFitered, function ($student) {
+            return count($student['courses']) > 0 && $student['wp_user_id'];
+        });
+        $studentsFitered = array_values($studentsFitered);
+
+
+        // return json_encode($studentsFitered);
 
 
         $data = [];
