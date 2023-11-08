@@ -90,7 +90,7 @@ class CourseStatusController extends Controller
                 } elseif ($student['EXAMEN'] == 'Aprobado' && $course['course_status'] == 'CURSANDO') {
                     $course['course_status'] = 'CURSANDO';
                 } elseif ($sap_status == 'CURSANDO' && $student['EXAMEN'] != 'Aprobado' && $course['course_status'] == 'COMPLETA') {
-                    $course['course_status'] = 'CURSANDO SIN CREDLY';
+                    $course['course_status'] = 'COMPLETA SIN CREDLY';
                 } elseif ($student['EXAMEN'] == 'Aprobado' && $course['course_status'] == 'COMPLETA') {
                     $course['course_status'] = 'COMPLETA';
                 }
@@ -141,7 +141,7 @@ class CourseStatusController extends Controller
             return $student;
         }, $studentsFitered);
 
-        // return json_encode($studentsNotFound);
+        return json_encode($studentsFitered);
 
 
         $data = [];

@@ -21,6 +21,7 @@ class FreezingsController extends Controller
 
         $data = new StudentsExcelController();
         $students = $data->index($mode);
+        // return json_encode($students);
 
         $students = array_map(function ($student) {
             $student['courses'] = array_map(function ($course) use ($student) {

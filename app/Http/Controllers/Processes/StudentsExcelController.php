@@ -131,6 +131,9 @@ class StudentsExcelController extends Controller
                         if (strpos($student['ESTADO'], 'CONTADO ') !== false) {
                             $string = 'CONTADO ';
                         }
+                        if (strpos($student['ESTADO'], 'DESCONGELADO ') !== false) {
+                            $string = 'DESCONGELADO ';
+                        }
 
                         if ($string) {
                             $enable = explode($string, $student['ESTADO'])[1];
