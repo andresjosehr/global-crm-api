@@ -404,7 +404,7 @@ class StudentsExcelController extends Controller
                         }
                     }
 
-                    if ($now->lessThanOrEqualTo($start)) {
+                    if ($now->lessThanOrEqualTo($start) && $course['start']!=null) {
                         $data[$i]['courses'][$j]['certifaction_test'] = '';
                     }
 

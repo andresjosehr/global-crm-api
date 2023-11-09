@@ -10,7 +10,7 @@ class UpdateExcelMails extends Controller
 {
     public function index()
     {
-        $mode = 'test';
+        $mode = 'prod';
 
         // Memory limit
         ini_set('memory_limit', -1);
