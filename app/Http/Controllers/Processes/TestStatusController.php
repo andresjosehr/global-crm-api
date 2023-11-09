@@ -32,7 +32,14 @@ class TestStatusController extends Controller
 
         $data = new StudentsExcelController();
         $students = $data->index('test');
-        // return json_encode($students);
+
+        $studentsFitered = array_map(function ($student) {
+            return [
+                'correo' => $student['CORREO'],
+                'wp_user_id' => $student['wp_user_id']
+            ];
+        }, $students);
+        return json_encode($studentsFitered);
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
@@ -83,7 +90,7 @@ class TestStatusController extends Controller
                 $c['_greaterThan'] = $now->greaterThan($end);
                 $c['_now']         = $now->format('Y-m-d');
                 $c['_end']         = $end->format('Y-m-d');
-                if ($now->greaterThan($end) && ($c['certifaction_test'] == '3 Intentos pendientes' || $c['certifaction_test'] == '2 Intentos pendientes' || $c['certifaction_test'] == '1 Intento pendiente' || $c['certifaction_test'] == 'Sin Intentos Gratis')) {
+                if (($now->greaterThan($end) || $c['end']==null) && ($c['certifaction_test'] == '2 Intentos pendientes' || $c['certifaction_test'] == '1 Intento pendiente' || $c['certifaction_test'] == 'Sin Intentos Gratis')) {
                     $c['certifaction_test'] = 'Reprobado';
                 }
 

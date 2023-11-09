@@ -56,7 +56,6 @@ class StudentsExcelController extends Controller
         set_time_limit(0);
 
         self::createGoogleServiceInstance();
-
         $data = self::getSheetsData($sheet_type);
         // return $data;
         $data = self::formatCourses($data);
