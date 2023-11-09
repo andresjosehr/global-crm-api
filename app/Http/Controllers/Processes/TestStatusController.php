@@ -34,13 +34,6 @@ class TestStatusController extends Controller
         $students = $data->index('test');
 
         $studentsFitered = array_map(function ($student) {
-            return [
-                'correo' => $student['CORREO'],
-                'wp_user_id' => $student['wp_user_id']
-            ];
-        }, $students);
-        return json_encode($studentsFitered);
-        $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
             }
