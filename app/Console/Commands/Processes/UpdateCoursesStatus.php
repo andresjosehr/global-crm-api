@@ -1,33 +1,33 @@
 <?php
 
-namespace App\Http\Controllers\Processes;
+namespace App\Console\Commands\Processes;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Processes\StudentsExcelController;
-use App\Models\Wordpress\WpUser;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Google_Client;
-use Google_Service_Sheets;
-use Google_Service_Sheets_ValueRange;
-use Google_Service_Sheets_Request;
-use Google_Service_Sheets_BatchUpdateSpreadsheetRequest;
-use Google_Service_Sheets_CellData;
+use Illuminate\Console\Command;
 
-
-
-class CourseStatusController extends Controller
+class UpdateCoursesStatus extends Command
 {
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'update-courses-status';
 
-    public $sheets = [
-        "1CKiL-p7PhL2KxnfM7G2SXcffto7OGH7yM8BT3AiBWd8" => 1308509451,
-        "1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo" => 378979069,
-        "10IYPXewqQL1WoVXx0b3vp-BOCbIBu0zZMVdbBAdSPec" => 283027112,
-        "1GgPmMaJelAlH7V-ovHNKN9GQfqprE2Lq6eOFQfhGWNA" => 404045194
-    ];
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
 
-    public function index()
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle()
     {
         $data = new StudentsExcelController();
         $students = $data->index('test');
@@ -153,7 +153,7 @@ class CourseStatusController extends Controller
 
         $data = $google_sheet->updateGoogleSheet($data);
 
-        return json_encode(["Exito" => $studentsFitered]);
+        print_r(["Exito" => $studentsFitered]);
+        return Command::SUCCESS;
     }
-
 }

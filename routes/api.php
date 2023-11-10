@@ -70,12 +70,12 @@ Route::prefix('sales')->group(function (){
     Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
 });
 
-Route::prefix('processes')->group(function (){
-    Route::get('update-courses-status', 'App\Http\Controllers\Processes\CourseStatusController@index');
-    Route::get('update-test-status', 'App\Http\Controllers\Processes\TestStatusController@index');
-    Route::get('update-excel-mails', 'App\Http\Controllers\Processes\UpdateExcelMails@index');
-});
+// Route::prefix('processes')->group(function (){
+//     Route::get('update-courses-status', 'App\Http\Controllers\Processes\CourseStatusController@index');
+//     Route::get('update-test-status', 'App\Http\Controllers\Processes\TestStatusController@index');
+//     Route::get('update-excel-mails', 'App\Http\Controllers\Processes\UpdateExcelMails@index');
+// });
 
-Route::prefix('mails')->group(function (){
-    Route::get('send-unfreezings-emails', 'App\Http\Controllers\Mails\FreezingsController@index');
-});
+// Route::prefix('mails')->group(function (){
+//     Route::get('send-unfreezings-emails', 'App\Http\Controllers\Mails\FreezingsController@index');
+// });
