@@ -10,7 +10,7 @@ class UpdateExcelMails extends Controller
 {
     public function index()
     {
-        $mode = 'prod';
+        $mode = 'test';
 
         // Memory limit
         ini_set('memory_limit', -1);
@@ -19,12 +19,24 @@ class UpdateExcelMails extends Controller
         $students = $data->index($mode);
 
         $studentsFiltered = array_filter($students, function($student){
-            if($student['ACCESOS'] == 'PROGRAMADO' || $student['ACCESOS'] == 'PROGRAMADO (DESCONGELAR)'){
-                return $student;
-            }
+            $courses = array_filter($student['courses'], function($course){
+                return $course['access'] == 'PROGRAMADO' || $course['access'] == 'PROGRAMADO (DESCONGELAR)';
+            });
+            $courses = array_values($courses);
+            return count($courses) > 0;
         });
 
+        $studentsFiltered = array_map(function($student){
+            $courses = array_filter($student['courses'], function($course){
+                return $course['access'] == 'PROGRAMADO' || $course['access'] == 'PROGRAMADO (DESCONGELAR)';
+            });
+
+            $student['courses'] = array_values($courses);
+            return $student;
+        }, $studentsFiltered);
+
         $studentsFiltered = array_values($studentsFiltered);
+        return json_encode($studentsFiltered);
 
         $data = array_map(function($student){
             return [

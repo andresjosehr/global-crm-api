@@ -160,29 +160,30 @@ class StudentsExcelController extends Controller
                                 'course_id'  => $course_db->id,
                                 'sap_user'   => $student['USUARIO SAP'],
                                 'name'       => $course_db->name,
+                                'access'     => $student['USUARIO AULA'],
                                 'start'      => $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
                                 'end'        => $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
                                 'wp_post_id' => $course_db->wp_post_id,
-                                'type'       => 'paid',
-                                '$string'    => $string
+                                'type'       => 'paid'
                             ];
                         } catch (\Throwable $th) {
                             $courses[] = [
                                 'course_id'  => $course_db->id,
                                 'name'       => $course_db->name,
                                 'sap_user'   => $student['USUARIO SAP'],
+                                'access'     => $student['USUARIO AULA'],
                                 'start'      => null,
                                 'end'        => null,
                                 'error'      => json_encode($th->getMessage()),
                                 'wp_post_id' => $course_db->wp_post_id,
-                                'type'       => 'paid',
-                                '$string'    => $string
+                                'type'       => 'paid'
                             ];
                         }
                     }
                 }
 
                 // If not include SAP courses
+                $cols = [6 => "EXC ACCESOS", 7 => "PBI ACCESOS", 8 => "PBI ACCESOS", 9 => "MSP ACCESOS"];
                 if (strpos($course_name, 'SAP') === false) {
                     $dates = [
                         // Excel
@@ -200,6 +201,7 @@ class StudentsExcelController extends Controller
                             'course_id'  => $course_db->id,
                             'sap_user'   => $student['USUARIO SAP'],
                             'name'       => $course_db->name,
+                            'access'     => $student[$cols[$course_db->id]],
                             'start'      => $student[$dates[$course_db->id]['start']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['start']])->format('Y-m-d') : null,
                             'end'        => $student[$dates[$course_db->id]['end']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['end']])->format('Y-m-d') : null,
                             'wp_post_id' => $course_db->wp_post_id,
@@ -211,6 +213,7 @@ class StudentsExcelController extends Controller
                         $courses[] = [
                             'course_id'  => $course_db->id,
                             'name'       => $course_db->name,
+                            'access'     => $student[$cols[$course_db->id]],
                             'sap_user'   => $student['USUARIO SAP'],
                             'start'      => null,
                             'end'        => null,
