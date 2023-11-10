@@ -10,7 +10,7 @@ class UpdateExcelMails extends Controller
 {
     public function index()
     {
-        $mode = 'test';
+        $mode = 'prod';
 
         // Memory limit
         ini_set('memory_limit', -1);
@@ -36,17 +36,25 @@ class UpdateExcelMails extends Controller
         }, $studentsFiltered);
 
         $studentsFiltered = array_values($studentsFiltered);
-        return json_encode($studentsFiltered);
+        // return json_encode($studentsFiltered);
 
-        $data = array_map(function($student){
-            return [
-                'column'            => 'K',
+
+        $data = [];
+        array_map(function($student) use (&$data){
+            array_map(function($course) use (&$data, $student){
+
+                $cols = [6 => 'U', 7 => 'AI', 8 => 'AI', 9 => 'AQ'];
+                $data[] = [
+                'column'            => $course['type']=='paid' ? 'K' : $cols[$course['course_id']],
                 'value'             => 'ENVIADOS',
                 'tab_id'            => $student['course_tab_id'],
                 'course_row_number' => $student['course_row_number'],
                 'sheet_id'          => $student['sheet_id'],
-            ];
+                ];
+
+            }, $student['courses']);
         }, $studentsFiltered);
+
 
         $google_sheet = new GoogleSheetController();
 
