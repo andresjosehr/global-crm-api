@@ -70,8 +70,11 @@ class SendUnfreezingMails extends Command
                  $now = Carbon::now()->setTimezone('America/Lima');
                  $start = Carbon::parse($course['start'])->setTimezone('America/Lima')->startOfDay(); // Ajustamos al inicio del día
                  $tomorrow = $now->copy()->startOfDay(); // Ajustamos al inicio del día
-                 // Add one day to tomorrow
-                 // $tomorrow->addDay();
+                 // if today is saturday
+                 if($now->isSaturday()){
+                     $tomorrow->addDay();
+                 }
+
 
                  // Check if start is tomorrow
                  if (!$start->isSameDay($tomorrow)) {
