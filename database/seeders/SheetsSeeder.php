@@ -31,7 +31,7 @@ class SheetsSeeder extends Seeder
             [
                 'sheet_id'      => '1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo',
                 'base_tab_id'   => 0,
-                'course_tab_id' => 770171719,
+                'course_tab_id' => 1591900990,
                 'link'          => 'https://docs.google.com/spreadsheets/d/1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo/edit#gid=810305363',
                 'type'          => 'test'
             ],
