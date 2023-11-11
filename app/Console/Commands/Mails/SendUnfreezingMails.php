@@ -90,8 +90,8 @@ class SendUnfreezingMails extends Command
          // return ZohoToken::where('token', '<>', '')->first();
 
 
-        //  self::sendMails($students);
-        //  self::updateExcel($students);
+         self::sendMails($students);
+         self::updateExcel($students);
 
         print_r($students);
         return Command::SUCCESS;
