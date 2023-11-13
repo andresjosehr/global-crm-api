@@ -70,13 +70,16 @@ Route::prefix('sales')->group(function (){
     Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
 });
 
-Route::prefix('processes')->group(function (){
-    Route::get('update-courses-status', 'App\Http\Controllers\Processes\CourseStatusController@index');
-    Route::get('update-test-status', 'App\Http\Controllers\Processes\TestStatusController@index');
-    Route::get('update-excel-mails', 'App\Http\Controllers\Processes\UpdateExcelMails@index');
-    Route::get('update-aula-status', 'App\Http\Controllers\Processes\AulaStatusController@index');
-});
 
-Route::prefix('mails')->group(function (){
-    Route::get('send-unfreezings-emails', 'App\Http\Controllers\Mails\FreezingsController@index');
+Route::group(['middleware' => ['environment_access']], function () use ($basePathController) {
+    Route::prefix('processes')->group(function (){
+        Route::get('update-test-status', 'App\Http\Controllers\ProcessesController@updateTestsStatus');
+        Route::get('update-courses-status', 'App\Http\Controllers\ProcessesController@updateCoursesStatus');
+        Route::get('update-excel-mails', 'App\Http\Controllers\ProcessesController@updateExcelMails');
+        Route::get('update-aula-status', 'App\Http\Controllers\ProcessesController@updateAulaStatus');
+    });
+
+    Route::prefix('mails')->group(function (){
+        Route::get('send-unfreezings-emails', 'App\Http\Controllers\ProcessesController@sendUnfreezingsEmails');
+    });
 });

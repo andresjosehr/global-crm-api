@@ -33,9 +33,11 @@ class UpdateTestsStatus extends Command
         // Memory limit
         ini_set('memory_limit', -1);
 
+
+
         $data = new StudentsExcelController();
         $students = $data->index('test');
-
+        // return json_encode($students);
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
@@ -89,6 +91,9 @@ class UpdateTestsStatus extends Command
                 if (($now->greaterThan($end) || $c['end'] == null) && ($c['certifaction_test'] == '2 Intentos pendientes' || $c['certifaction_test'] == '1 Intento pendiente' || $c['certifaction_test'] == 'Sin Intentos Gratis')) {
                     $c['certifaction_test'] = 'Reprobado';
                 }
+                if (($now->greaterThan($end) || $c['end'] == null) && $c['certifaction_test'] == '3 Intentos pendientes') {
+                    $c['certifaction_test'] = 'No Aplica';
+                }
 
                 if ($c['course_id'] == 6) {
 
@@ -102,6 +107,16 @@ class UpdateTestsStatus extends Command
                         $c['nivel_avanzado']['certifaction_test'] = 'No Aplica';
                     }
 
+                    if ($c['nivel_basico']['certificate'] == 'EMITIDO') {
+                        $c['nivel_basico']['certifaction_test'] = 'Aprobado';
+                    }
+                    if ($c['nivel_intermedio']['certificate'] == 'EMITIDO') {
+                        $c['nivel_intermedio']['certifaction_test'] = 'Aprobado';
+                    }
+                    if ($c['nivel_avanzado']['certificate'] == 'EMITIDO') {
+                        $c['nivel_avanzado']['certifaction_test'] = 'Aprobado';
+                    }
+
 
                     if (!$c['end'] && !$c['start']) {
                         $c['nivel_basico']['certifaction_test'] = '';
@@ -111,13 +126,19 @@ class UpdateTestsStatus extends Command
                     $c['certifaction_test'] = '';
                 }
 
+                if ($c['course_id'] != 6) {
+                    if ($c['certificate'] == 'EMITIDO') {
+                        $c['certifaction_test'] = 'Aprobado';
+                    }
+                }
+
                 return $c;
             }, $student['courses']);
 
             return $student;
         }, $students);
 
-        // return json_encode($studentsFitered);
+        // return $studentsFitered;
 
         $studentsFitered = array_filter($studentsFitered, function ($student) {
             return count($student['courses']) > 0 && $student['wp_user_id'];
@@ -125,9 +146,7 @@ class UpdateTestsStatus extends Command
         $studentsFitered = array_values($studentsFitered);
 
 
-        // return json_encode($studentsFitered);
-
-
+        // return $studentsFitered;
 
 
         $data = [];
@@ -174,7 +193,6 @@ class UpdateTestsStatus extends Command
             }
         }
 
-
         $google_sheet = new GoogleSheetController();
 
         $data = $google_sheet->transformData($data);
@@ -182,8 +200,7 @@ class UpdateTestsStatus extends Command
 
         $google_sheet->updateGoogleSheet($data);
 
-        // return "Exito";
-        print_r(["Exito" => $studentsFitered]);
+        return $this->line(json_encode(["Exito" => $studentsFitered]));
         return Command::SUCCESS;
     }
 }

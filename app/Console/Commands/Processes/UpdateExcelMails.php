@@ -82,7 +82,7 @@ class UpdateExcelMails extends Command
 
         $google_sheet->updateGoogleSheet($data);
 
-        print_r(["Exito" => $studentsFiltered]);
+        return $this->line(json_encode(["Exito" => $studentsFiltered]));
         return Command::SUCCESS;
     }
 }

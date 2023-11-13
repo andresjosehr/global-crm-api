@@ -1,18 +1,37 @@
 <?php
 
-namespace App\Http\Controllers\Processes;
+namespace App\Console\Commands\Processes;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Processes\StudentsExcelController;
 use App\Models\Course;
 use App\Models\Wordpress\WpLearnpressUserItem;
 use App\Models\Wordpress\WpPost;
 use App\Models\Wordpress\WpPostMeta;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Illuminate\Console\Command;
 
-class AulaStatusController extends Controller
+class UpdateAulaStatus extends Command
 {
-    public function index()
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'update-aula-status';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle()
     {
         // Memory limit
         ini_set('memory_limit', -1);
@@ -135,6 +154,7 @@ class AulaStatusController extends Controller
               }
         }
 
-        return json_encode(["Exito" =>$dataToUpdate]);
+        return $this->line(json_encode(["Exito" => $dataToUpdate]));
     }
 }
+
