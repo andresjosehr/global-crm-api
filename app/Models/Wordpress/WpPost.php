@@ -12,4 +12,9 @@ class WpPost extends Model
     protected $connection = 'wordpress';
 
     protected $table = 'posts';
+
+
+    public function meta() {
+        return $this->hasMany(WpPostMeta::class, 'post_id', 'ID');
+    }
 }

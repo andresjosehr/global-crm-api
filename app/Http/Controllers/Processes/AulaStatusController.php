@@ -112,6 +112,8 @@ class AulaStatusController extends Controller
             }, $student['inactive_courses']);
         }, $students);
 
+        // return json_encode(["Exito" =>$dataToUpdate]);
+
         foreach ($dataToUpdate as $record) {
             WpPostMeta::updateOrCreate(
                 [

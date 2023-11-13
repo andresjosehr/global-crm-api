@@ -11,6 +11,8 @@ class WpPostMeta extends Model
 
     protected $connection = 'wordpress';
     protected $table = 'postmeta';
+    // primary key
+    protected $primaryKey = 'meta_id';
 
     protected $fillable = [
         'post_id',
@@ -20,4 +22,6 @@ class WpPostMeta extends Model
 
     // Disable timestamps
     public $timestamps = false;
+
+
 }
