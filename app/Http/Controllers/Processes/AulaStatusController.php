@@ -116,7 +116,7 @@ class AulaStatusController extends Controller
             WpPostMeta::updateOrCreate(
                 [
                     'post_id' => $record['order_id'],
-                    'meta_key' => $record['lpa_lesson_status']
+                    'meta_key' => $record['status']
                 ],
                 ['meta_value' => $record['status']]
             );
