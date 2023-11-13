@@ -11,4 +11,10 @@ class WpPostMeta extends Model
 
     protected $connection = 'wordpress';
     protected $table = 'postmeta';
+
+    protected $fillable = [
+        'post_id',
+        'meta_key',
+        'meta_value',
+    ];
 }
