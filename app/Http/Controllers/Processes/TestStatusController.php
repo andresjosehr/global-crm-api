@@ -86,6 +86,9 @@ class TestStatusController extends Controller
                 if (($now->greaterThan($end) || $c['end'] == null) && ($c['certifaction_test'] == '2 Intentos pendientes' || $c['certifaction_test'] == '1 Intento pendiente' || $c['certifaction_test'] == 'Sin Intentos Gratis')) {
                     $c['certifaction_test'] = 'Reprobado';
                 }
+                if (($now->greaterThan($end) || $c['end'] == null) && $c['certifaction_test'] == '3 Intentos pendientes') {
+                    $c['certifaction_test'] = 'No Aplica';
+                }
 
                 if ($c['course_id'] == 6) {
 
@@ -99,6 +102,16 @@ class TestStatusController extends Controller
                         $c['nivel_avanzado']['certifaction_test'] = 'No Aplica';
                     }
 
+                    if ($c['nivel_basico']['certificate'] == 'EMITIDO') {
+                        $c['nivel_basico']['certifaction_test'] = 'Aprobado';
+                    }
+                    if ($c['nivel_intermedio']['certificate'] == 'EMITIDO') {
+                        $c['nivel_intermedio']['certifaction_test'] = 'Aprobado';
+                    }
+                    if ($c['nivel_avanzado']['certificate'] == 'EMITIDO') {
+                        $c['nivel_avanzado']['certifaction_test'] = 'Aprobado';
+                    }
+
 
                     if (!$c['end'] && !$c['start']) {
                         $c['nivel_basico']['certifaction_test'] = '';
@@ -106,6 +119,12 @@ class TestStatusController extends Controller
                         $c['nivel_avanzado']['certifaction_test'] = '';
                     }
                     $c['certifaction_test'] = '';
+                }
+
+                if($c['course_id'] != 6){
+                    if ($c['certificate'] == 'EMITIDO') {
+                        $c['certifaction_test'] = 'Aprobado';
+                    }
                 }
 
                 return $c;

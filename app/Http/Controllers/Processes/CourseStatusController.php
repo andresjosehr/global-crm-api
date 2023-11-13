@@ -89,7 +89,6 @@ class CourseStatusController extends Controller
                     }
                 }
 
-
                 return $course;
             }, $freeCourses);
 
@@ -112,10 +111,6 @@ class CourseStatusController extends Controller
         },$studentsFitered);
 
         $studentsFitered = array_values($studentsFitered);
-
-
-        // return json_encode($studentsFitered);
-
 
         $data = [];
         foreach ($studentsFitered as $student) {

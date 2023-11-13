@@ -86,11 +86,39 @@ class StudentsExcelController extends Controller
             $courses_names = array_map('strtoupper', $courses_names);
 
             $courses = [];
+            $inactive_courses = [];
 
             $sapNumber = 0;
             foreach ($courses_names as $course_name) {
                 if (in_array($course_name, ['PP', 'MM', 'PM', 'HCM', 'FI', 'INTEGRAL', 'SAP PP', 'SAP MM', 'SAP PM', 'SAP HCM', 'SAP FI', 'SAP INTEGRAL'])) {
                     $sapNumber++;
+                }
+            }
+
+            $enable = [];
+            if ($sapNumber > 1) {
+                $string = '';
+                if (strpos($student['ESTADO'], 'HABILITADO ') !== false) {
+                    $string = 'HABILITADO ';
+                }
+                if (strpos($student['ESTADO'], 'AL DIA/ CUOTAS ') !== false) {
+                    $string = 'AL DIA/ CUOTAS ';
+                }
+                if (strpos($student['ESTADO'], 'CONTADO ') !== false) {
+                    $string = 'CONTADO ';
+                }
+                if (strpos($student['ESTADO'], 'DESCONGELADO ') !== false) {
+                    $string = 'DESCONGELADO ';
+                }
+
+                if ($string) {
+                    $enable = explode($string, $student['ESTADO'])[1];
+                    $enable = explode('/', $enable)[0];
+                    $enable = explode(' PENDIENTE', $enable)[0];
+                    $enable = explode(' ', $enable);
+                    $enable = array_map(function ($item) {
+                        return 'SAP ' . trim($item);
+                    }, $enable);
                 }
             }
 
@@ -110,75 +138,36 @@ class StudentsExcelController extends Controller
 
                 if (strpos($course_name, 'SAP') !== false) {
 
-                    $enable = [];
-                    $start = null;
-                    $end = null;
-
-
-
-                    $start = $student['INICIO'];
-                    $end = $student['FIN'];
-
-                    if ($sapNumber > 1) {
-                        $string = '';
-                        if (strpos($student['ESTADO'], 'HABILITADO ') !== false) {
-                            $string = 'HABILITADO ';
-                        }
-                        if (strpos($student['ESTADO'], 'AL DIA/ CUOTAS ') !== false) {
-                            $string = 'AL DIA/ CUOTAS ';
-                        }
-                        if (strpos($student['ESTADO'], 'CONTADO ') !== false) {
-                            $string = 'CONTADO ';
-                        }
-                        if (strpos($student['ESTADO'], 'DESCONGELADO ') !== false) {
-                            $string = 'DESCONGELADO ';
-                        }
-
-                        if ($string) {
-                            $enable = explode($string, $student['ESTADO'])[1];
-                            $enable = explode('/', $enable)[0];
-                            $enable = explode(' PENDIENTE', $enable)[0];
-                            $enable = explode(' ', $enable);
-                            $enable = array_map(function ($item) {
-                                return 'SAP ' . trim($item);
-                            }, $enable);
-
-                            if (in_array($course_name, $enable)) {
-                                $start = $student['INICIO'];
-                                $end = $student['FIN'];
-                            } else {
-                                $start = null;
-                                $end = null;
-                            }
-                        }
-                    }
-
+                    $c = [
+                        'course_id'   => $course_db->id,
+                        'sap_user'    => $student['USUARIO SAP'],
+                        'name'        => $course_db->name,
+                        'access'      => $student['ACCESOS'],
+                        'start'       => null,
+                        'end'         => null,
+                        'certificate' => $student['CERTIFICADO'],
+                        'wp_post_id'  => $course_db->wp_post_id,
+                        'type'        => 'paid'
+                    ];
 
                     if (in_array($course_name, $enable) || $sapNumber == 1) {
+                        $start = $student['INICIO'];
+                        $end = $student['FIN'];
                         try {
-                            $courses[] = [
-                                'course_id'  => $course_db->id,
-                                'sap_user'   => $student['USUARIO SAP'],
-                                'name'       => $course_db->name,
-                                'access'     => $student['ACCESOS'],
-                                'start'      => $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
-                                'end'        => $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
-                                'wp_post_id' => $course_db->wp_post_id,
-                                'type'       => 'paid'
-                            ];
+                            $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
+                            $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
                         } catch (\Throwable $th) {
-                            $courses[] = [
-                                'course_id'  => $course_db->id,
-                                'name'       => $course_db->name,
-                                'sap_user'   => $student['USUARIO SAP'],
-                                'access'     => $student['ACCESOS'],
-                                'start'      => null,
-                                'end'        => null,
-                                'error'      => json_encode($th->getMessage()),
-                                'wp_post_id' => $course_db->wp_post_id,
-                                'type'       => 'paid'
-                            ];
+                            $start = null;
+                            $end   = null;
                         }
+
+                        $courses[] = $c;
+                        $courses[count($courses) - 1]['start'] = $start;
+                        $courses[count($courses) - 1]['end'] = $end;
+                    }
+
+                    if (!in_array($course_name, $enable) && $sapNumber > 1) {
+                        $inactive_courses[] = $c;
                     }
                 }
 
@@ -187,47 +176,43 @@ class StudentsExcelController extends Controller
                 if (strpos($course_name, 'SAP') === false) {
                     $dates = [
                         // Excel
-                        6 => ['start' => 'EXC INICIO', 'end' => 'EXC FIN'],
+                        6 => ['start' => 'EXC INICIO', 'end' => 'EXC FIN', 'certificate' => 'EXC CERTIF. AVA'],
                         // Fundamentos de Power BI
-                        7 => ['start' => 'PBI INICIO', 'end' => 'PBI FIN'],
+                        7 => ['start' => 'PBI INICIO', 'end' => 'PBI FIN', 'certificate' => 'PBI CERTIFICADO'],
                         // Power BI para el Análisis de Datos
-                        8 => ['start' => 'PBI INICIO', 'end' => 'PBI FIN'],
+                        8 => ['start' => 'PBI INICIO', 'end' => 'PBI FIN', 'certificate' => 'PBI CERTIFICADO'],
                         // Fundamentos de MS Project 2019
-                        9 => ['start' => 'MSP INICIO', 'end' => 'MSP FIN'],
+                        9 => ['start' => 'MSP INICIO', 'end' => 'MSP FIN', 'certificate' => 'MSP CERTIFICADO'],
                     ];
 
+
+                    $start = $student[$dates[$course_db->id]['start']];
+                    $end = $student[$dates[$course_db->id]['end']];
                     try {
-                        $courses[] = [
-                            'course_id'  => $course_db->id,
-                            'sap_user'   => $student['USUARIO SAP'],
-                            'name'       => $course_db->name,
-                            'access'     => $student[$cols[$course_db->id]],
-                            'start'      => $student[$dates[$course_db->id]['start']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['start']])->format('Y-m-d') : null,
-                            'end'        => $student[$dates[$course_db->id]['end']] ? Carbon::createFromFormat('d/m/Y', $student[$dates[$course_db->id]['end']])->format('Y-m-d') : null,
-                            'wp_post_id' => $course_db->wp_post_id,
-                            'column1'    => $dates[$course_db->id]['start'],
-                            'column2'    => $dates[$course_db->id]['end'],
-                            'type'       => 'free'
-                        ];
+                        $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
+                        $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
                     } catch (\Throwable $th) {
-                        $courses[] = [
-                            'course_id'  => $course_db->id,
-                            'name'       => $course_db->name,
-                            'access'     => $student[$cols[$course_db->id]],
-                            'sap_user'   => $student['USUARIO SAP'],
-                            'start'      => null,
-                            'end'        => null,
-                            '_column1'   => $dates[$course_db->id]['start'],
-                            '_column2'   => $dates[$course_db->id]['end'],
-                            'error'      => json_encode($th->getMessage()),
-                            'wp_post_id' => $course_db->wp_post_id,
-                            'type'       => 'free'
-                        ];
+                        $start = null;
+                        $end   = null;
                     }
+
+
+                    $courses[] = [
+                        'course_id'   => $course_db->id,
+                        'sap_user'    => $student['USUARIO SAP'],
+                        'name'        => $course_db->name,
+                        'access'      => $student[$cols[$course_db->id]],
+                        'start'       => $start,
+                        'end'         => $end,
+                        'certificate' => $student[$dates[$course_db->id]['certificate']],
+                        'wp_post_id'  => $course_db->wp_post_id,
+                        'type'        => 'free'
+                    ];
                 }
             }
 
             $data[$i]['courses'] = $courses;
+            $data[$i]['inactive_courses'] = $inactive_courses;
         }
 
         // $courses_not_found =  array_values(array_unique($courses_not_found));
@@ -239,11 +224,11 @@ class StudentsExcelController extends Controller
     {
 
         $users_db = WpUser::select('ID', 'user_email')
-             ->get()
-             ->mapWithKeys(function ($user) {
-                 return [strtolower($user->user_email) => $user->ID];
-             })
-             ->toArray();
+            ->get()
+            ->mapWithKeys(function ($user) {
+                return [strtolower($user->user_email) => $user->ID];
+            })
+            ->toArray();
         $users_db2 = WpUser::select('ID', 'user_login')->get()->pluck('ID', 'user_login')->toArray();
 
         // Realizar la consulta
@@ -323,7 +308,7 @@ class StudentsExcelController extends Controller
                     $data[$i]['wp_user_id'] = isset($users_db2[$student[$col]]) ? $users_db2[$student[$col]] : null;
                 }
 
-                if(!$data[$i]['wp_user_id']){
+                if (!$data[$i]['wp_user_id']) {
                     $data[$i]['wp_user_id'] = isset($users_db[$student['CORREO']]) ? $users_db[$student['CORREO']] : null;
                 }
 
@@ -332,6 +317,11 @@ class StudentsExcelController extends Controller
                 // }
             }
 
+            $certificates = [
+                'nivel_basico'     => 'EXC CERTIF. BÁS',
+                'nivel_intermedio' => 'EXC CERTIF. INT',
+                'nivel_avanzado'   => 'EXC CERTIF. AVA',
+            ];
             foreach ($student['courses'] as $j => $course) {
                 if ($course['course_id'] != 6) {
                     $data[$i]['courses'][$j]['lessons_completed'] = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
@@ -406,7 +396,7 @@ class StudentsExcelController extends Controller
                         }
                     }
 
-                    if ($now->lessThanOrEqualTo($start) && $course['start']!=null) {
+                    if ($now->lessThanOrEqualTo($start) && $course['start'] != null) {
                         $data[$i]['courses'][$j]['certifaction_test'] = '';
                     }
 
@@ -419,6 +409,7 @@ class StudentsExcelController extends Controller
 
                         $data[$i]['courses'][$j][$key]                      = [];                                                   // Inicialización aquí
                         $data[$i]['courses'][$j][$key]['lessons_count']     = $groupedLessons['11148'][$name]->count();
+                        $data[$i]['courses'][$j][$key]['certificate']       = $student[$certificates[$key]];
                         $data[$i]['courses'][$j][$key]['lessons_completed'] = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                             ->where('ref_id', $course['wp_post_id'])
                             ->where('item_type', 'lp_lesson')
@@ -436,9 +427,9 @@ class StudentsExcelController extends Controller
                         }
 
 
-                        $now = Carbon::now()->setTimezone('America/Lima');
+                        $now   = Carbon::now()->setTimezone('America/Lima');
                         $start = Carbon::parse($course['start'])->setTimezone('America/Lima');
-                        $end = Carbon::parse($course['end'] . ' 23:59:59')->setTimezone('America/Lima')->setTime(23, 59, 59);
+                        $end   = Carbon::parse($course['end'] . ' 23:59:59')->setTimezone('America/Lima')->setTime(23, 59, 59);
 
                         if ($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)) {
                             $data[$i]['courses'][$j][$key]['course_status'] = $data[$i]['courses'][$j][$key]['lesson_progress'] == 'COMPLETADO' ? 'COMPLETA' : 'CURSANDO';

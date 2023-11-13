@@ -25,28 +25,28 @@ class SheetsSeeder extends Seeder
                 'sheet_id'      => '1CKiL-p7PhL2KxnfM7G2SXcffto7OGH7yM8BT3AiBWd8',
                 'base_tab_id'   => 0,
                 'course_tab_id' => 1955676378,
-                'link'          => 'https://docs.google.com/spreadsheets/d/1CKiL-p7PhL2KxnfM7G2SXcffto7OGH7yM8BT3AiBWd8/edit#gid=810305363',
+                'link'          => 'https://docs.google.com/spreadsheets/d/1CKiL-p7PhL2KxnfM7G2SXcffto7OGH7yM8BT3AiBWd8/edit#gid=1955676378',
                 'type'          => 'test'
             ],
             [
                 'sheet_id'      => '1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo',
                 'base_tab_id'   => 0,
                 'course_tab_id' => 1591900990,
-                'link'          => 'https://docs.google.com/spreadsheets/d/1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo/edit#gid=810305363',
+                'link'          => 'https://docs.google.com/spreadsheets/d/1vLB88xEriZVpMx7-xe960_0KrQm6l0795dMMafp_qLo/edit#gid=1591900990',
                 'type'          => 'test'
             ],
             [
                 'sheet_id'      => '10IYPXewqQL1WoVXx0b3vp-BOCbIBu0zZMVdbBAdSPec',
                 'base_tab_id'   => 0,
-                'course_tab_id' => 1096658847,
-                'link'          => 'https://docs.google.com/spreadsheets/d/10IYPXewqQL1WoVXx0b3vp-BOCbIBu0zZMVdbBAdSPec/edit#gid=810305363',
+                'course_tab_id' => 1141869294,
+                'link'          => 'https://docs.google.com/spreadsheets/d/10IYPXewqQL1WoVXx0b3vp-BOCbIBu0zZMVdbBAdSPec/edit#gid=1141869294',
                 'type'          => 'test'
             ],
             [
                 'sheet_id'      => '1GgPmMaJelAlH7V-ovHNKN9GQfqprE2Lq6eOFQfhGWNA',
                 'base_tab_id'   => 0,
                 'course_tab_id' => 817923340,
-                'link'          => 'https://docs.google.com/spreadsheets/d/1GgPmMaJelAlH7V-ovHNKN9GQfqprE2Lq6eOFQfhGWNA/edit#gid=810305363',
+                'link'          => 'https://docs.google.com/spreadsheets/d/1GgPmMaJelAlH7V-ovHNKN9GQfqprE2Lq6eOFQfhGWNA/edit#gid=817923340',
                 'type'          => 'test'
             ],
 
