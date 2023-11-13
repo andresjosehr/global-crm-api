@@ -17,4 +17,7 @@ class WpPostMeta extends Model
         'meta_key',
         'meta_value',
     ];
+
+    // Disable timestamps
+    public $timestamps = false;
 }
