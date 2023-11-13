@@ -90,6 +90,7 @@ class AulaStatusController extends Controller
         }, $students);
 
 
+        return json_encode($students);
         $dataToUpdate = [];
         array_map(function ($student) use (&$dataToUpdate) {
             array_map(function ($course) use ($student, &$dataToUpdate) {
@@ -132,6 +133,7 @@ class AulaStatusController extends Controller
                 ]);
               }
         }
+
         return json_encode($dataToUpdate);
     }
 }
