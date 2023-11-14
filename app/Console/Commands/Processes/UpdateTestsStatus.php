@@ -91,7 +91,7 @@ class UpdateTestsStatus extends Command
                 if (($now->greaterThan($end) || $c['end'] == null) && ($c['certifaction_test'] == '2 Intentos pendientes' || $c['certifaction_test'] == '1 Intento pendiente' || $c['certifaction_test'] == 'Sin Intentos Gratis')) {
                     $c['certifaction_test'] = 'Reprobado';
                 }
-                if (($now->greaterThan($end) || $c['end'] == null) && $c['certifaction_test'] == '3 Intentos pendientes') {
+                if (($now->greaterThan($end)) && $c['certifaction_test'] == '3 Intentos pendientes') {
                     $c['certifaction_test'] = 'No Aplica';
                 }
 
