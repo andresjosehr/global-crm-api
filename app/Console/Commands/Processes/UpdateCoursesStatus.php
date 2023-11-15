@@ -158,11 +158,11 @@ class UpdateCoursesStatus extends Command
 
         $data = $google_sheet->updateGoogleSheet($data);
 
-        // sbasurto686@gmail.com
-        $sbasurto = array_filter($studentsFitered, function ($student) {
-            return $student['CORREO'] == 'sbasurto686@gmail.com';
-        });
-        return $this->line(json_encode(["Exito" => $sbasurto]));
+        // // sbasurto686@gmail.com
+        // $sbasurto = array_filter($studentsFitered, function ($student) {
+        //     return $student['CORREO'] == 'sbasurto686@gmail.com';
+        // });
+        return $this->line(json_encode(["Exito" => $studentsFitered]));
     }
 }
 

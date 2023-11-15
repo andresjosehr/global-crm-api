@@ -348,15 +348,15 @@ class StudentsExcelController extends Controller
                     $data[$i]['courses'][$j]['lessons_count'] = $lessonsCount[$course['wp_post_id']];
                     $data[$i]['courses'][$j]['lessons_completed'] = $lessons_completed->count();
 
-                    $data[$i]['courses'][$j]['______lessons_count'] = $lessons[$course['wp_post_id']];
-                    $data[$i]['courses'][$j]['______lessons_completed'] = $lessons_completed->map(function($q){
-                        return $q->item_id;
-                    })->toArray();
+                    // $data[$i]['courses'][$j]['______lessons_count'] = $lessons[$course['wp_post_id']];
+                    // $data[$i]['courses'][$j]['______lessons_completed'] = $lessons_completed->map(function($q){
+                    //     return $q->item_id;
+                    // })->toArray();
 
                     // Get diff between lessons and lessons completed
-                    $data[$i]['courses'][$j]['______lessons_diff'] = array_diff($lessons[$course['wp_post_id']], $lessons_completed->map(function($q){
-                        return $q->item_id;
-                    })->toArray());
+                    // $data[$i]['courses'][$j]['______lessons_diff'] = array_diff($lessons[$course['wp_post_id']], $lessons_completed->map(function($q){
+                    //     return $q->item_id;
+                    // })->toArray());
 
 
 
