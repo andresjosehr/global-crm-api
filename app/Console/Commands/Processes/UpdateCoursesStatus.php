@@ -4,6 +4,7 @@ namespace App\Console\Commands\Processes;
 
 use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class UpdateCoursesStatus extends Command
@@ -34,30 +35,38 @@ class UpdateCoursesStatus extends Command
 
 
         $studentsFitered = array_map(function ($student) {
-            if (!$student['wp_user_id']) {
-                return $student;
-            }
+            // if (!$student['wp_user_id']) {
+            //     return $student;
+            // }
 
 
             $col = [1 => 'CERTIFICADO', 2 => 'CERTIFICADO', 3 => 'CERTIFICADO', 4 => 'CERTIFICADO', 5 => 'CERTIFICADO', 10 => 'CERTIFICADO', 6 => 'EXC CERTIF. AVA', 7 => 'PBI CERTIFICADO', 8 => 'PBI CERTIFICADO', 9 => 'MSP CERTIFICADO'];
             $courses = array_map(function ($course) use ($student, $col) {
                 if (!$course['end'] && !$course['start']) {
                     $id = $course['course_id'];
-                    if ($id == 6) {
-                    }
 
                     $course['course_status'] = 'POR HABILITAR';
 
-                    if ($student[$col[$id]] == 'NO APLICA') {
+                    if ($course['certificate'] == 'NO APLICA') {
                         $course['course_status'] = 'NO CULMINÓ';
                     }
-                    if ($student[$col[$id]] == 'EMITIDO') {
+                    if ($course['certificate'] == 'EMITIDO') {
                         $course['course_status'] = 'COMPLETA';
                     }
                 }
 
-                if ($course['type'] == 'paid' && $student['ACCESOS'] == 'CORREO CONGELAR') {
-                    $course['course_status'] = 'POR HABILITAR';
+
+                $now = Carbon::now()->setTimezone('America/Lima');
+                $start = Carbon::parse($course['start'])->setTimezone('America/Lima');
+                $end = Carbon::parse($course['end'] . ' 23:59:59')->setTimezone('America/Lima')->setTime(23, 59, 59);
+
+                if ($course['type'] == 'paid' && $student['ACCESOS'] == 'CORREO CONGELAR'){
+                    if($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)){
+                        $course['course_status'] = 'CURSANDO';
+                    }
+                    if($now->lessThan($start)){
+                        $course['course_status'] = 'POR HABILITAR';
+                    }
                 }
 
                 return $course;
@@ -107,11 +116,12 @@ class UpdateCoursesStatus extends Command
         $studentsFitered = array_map(function ($student) {
             if(!$student['wp_user_id']){
                 $student['courses'] = array_map(function($course){
-                    $course['course_status'] = 'POR HABILITAR';
+                    if ($course['certificate'] == '') {
+                        $course['course_status'] = 'POR HABILITAR';
+                    }
                     return $course;
                 }, $student['courses']);
             }
-
             return $student;
         },$studentsFitered);
 
@@ -148,7 +158,11 @@ class UpdateCoursesStatus extends Command
 
         $data = $google_sheet->updateGoogleSheet($data);
 
-        return $this->line(json_encode(["Exito" => $studentsFitered]));
+        // sbasurto686@gmail.com
+        $sbasurto = array_filter($studentsFitered, function ($student) {
+            return $student['CORREO'] == 'sbasurto686@gmail.com';
+        });
+        return $this->line(json_encode(["Exito" => $sbasurto]));
     }
 }
 

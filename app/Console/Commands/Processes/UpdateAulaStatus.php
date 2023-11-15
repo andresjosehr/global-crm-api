@@ -37,7 +37,7 @@ class UpdateAulaStatus extends Command
         ini_set('memory_limit', -1);
 
         $data = new StudentsExcelController();
-        $students = $data->index('prod');
+        $students = $data->index('test');
 
         $students = array_filter($students, function ($student) {
             return $student['wp_user_id'] ? true : false;
@@ -154,7 +154,7 @@ class UpdateAulaStatus extends Command
               }
         }
 
-        return $this->line(json_encode(["Exito" => $dataToUpdate]));
+        return $this->line(json_encode(["Exito" => $students]));
     }
 }
 

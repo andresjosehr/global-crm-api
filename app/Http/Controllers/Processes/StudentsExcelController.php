@@ -101,6 +101,9 @@ class StudentsExcelController extends Controller
                 if (strpos($student['ESTADO'], 'HABILITADO ') !== false) {
                     $string = 'HABILITADO ';
                 }
+                if (strpos($student['ESTADO'], 'HABILITAR ') !== false) {
+                    $string = 'HABILITAR ';
+                }
                 if (strpos($student['ESTADO'], 'AL DIA/ CUOTAS ') !== false) {
                     $string = 'AL DIA/ CUOTAS ';
                 }
@@ -254,8 +257,10 @@ class StudentsExcelController extends Controller
 
         // Count lessons by course
         $lessonsCount = [];
+        $lessons = [];
         foreach ($groupedLessons as $course_id => $course_lessons) {
             $lessonsCount[$course_id] = $course_lessons->count();
+            $lessons[$course_id] = $course_lessons->pluck('ID')->toArray();
         }
 
 
@@ -324,14 +329,14 @@ class StudentsExcelController extends Controller
             ];
             foreach ($student['courses'] as $j => $course) {
                 if ($course['course_id'] != 6) {
-                    $data[$i]['courses'][$j]['lessons_completed'] = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
+                    $lessons_completed = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                         ->where('ref_id', $course['wp_post_id'])
                         ->where('item_type', 'lp_lesson')
                         ->where('status', 'completed')
                         ->whereHas('item', function ($q) {
                             $q->where('post_title', 'not like', '%webinar%');
                         })
-                        ->get()->unique('item_id')->values()->count();
+                        ->get()->unique('item_id')->values();
 
                     $quizzes = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                         ->where('ref_id', $course['wp_post_id'])
@@ -341,6 +346,19 @@ class StudentsExcelController extends Controller
                         ->get();
 
                     $data[$i]['courses'][$j]['lessons_count'] = $lessonsCount[$course['wp_post_id']];
+                    $data[$i]['courses'][$j]['lessons_completed'] = $lessons_completed->count();
+
+                    $data[$i]['courses'][$j]['______lessons_count'] = $lessons[$course['wp_post_id']];
+                    $data[$i]['courses'][$j]['______lessons_completed'] = $lessons_completed->map(function($q){
+                        return $q->item_id;
+                    })->toArray();
+
+                    // Get diff between lessons and lessons completed
+                    $data[$i]['courses'][$j]['______lessons_diff'] = array_diff($lessons[$course['wp_post_id']], $lessons_completed->map(function($q){
+                        return $q->item_id;
+                    })->toArray());
+
+
 
 
 
@@ -396,8 +414,9 @@ class StudentsExcelController extends Controller
                         }
                     }
 
+
                     if ($now->lessThanOrEqualTo($start) && $course['start'] != null) {
-                        $data[$i]['courses'][$j]['certifaction_test'] = '';
+                        $data[$i]['courses'][$j]['certifaction_test'] = '3 Intentos pendientes';
                     }
 
                     $data[$i]['courses'][$j]['quizzes'] = $quizzes;
@@ -408,15 +427,20 @@ class StudentsExcelController extends Controller
                     foreach ($levels as $key => $name) {
 
                         $data[$i]['courses'][$j][$key]                      = [];                                                   // Inicialización aquí
-                        $data[$i]['courses'][$j][$key]['lessons_count']     = $groupedLessons['11148'][$name]->count();
                         $data[$i]['courses'][$j][$key]['certificate']       = $student[$certificates[$key]];
-                        $data[$i]['courses'][$j][$key]['lessons_completed'] = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
+
+                        $lessons_completed = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                             ->where('ref_id', $course['wp_post_id'])
                             ->where('item_type', 'lp_lesson')
                             ->where('status', 'completed')
                             ->whereIn('item_id', $groupedLessons['11148'][$name]->pluck('ID')->toArray())
                             // Unique by item_id
-                            ->get()->unique('item_id')->values()->count();
+                            ->get()->unique('item_id')->values();
+
+                        $data[$i]['courses'][$j][$key]['lessons_count']     = $groupedLessons['11148'][$name]->count();
+                        $data[$i]['courses'][$j][$key]['lessons_completed'] = $lessons_completed->count();
+
+
 
                         if ($data[$i]['courses'][$j][$key]['lessons_completed'] >= 0) {
                             $data[$i]['courses'][$j][$key]['lesson_progress'] = 'EN PROGRESO';
