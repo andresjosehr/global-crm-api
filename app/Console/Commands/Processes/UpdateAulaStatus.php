@@ -154,7 +154,7 @@ class UpdateAulaStatus extends Command
               }
         }
 
-        return $this->line(json_encode(["Exito" => $students]));
+        return $this->line(json_encode(["Exito" => $dataToUpdate]));
     }
 }
 
