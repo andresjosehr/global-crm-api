@@ -118,11 +118,12 @@ class UpdateTestsStatus extends Command
 
 
                     if (!$c['end'] && !$c['start']) {
-                        $c['nivel_basico']['certifaction_test'] = '';
-                        $c['nivel_intermedio']['certifaction_test'] = '';
-                        $c['nivel_avanzado']['certifaction_test'] = '';
+
+
+                        if(!$c['nivel_basico']['certificate']){ $c['nivel_basico']['certifaction_test'] = '3 Intentos pendientes';}
+                        if(!$c['nivel_intermedio']['certificate']){ $c['nivel_intermedio']['certifaction_test'] = '3 Intentos pendientes';}
+                        if(!$c['nivel_avanzado']['certificate']){ $c['nivel_avanzado']['certifaction_test'] = '3 Intentos pendientes';}
                     }
-                    $c['certifaction_test'] = '';
                 }
 
                 if ($c['course_id'] != 6) {

@@ -85,6 +85,7 @@ class UpdateAulaStatus extends Command
             $courses = array_filter($courses, function ($course){
                 return $course['order_id'] ? true : false;
             });
+
             $courses = array_values($courses);
 
 
