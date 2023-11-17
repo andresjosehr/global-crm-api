@@ -103,6 +103,12 @@ class UpdateCoursesStatus extends Command
                     }
                 }
 
+                if($course['course_id']==6){
+                    if($course['nivel_basico']['certificate']=="NO APLICA" || $course['nivel_intermedio']['certificate']=="NO APLICA" || $course['nivel_avanzado']['certificate']=="NO APLICA"){
+                        $course['course_status'] = 'NO CULMINÓ';
+                    }
+                }
+
                 return $course;
             }, $freeCourses);
 
