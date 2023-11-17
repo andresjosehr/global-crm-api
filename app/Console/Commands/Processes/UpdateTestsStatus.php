@@ -37,7 +37,6 @@ class UpdateTestsStatus extends Command
 
         $data = new StudentsExcelController();
         $students = $data->index('test');
-        // return json_encode($students);
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
@@ -66,16 +65,16 @@ class UpdateTestsStatus extends Command
                     continue;
                 }
 
-                if (in_array($student[$column], $status)) {
-                    // remove course with id 6
-                    $courses = array_filter($student['courses'], function ($course) use ($id) {
-                        return $course['course_id'] != $id;
-                    });
+                // if (in_array($student[$column], $status)) {
+                //     // remove course with id 6
+                //     $courses = array_filter($student['courses'], function ($course) use ($id) {
+                //         return $course['course_id'] != $id;
+                //     });
 
-                    $courses = array_values($courses);
-                    $student['courses'] = $courses;
-                    continue;
-                }
+                //     $courses = array_values($courses);
+                //     $student['courses'] = $courses;
+                //     continue;
+                // }
             }
 
             // replace course in courses

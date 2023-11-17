@@ -78,8 +78,39 @@ class StudentsExcelController extends Controller
     public function formatCourses($data)
     {
 
+        $users_db = WpUser::select('ID', 'user_email')
+            ->get()
+            ->mapWithKeys(function ($user) {
+                return [strtolower($user->user_email) => $user->ID];
+            })
+            ->toArray();
+        $users_db2 = WpUser::select('ID', 'user_login')->get()->pluck('ID', 'user_login')->toArray();
+
         $courses_not_found = [];
         foreach ($data as $i => $student) {
+            $student['CORREO'] = strtolower($student['CORREO']);
+            $data[$i]['wp_user_id'] = isset($users_db[$student['CORREO']]) ? $users_db[$student['CORREO']] : null;
+
+            if (!$data[$i]['wp_user_id']) {
+                $col = '';
+                if ($data[$i]['USUARIO AULA']) {
+                    $col = 'USUARIO AULA';
+                } elseif ($data[$i]['MSP USUARIO AULA']) {
+                    $col = 'MSP USUARIO AULA';
+                } elseif ($data[$i]['PBI USUARIO AULA']) {
+                    $col = 'PBI USUARIO AULA';
+                } elseif ($data[$i]['EXC USUARIO AULA']) {
+                    $col = 'EXC USUARIO AULA';
+                }
+
+                if ($col) {
+                    $data[$i]['wp_user_id'] = isset($users_db2[$student[$col]]) ? $users_db2[$student[$col]] : null;
+                }
+
+                if (!$data[$i]['wp_user_id']) {
+                    $data[$i]['wp_user_id'] = isset($users_db[$student['CORREO']]) ? $users_db[$student['CORREO']] : null;
+                }
+            }
 
             $courses_names = explode('+', $student['CURSOS']);
             $courses_names = array_map('trim', $courses_names);
@@ -113,6 +144,9 @@ class StudentsExcelController extends Controller
                 if (strpos($student['ESTADO'], 'DESCONGELADO ') !== false) {
                     $string = 'DESCONGELADO ';
                 }
+                if (strpos($student['ESTADO'], 'CONGELADO ') !== false) {
+                    $string = 'CONGELADO ';
+                }
 
                 if ($string) {
                     $enable = explode($string, $student['ESTADO'])[1];
@@ -139,6 +173,12 @@ class StudentsExcelController extends Controller
                     continue;
                 }
 
+
+                $order_id = null;
+                if($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()){
+                    $order_id = $order->ref_id;
+                }
+
                 if (strpos($course_name, 'SAP') !== false) {
 
                     $c = [
@@ -148,6 +188,7 @@ class StudentsExcelController extends Controller
                         'access'      => $student['ACCESOS'],
                         'start'       => null,
                         'end'         => null,
+                        'order_id'    => $order_id,
                         'certificate' => $student['CERTIFICADO'],
                         'wp_post_id'  => $course_db->wp_post_id,
                         'type'        => 'paid'
@@ -207,6 +248,7 @@ class StudentsExcelController extends Controller
                         'access'      => $student[$cols[$course_db->id]],
                         'start'       => $start,
                         'end'         => $end,
+                        'order_id'    => $order_id,
                         'certificate' => $student[$dates[$course_db->id]['certificate']],
                         'wp_post_id'  => $course_db->wp_post_id,
                         'type'        => 'free'
@@ -226,13 +268,6 @@ class StudentsExcelController extends Controller
     public function formatProgress($data)
     {
 
-        $users_db = WpUser::select('ID', 'user_email')
-            ->get()
-            ->mapWithKeys(function ($user) {
-                return [strtolower($user->user_email) => $user->ID];
-            })
-            ->toArray();
-        $users_db2 = WpUser::select('ID', 'user_login')->get()->pluck('ID', 'user_login')->toArray();
 
         // Realizar la consulta
         $lessons = DB::connection('wordpress')->table('posts as lessons')
@@ -294,33 +329,8 @@ class StudentsExcelController extends Controller
 
 
         foreach ($data as $i => $student) {
-            $student['CORREO'] = strtolower($student['CORREO']);
-            $data[$i]['wp_user_id'] = isset($users_db[$student['CORREO']]) ? $users_db[$student['CORREO']] : null;
 
-            if (!$data[$i]['wp_user_id']) {
-                $col = '';
-                if ($data[$i]['USUARIO AULA']) {
-                    $col = 'USUARIO AULA';
-                } elseif ($data[$i]['MSP USUARIO AULA']) {
-                    $col = 'MSP USUARIO AULA';
-                } elseif ($data[$i]['PBI USUARIO AULA']) {
-                    $col = 'PBI USUARIO AULA';
-                } elseif ($data[$i]['EXC USUARIO AULA']) {
-                    $col = 'EXC USUARIO AULA';
-                }
 
-                if ($col) {
-                    $data[$i]['wp_user_id'] = isset($users_db2[$student[$col]]) ? $users_db2[$student[$col]] : null;
-                }
-
-                if (!$data[$i]['wp_user_id']) {
-                    $data[$i]['wp_user_id'] = isset($users_db[$student['CORREO']]) ? $users_db[$student['CORREO']] : null;
-                }
-
-                // if (!$data[$i]['wp_user_id']) {
-                //     continue;
-                // }
-            }
 
             $certificates = [
                 'nivel_basico'     => 'EXC CERTIF. BÁS',

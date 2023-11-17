@@ -125,6 +125,17 @@ class UpdateCoursesStatus extends Command
             return $student;
         },$studentsFitered);
 
+
+        // $studentsFitered = array_map(function ($student) {
+        //     if(!$student['wp_user_id']){
+        //         return $student;
+        //     }
+
+
+
+        //     return $student;
+        // },$studentsFitered);
+
         $studentsFitered = array_values($studentsFitered);
 
         $data = [];
@@ -152,11 +163,11 @@ class UpdateCoursesStatus extends Command
 
 
         $google_sheet = new GoogleSheetController();
-
+        $dataToUpdate = $data;
         $data = $google_sheet->transformData($data);
         $data = $google_sheet->prepareRequests($data);
 
-        $data = $google_sheet->updateGoogleSheet($data);
+        $google_sheet->updateGoogleSheet($data);
 
         // // sbasurto686@gmail.com
         // $sbasurto = array_filter($studentsFitered, function ($student) {
