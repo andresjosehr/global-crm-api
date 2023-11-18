@@ -21,7 +21,9 @@ return new class extends Migration
             $table->bigInteger('lead_id')->unsigned()->nullable();
             $table->foreign('lead_id')->references('id')->on('leads');
 
+            $table->longText('call_status');
             $table->longText('observation');
+
 
             $table->timestamps();
         });

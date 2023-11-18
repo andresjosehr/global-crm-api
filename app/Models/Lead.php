@@ -16,8 +16,13 @@ class Lead extends Model
         'phone',
     ];
 
-    public function assignments()
+    public function leadAssignments()
     {
         return $this->hasMany(LeadAssignment::class);
+    }
+
+    public function observations()
+    {
+        return $this->hasMany(LeadObservation::class)->orderBy('created_at', 'desc');
     }
 }

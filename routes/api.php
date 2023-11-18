@@ -49,7 +49,12 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::post('import-data', 'App\Http\Controllers\SalesController@importData');
         Route::get('get-leads', 'App\Http\Controllers\SalesController@getLeads');
         Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
-        Route::get('get-lead', 'App\Http\Controllers\LeadsController@getLead');
+        Route::get('get-next-lead', 'App\Http\Controllers\LeadsController@getNextLead');
+        Route::get('get-previous-lead', 'App\Http\Controllers\LeadsController@getPreviousLead');
+        Route::get('get-current-lead', 'App\Http\Controllers\LeadsController@getCurrentLead');
+
+        Route::post('save-observation/{id}', 'App\Http\Controllers\LeadsController@saveObservation');
+        Route::post('save-basic-data/{id}', 'App\Http\Controllers\LeadsController@saveBasicData');
     });
 	/* Add new routes here */
 });

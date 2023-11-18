@@ -5,93 +5,182 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use App\Models\LeadAssignment;
+use App\Models\LeadObservation;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class LeadsController extends Controller
 {
-    public function assignNextLead(Request $request)
+
+    public function getCurrentLead(Request $request)
     {
-        $userId = $request->user()->id;
-        $lastAssignment = LeadAssignment::where('user_id', $userId)
-                             ->orderBy('sequence', 'desc')
-                             ->first();
+        $user = $request->user();
 
-        $nextSequence = $lastAssignment ? $lastAssignment->sequence + 1 : 1;
-        $totalLeads = Lead::count();
+        $lead = $user->leadAssignments()->latest('order')->where('active', true)->first();
 
-        if ($nextSequence > $totalLeads) {
-            $nextSequence = 1; // Vuelve al principio si se llega al final
+
+        if (!$lead) {
+            self::assignNextLead($user);
         }
 
-        $nextLead = Lead::whereDoesntHave('assignments', function ($query) use ($userId) {
-                            $query->where('user_id', $userId);
-                        })
-                        ->skip($nextSequence - 1)
-                        ->first();
+        $lead = $user->leadAssignments()->latest('order')->where('active', true)->first()->lead;
+        // ATTATCH observations.user
+        $lead = Lead::with('observations.user')->find($lead->id);
 
-        if (!$nextLead) {
-            return response()->json(['message' => 'No hay más leads disponibles.'], 404);
-        }
 
-        $assignment = new LeadAssignment();
-        $assignment->user_id = $userId;
-        $assignment->lead_id = $nextLead->id;
-        $assignment->sequence = $nextSequence;
-        $assignment->save();
 
-        return ApiResponseController::response('Lead asignado exitosamente', 200, $assignment);
+        return ApiResponseController::response("Exito", 200, $lead);
     }
 
-    public function previousLead(Request $request)
+    public function getNextLead(Request $request)
     {
-        $userId = $request->user()->id;
-        $lastAssignment = LeadAssignment::where('user_id', $userId)
-                             ->orderBy('sequence', 'desc')
-                             ->first();
+        $user = $request->user();
 
-        if (!$lastAssignment || $lastAssignment->sequence == 1) {
-            return ApiResponseController::response('No hay leads anteriores', 200);
+        self::assignNextLead($user);
+        $lead = $user->leadAssignments()->latest('order')->first()->lead;
+        $lead = Lead::with('observations.user')->find($lead->id);
+
+        return ApiResponseController::response("Exito", 200, $lead);
+    }
+
+    public function getPreviousLead(Request $request)
+    {
+        $user = $request->user();
+
+        $previousAssignment = self::assignPreviousLead($user);
+
+        if (!$previousAssignment) {
+            return ApiResponseController::response("No hay leads previos", 200);
         }
 
-        $previousLeadId = LeadAssignment::where('user_id', $userId)
-                             ->where('sequence', '<', $lastAssignment->sequence)
-                             ->orderBy('sequence', 'desc')
-                             ->first()
-                             ->lead_id;
+        $lead = $previousAssignment->lead;
+        $lead = Lead::with('observations.user')->find($lead->id);
 
-        $lead = Lead::find($previousLeadId);
-        return ApiResponseController::response('Lead asignado exitosamente', 200, $lead);
+        return ApiResponseController::response("Exito", 200, $lead);
+    }
+
+    public function assignNextLead(User $user)
+    {
+        // Obtener el último lead asignado al asesor y el orden actual
+        $lastAssignment = $user->leadAssignments()->latest('order')->where('active', true)->first();
+        $nextOrder = $lastAssignment ? $lastAssignment->order + 1 : 1;
+
+        // Verificar si ya existe un lead asignado con el siguiente orden
+        $nextAssignment = $user->leadAssignments()->where('order', $nextOrder)->first();
+
+        if ($nextAssignment) {
+            // Reactivar el lead siguiente si existe
+            $nextAssignment->update(['active' => true]);
+        } else {
+            // Si no existe, determinar el próximo lead a asignar
+            $data = $this->findNextLeadId($user, $lastAssignment);
+
+            // Crear la nueva asignación
+            $nextAssignment = new LeadAssignment([
+                'lead_id' => $data['nextLeadId'],
+                'round' => $data['round'],
+                'order' => $nextOrder,
+                'active' => true, // El lead se marca como activo por defecto
+                'assigned_at' => now(),
+            ]);
+
+            $user->leadAssignments()->save($nextAssignment);
+        }
+
+        // Marcar el lead anterior como inactivo
+        if ($lastAssignment) {
+            $lastAssignment->update(['active' => false]);
+        }
+
+        return $nextAssignment;
+    }
+
+    public function assignPreviousLead(User $user)
+    {
+        // Obtener el lead actualmente asignado y disminuir el orden
+        $currentAssignment = $user->leadAssignments()->latest('order')->where('active', true)->first();
+
+        if (!$currentAssignment || $currentAssignment->order <= 1) {
+            // No hay lead previo o es el primer lead
+            return null;
+        }
+
+        $previousOrder = $currentAssignment->order - 1;
+        $previousAssignment = $user->leadAssignments()->where('order', $previousOrder)->first();
+
+        // Marcar el lead actual como inactivo y el anterior como activo
+        if ($previousAssignment) {
+            $currentAssignment->update(['active' => false]);
+            $previousAssignment->update(['active' => true]);
+        }
+
+        return $previousAssignment;
+    }
+
+    private function findNextLeadId()
+    {
+        // Obtener todos los leads ya asignados al usuario
+        $activeAssignedLeadIds = LeadAssignment::where('active', true)->pluck('lead_id');
+
+        // Get max activeAssignedLeadIds
+        $round = LeadAssignment::max('round') ?? 1;
+        $maxActiveAssignedLeadId = LeadAssignment::where('round', $round)->max('lead_id') ?? 0;
+
+        // Encuentra el próximo lead no asignado al usuario
+        $nextLeadId = Lead::whereNotIn('id', $activeAssignedLeadIds)
+            ->where('id', '>', $maxActiveAssignedLeadId)
+            ->orderBy('id', 'ASC')
+            ->first();
+
+        if(!$nextLeadId){
+            $round++;
+            $nextLeadId = $this->startNewRound();
+        } else{
+            $nextLeadId = $nextLeadId->id;
+        }
+
+        return [
+            'round' => $round,
+            'nextLeadId' => $nextLeadId
+        ];
+    }
+
+    private function startNewRound()
+    {
+        // Comienza una nueva vuelta asignando el primer lead disponible
+        return Lead::orderBy('id')->first()->id;
+    }
+
+
+    public function saveBasicData(Request $request, $id)
+    {
+        $lead = Lead::where('id', $id)->update([
+            'name' => $request->name,
+            'courses' => $request->courses,
+            'phone' => $request->phone,
+            'status' => $request->status,
+            'email' => $request->email,
+            'origin' => $request->origin,
+            'document' => $request->document
+        ]);
+
+        $lead = Lead::with('observations.user')->find($id);
+
+        return ApiResponseController::response("Exito", 200, $lead);
 
     }
 
-    public function nextLead(Request $request)
+    public function saveObservation(Request $request, $id)
     {
-        $userId = $request->user()->id;
-        $nextLeadId = LeadAssignment::where('user_id', $userId)
-                            ->orderBy('sequence', 'asc')
-                            ->firstWhere('sequence', '>', $request->sequence)
-                            ->lead_id ?? null;
+        $lead = LeadObservation::create([
+            'user_id' => $request->user()->id,
+            'lead_id' => $id,
+            'call_status' => $request->call_status,
+            'observation' => $request->observation,
+        ]);
 
-        if (!$nextLeadId) {
-            return response()->json(['message' => 'No hay más leads.'], 404);
-        }
+        $lead = Lead::with('observations.user')->find($lead->lead_id);
 
-        return $lead = Lead::find($nextLeadId);
-        return ApiResponseController::response('Lead asignado exitosamente', 200, $lead);
-    }
-
-    public function currentLead(Request $request)
-    {
-        $userId = $request->user()->id;
-
-        $currentAssignment = LeadAssignment::where('user_id', $userId)
-                               ->orderBy('sequence', 'desc')
-                               ->first();
-
-        if (!$currentAssignment) {
-            return response()->json(['message' => 'Actualmente no tienes asignaciones.'], 404);
-        }
-
-        return Lead::find($currentAssignment->lead_id);
+        return ApiResponseController::response("Exito", 200, $lead);
     }
 }

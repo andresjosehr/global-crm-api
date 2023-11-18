@@ -190,7 +190,7 @@ class UpdateCoursesStatus extends Command
 
         $studentsFitered = array_map(function ($student) {
             $courses = array_map(function ($course) {
-                if ($course['course_status'] == 'POR HABILITAR' && $course['order_id']) {
+                if ($course['course_status'] == 'POR HABILITAR' && $course['order_id'] && !$course['start'] && !$course['end']) {
                     $order_date = WpPost::where('ID', $course['order_id'])->first()->post_date;
                     // Check if date is gratter than 2 months
                     $now = Carbon::now()->setTimezone('America/Lima');

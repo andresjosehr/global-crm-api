@@ -69,7 +69,42 @@ class UsersSeeder extends Seeder
                 'email' => 'tecnicoinstalacion2@gmail.com',
                 'password' => bcrypt('secret'),
                 'role_id' => DB::table('roles')->where('name', 'Tecnico de instalación')->first()->id,
+            ],
+
+
+
+
+            [
+                'name' => 'ALDHAIR JOSÉ CARDOZO VILLARROEL',
+                'email' => 'aldhairjcardozov@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+            ],
+            [
+                'name' => 'Leonardo Dario Valero Hidalgo',
+                'email' => 'leodario28@hotmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+            ],
+            [
+                'name' => 'Moisés Alejandro Dumont Martínez',
+                'email' => 'mdumont359@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+            ],
+            [
+                'name' => 'Gabriela Del Valle Manrique Rodriguez',
+                'email' => 'manriquegabriela1@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+            ],
+            [
+                'name' => 'Arquimedes Emanuel Castañeda Cova',
+                'email' => 'arquimedescastaneda77@gmail.com',
+                'password' => bcrypt('secret'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
             ]
+
         ]);
 
 

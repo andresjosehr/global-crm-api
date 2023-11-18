@@ -33,7 +33,11 @@ class ModulesRolesSeeder extends Seeder
 
         DB::table('modules_roles')->insert([
             [
-                'module_id' => self::module('Alumnos'),
+                'module_id' => self::module('Ventas'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
+            [
+                'module_id' => self::module('Gestionar leads'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
         ]);

@@ -9,6 +9,15 @@ class LeadAssignment extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'lead_id',
+        'user_id',
+        'active',
+        'assigned_at',
+        'order',
+        'round',
+    ];
+
 
     public function user()
     {
