@@ -284,4 +284,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(StaffAvailabilitySlot::class);
     }
 
+    public function leadAssignments()
+    {
+        return $this->hasMany(LeadAssignment::class);
+    }
+
 }

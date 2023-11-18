@@ -13,12 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('leads_traking', function (Blueprint $table) {
+        Schema::create('user_leads', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->nullable();
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->bigInteger('lead_id')->unsigned()->nullable();
-            $table->foreign('lead_id')->references('id')->on('leads');
             $table->timestamps();
         });
     }
@@ -30,6 +26,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('lead_trakings');
+        Schema::dropIfExists('user_leads');
     }
 };

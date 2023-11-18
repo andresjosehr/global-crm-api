@@ -15,4 +15,9 @@ class Lead extends Model
         'courses',
         'phone',
     ];
+
+    public function assignments()
+    {
+        return $this->hasMany(LeadAssignment::class);
+    }
 }
