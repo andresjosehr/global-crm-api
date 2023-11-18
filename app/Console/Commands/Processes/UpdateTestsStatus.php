@@ -138,10 +138,9 @@ class UpdateTestsStatus extends Command
             return $student;
         }, $students);
 
-        // return $studentsFitered;
 
         $studentsFitered = array_filter($studentsFitered, function ($student) {
-            return count($student['courses']) > 0 && $student['wp_user_id'];
+            return count($student['courses']) > 0 ;
         });
         $studentsFitered = array_values($studentsFitered);
 

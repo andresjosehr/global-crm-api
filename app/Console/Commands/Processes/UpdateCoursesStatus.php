@@ -4,6 +4,8 @@ namespace App\Console\Commands\Processes;
 
 use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use App\Models\Course;
+use App\Models\Wordpress\WpPost;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -30,6 +32,7 @@ class UpdateCoursesStatus extends Command
      */
     public function handle()
     {
+
         $data = new StudentsExcelController();
         $students = $data->index('test');
 
@@ -60,11 +63,11 @@ class UpdateCoursesStatus extends Command
                 $start = Carbon::parse($course['start'])->setTimezone('America/Lima');
                 $end = Carbon::parse($course['end'] . ' 23:59:59')->setTimezone('America/Lima')->setTime(23, 59, 59);
 
-                if ($course['type'] == 'paid' && $student['ACCESOS'] == 'CORREO CONGELAR'){
-                    if($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)){
+                if ($course['type'] == 'paid' && $student['ACCESOS'] == 'CORREO CONGELAR') {
+                    if ($now->greaterThanOrEqualTo($start) && $now->lessThanOrEqualTo($end)) {
                         $course['course_status'] = 'CURSANDO';
                     }
-                    if($now->lessThan($start)){
+                    if ($now->lessThan($start)) {
                         $course['course_status'] = 'POR HABILITAR';
                     }
                 }
@@ -103,8 +106,8 @@ class UpdateCoursesStatus extends Command
                     }
                 }
 
-                if($course['course_id']==6){
-                    if($course['nivel_basico']['certificate']=="NO APLICA" || $course['nivel_intermedio']['certificate']=="NO APLICA" || $course['nivel_avanzado']['certificate']=="NO APLICA"){
+                if ($course['course_id'] == 6) {
+                    if ($course['nivel_basico']['certificate'] == "NO APLICA" || $course['nivel_intermedio']['certificate'] == "NO APLICA" || $course['nivel_avanzado']['certificate'] == "NO APLICA") {
                         $course['course_status'] = 'NO CULMINÓ';
                     }
                 }
@@ -120,8 +123,8 @@ class UpdateCoursesStatus extends Command
 
 
         $studentsFitered = array_map(function ($student) {
-            if(!$student['wp_user_id']){
-                $student['courses'] = array_map(function($course){
+            if (!$student['wp_user_id']) {
+                $student['courses'] = array_map(function ($course) {
                     if ($course['certificate'] == '') {
                         $course['course_status'] = 'POR HABILITAR';
                     }
@@ -129,20 +132,91 @@ class UpdateCoursesStatus extends Command
                 }, $student['courses']);
             }
             return $student;
-        },$studentsFitered);
+        }, $studentsFitered);
 
 
-        // $studentsFitered = array_map(function ($student) {
-        //     if(!$student['wp_user_id']){
-        //         return $student;
-        //     }
+        $paidCourseDB = Course::where('type', 'paid')->pluck('id')->toArray();
+        $freeCoursesDB = Course::where('type', 'free')->whereNotIn('id', [7, 8])->get()->pluck('id')->toArray();
+
+        $studentsFitered = array_map(function ($student) use ($paidCourseDB, $freeCoursesDB) {
+            $courseIds = array_column($student['courses'], 'course_id');
 
 
+            if (!in_array(6, $courseIds)) {
+                $student['courses'][] = [
+                    'course_id' => 6,
+                    'name' => "EXCEL",
+                    'type' => 'free',
+                    'course_status' => 'NO APLICA',
+                ];
+            }
+            if (!in_array(9, $courseIds)) {
+                $student['courses'][] = [
+                    'course_id' => 9,
+                    'name' => "MS PROJECT",
+                    'type' => 'free',
+                    'course_status' => 'NO APLICA',
+                ];
+            }
 
-        //     return $student;
-        // },$studentsFitered);
+            if (!in_array(7, $courseIds) && !in_array(8, $courseIds)) {
+                $student['courses'][] = [
+                    'course_id' => 7,
+                    'name' => 'POWERBI',
+                    'type' => 'free',
+                    'course_status' => 'NO APLICA',
+                ];
+            }
+
+            if (empty(array_intersect($courseIds, $paidCourseDB))) {
+                $student['courses'][] = [
+                    'course_id' => 0,
+                    'name' => 'GENERAL SAP',
+                    'type' => 'paid',
+                    'course_status' => 'NO APLICA',
+                ];
+
+                // Ninguno de los cursos del usuario es un curso pagado
+            }
+
+
+            return $student;
+        }, $studentsFitered);
 
         $studentsFitered = array_values($studentsFitered);
+
+        // return $this->line(json_encode($studentsFitered));
+
+
+        $studentsFitered = array_map(function ($student) {
+            $courses = array_map(function ($course) {
+                if ($course['course_status'] == 'POR HABILITAR' && $course['order_id']) {
+                    $order_date = WpPost::where('ID', $course['order_id'])->first()->post_date;
+                    // Check if date is gratter than 2 months
+                    $now = Carbon::now()->setTimezone('America/Lima');
+                    $order_date = Carbon::parse($order_date)->setTimezone('America/Lima');
+                    $diff = $now->diffInMonths($order_date);
+                    if($diff >= 2){
+                        $course['order_date'] = $order_date;
+                        $course['diff'] = $diff;
+
+                        if($course['lesson_progress']=='EN PROGRESO'){
+                            $course['course_status'] = 'NO CULMINÓ';
+                        }
+                        if($course['lesson_progress']=='COMPLETADO'){
+                            $course['course_status'] = 'COMPLETA';
+                        }
+
+                    }
+                }
+                return $course;
+            }, $student['courses']);
+
+            $student['courses'] = $courses;
+            return $student;
+        }, $studentsFitered);
+
+        // return $this->line(json_encode($studentsFitered));
 
         $data = [];
         foreach ($studentsFitered as $student) {
