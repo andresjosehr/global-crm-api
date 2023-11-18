@@ -94,9 +94,10 @@ class SendUnfreezingMails extends Command
 
 
          self::sendMails($students);
-         $data = self::updateExcel($students);
+         $dataNueve = self::updateExcel($students);
 
-        print_r($data);
+         return $this->line(json_encode(["Data Excel" => $dataNueve]));
+         
         return Command::SUCCESS;
     }
 
@@ -131,18 +132,21 @@ class SendUnfreezingMails extends Command
     public function updateExcel($students)
     {
 
-        $data = array_map(function($student){
-            $student['value'] = 'PROGRAMADO (DESCONGELAR)';
-            $student['column'] = 'K';
-            $student['tab_id'] = $student['course_tab_id'];
-            return $student;
+        $dataU = array_map(function($student){
+            return [
+                'value' => 'PROGRAMADO (DESCONGELAR)',
+                'column' => 'K',
+                'tab_id' => $student['course_tab_id'],
+                'sheet_id' => $student['sheet_id'],
+                'course_row_number' => $student['course_row_number']
+            ];
         }, $students);
 
 
         $google_sheet = new GoogleSheetController();
 
-        $dataU = $google_sheet->transformData($data);
-        $data = $google_sheet->prepareRequests($dataU);
+        $data = $google_sheet->transformData($dataU);
+        $data = $google_sheet->prepareRequests($data);
 
         $google_sheet->updateGoogleSheet($data);
 

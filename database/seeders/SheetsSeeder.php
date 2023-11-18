@@ -60,8 +60,8 @@ class SheetsSeeder extends Seeder
             [
                 'sheet_id'      => '14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs',
                 'base_tab_id'   => 0,
-                'course_tab_id' => 810305363,
-                'link'          => 'https://docs.google.com/spreadsheets/d/14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs/edit#gid=810305363',
+                'course_tab_id' => 1308509451,
+                'link'          => 'https://docs.google.com/spreadsheets/d/14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs/edit#gid=1308509451',
                 'type'          => 'prod'
             ],
             [
