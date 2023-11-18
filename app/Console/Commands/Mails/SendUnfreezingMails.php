@@ -94,9 +94,9 @@ class SendUnfreezingMails extends Command
 
 
          self::sendMails($students);
-         self::updateExcel($students);
+         $data = self::updateExcel($students);
 
-        print_r($students);
+        print_r($data);
         return Command::SUCCESS;
     }
 
@@ -141,11 +141,11 @@ class SendUnfreezingMails extends Command
 
         $google_sheet = new GoogleSheetController();
 
-        $data = $google_sheet->transformData($data);
-        $data = $google_sheet->prepareRequests($data);
+        $dataU = $google_sheet->transformData($data);
+        $data = $google_sheet->prepareRequests($dataU);
 
         $google_sheet->updateGoogleSheet($data);
 
-        return true;
+        return $dataU;
     }
 }

@@ -13,16 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('leads', function (Blueprint $table) {
+        Schema::create('lead_observations', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('courses');
-            $table->string('phone');
-            $table->string('status')->nullable();
-            $table->string('email')->nullable();
-            $table->string('origin')->nullable();
-            $table->string('document')->nullable();
-            $table->string('user_id')->nullable();
+            $table->bigInteger('user_id')->unsigned()->nullable();
+            $table->foreign('user_id')->references('id')->on('users');
+
+            $table->bigInteger('lead_id')->unsigned()->nullable();
+            $table->foreign('lead_id')->references('id')->on('leads');
+
+            $table->longText('observation');
+
             $table->timestamps();
         });
     }
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('leads');
+        Schema::dropIfExists('lead_observations');
     }
 };

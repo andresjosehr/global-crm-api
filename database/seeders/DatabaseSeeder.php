@@ -31,5 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call(StaffAvailabilitySlotsSeeder::class);
         $this->call(SapInstalationsSeeder::class);
         $this->call(SheetsSeeder::class);
+        $this->call(LeadsSeeder::class);
+        $this->call(LeadsTrakingSeeder::class);
     }
 }

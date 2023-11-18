@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Zadarma_API\Api;
 use App\Models\Lead;
+use App\Models\LeadTraking;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -67,6 +68,41 @@ class SalesController extends Controller
             ->paginate($perPage);
 
         return ApiResponseController::response('Consulta Exitosa', 200, $leads);
+    }
+
+    public function getLead(Request $request)
+    {
+        // Get user
+        $user = $request->user();
+
+
+
+        if(!$lead = LeadTraking::where('user_id', $user->id)->orderBy('id', 'DESC')->first()){
+
+            $lead = LeadTraking::where('user_id', null)->first();
+
+            $lead = Lead::where('id' ,">", $lead->id)->orderBy('id', 'ASC')->first();
+            LeadTraking::create([
+                'user_id' => $user->id,
+                'lead_id' => $lead->id
+            ]);
+
+            LeadTraking::where('user_id', null)->update(['lead_id' => $lead->id]);
+
+        }
+
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $lead);
+    }
+
+    public function nextLead(Request $request, $id)
+    {
+        // Get user
+        $user = $request->user();
+
+        $lead = LeadTraking::where('user_id', $user->id)->orderBy('id', 'DESC')->first();
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $lead);
     }
 
     public function getZadarmaInfo(){

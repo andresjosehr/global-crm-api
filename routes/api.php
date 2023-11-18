@@ -45,6 +45,12 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::resource('messages', 'App\Http\Controllers\MessagesController');
 
 
+    Route::prefix('sales')->group(function (){
+        Route::post('import-data', 'App\Http\Controllers\SalesController@importData');
+        Route::get('get-leads', 'App\Http\Controllers\SalesController@getLeads');
+        Route::get('get-lead', 'App\Http\Controllers\SalesController@getLead');
+        Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
+    });
 	/* Add new routes here */
 });
 
@@ -64,11 +70,7 @@ Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 
 
-Route::prefix('sales')->group(function (){
-    Route::post('import-data', 'App\Http\Controllers\SalesController@importData');
-    Route::get('get-leads', 'App\Http\Controllers\SalesController@getLeads');
-    Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
-});
+
 
 
 Route::group(['middleware' => ['environment_access']], function () use ($basePathController) {
