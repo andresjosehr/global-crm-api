@@ -45,6 +45,7 @@ class StudentsExcelController extends Controller
         'POWER'                => 'POWERBI BASICO',
         'MS PROJ'              => 'MS PROJECT',
         'EXCEL POWERBI'        => 'EXCEL',
+        'SAP PM EXCEL'         => 'SAP PM',
     ];
 
 
