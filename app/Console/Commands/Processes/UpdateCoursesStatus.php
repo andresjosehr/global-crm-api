@@ -218,6 +218,27 @@ class UpdateCoursesStatus extends Command
 
         // return $this->line(json_encode($studentsFitered));
 
+        $studentsFitered = array_map(function ($student){
+            $student['courses'] = array_map(function ($course){
+                if($course['course_id'] == 8){
+                    if($course['course_status'] == 'POR HABILITAR'){
+                        $course['course_status'] = 'POR HABILITAR AVANZADO';
+                    }
+                    if($course['course_status'] == 'CURSANDO'){
+                        $course['course_status'] = 'CURSANDO AVANZADO';
+                    }
+                    if($course['course_status'] == 'CURSANDO SIN CREDLY'){
+                        $course['course_status'] = 'CURSANDO AVANZADO SIN CREDLY';
+                    }
+                    if($course['course_status'] == 'CURSANDO'){
+                        $course['course_status'] = 'CURSANDO AVANZADO';
+                    }
+                }
+                return $course;
+            }, $student['courses']);
+            return $student;
+        }, $studentsFitered);
+
         $data = [];
         foreach ($studentsFitered as $student) {
             foreach ($student['courses'] as $course) {

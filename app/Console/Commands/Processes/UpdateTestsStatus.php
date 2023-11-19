@@ -78,11 +78,12 @@ class UpdateTestsStatus extends Command
             }
 
             // replace course in courses
-            $student['courses'] = array_map(function ($c) {
+            $course_status_columns = [1 => 'AULA SAP', 2 => 'AULA SAP', 3 => 'AULA SAP', 4 => 'AULA SAP', 5 => 'AULA SAP', 10 => 'AULA SAP', 6 => 'EXCEL', 7 => 'PBI', 8 => 'PBI' ,9 => 'MS PROJECT'];
+
+            $student['courses'] = array_map(function ($c) use ($student, $course_status_columns) {
 
                 $now = Carbon::now()->setTimezone('America/Lima');
                 $end = Carbon::parse($c['end'] . ' 23:59:59')->setTimezone('America/Lima')->setTime(23, 59, 59);
-
 
                 $c['_greaterThan'] = $now->greaterThan($end);
                 $c['_now']         = $now->format('Y-m-d');
@@ -130,7 +131,21 @@ class UpdateTestsStatus extends Command
                     if ($c['certificate'] == 'EMITIDO') {
                         $c['certifaction_test'] = 'Aprobado';
                     }
+                    if($student[$course_status_columns[$c['course_id']]] == 'NO APLICA'){
+                        $c['certifaction_test'] = '';
+                    }
                 }
+
+                if($c['course_id'] == 6){
+                    if($student[$course_status_columns[$c['course_id']]] == 'NO APLICA'){
+                        $c['nivel_basico']['certifaction_test'] = '';
+                        $c['nivel_intermedio']['certifaction_test'] = '';
+                        $c['nivel_avanzado']['certifaction_test'] = '';
+                    }
+                }
+
+
+
 
                 return $c;
             }, $student['courses']);
@@ -139,20 +154,83 @@ class UpdateTestsStatus extends Command
         }, $students);
 
 
+        $courses_db = \App\Models\Course::all();
+        $studentsFitered = array_map(function ($student) use ($courses_db){
+            $paidCourses = $courses_db->where('type', 'paid')->pluck('id')->toArray();
+            // Check if student has al least one paid course
+            $findPaidCourse = array_filter($student['courses'], function ($course) use ($paidCourses) {
+                return in_array($course['course_id'], $paidCourses);
+            });
+            $findPaidCourse = array_values($findPaidCourse);
+            if(count($findPaidCourse) == 0){
+                $student['courses'][] = [
+                    'course_id' => 0,
+                    'name' => 'SAP General',
+                    'type' => 'paid',
+                    'certifaction_test' => '',
+
+                ];
+            };
+            $courses_ids = array_map(function($course){
+                return $course['course_id'];
+            }, $student['courses']);
+
+
+            if(!in_array(7, $courses_ids) && !in_array(8, $courses_ids)){
+                $student['courses'][] = [
+                    'course_id' => 7,
+                    'name' => $courses_db->where('id', 7)->first()->name,
+                    'type' => 'free',
+                    'certifaction_test' => '',
+                ];
+            }
+
+            if(!in_array(9, $courses_ids)){
+                $student['courses'][] = [
+                    'course_id' => 9,
+                    'name' => $courses_db->where('id', 9)->first()->name,
+                    'type' => 'free',
+                    'certifaction_test' => '',
+                ];
+            }
+
+            if(!in_array(6, $courses_ids)){
+                $student['courses'][] = [
+                    'course_id' => 6,
+                    'name' => $courses_db->where('id', 6)->first()->name,
+                    'type' => 'free',
+                    'certifaction_test' => '',
+                    'nivel_basico' => [
+                        'certifaction_test' => '',
+                    ],
+                    'nivel_intermedio' => [
+                        'certifaction_test' => '',
+                    ],
+                    'nivel_avanzado' => [
+                        'certifaction_test' => '',
+                    ],
+                ];
+            };
+
+            return $student;
+
+        }, $studentsFitered);
         $studentsFitered = array_filter($studentsFitered, function ($student) {
             return count($student['courses']) > 0 ;
         });
         $studentsFitered = array_values($studentsFitered);
 
 
-        // return $studentsFitered;
 
 
-        $data = [];
+        // return $this->line(json_encode(["Exito 2" => $studentsFitered]));
+
+
+        $dataU = [];
         foreach ($studentsFitered as $student) {
             foreach ($student['courses'] as $course) {
                 if ($course['type'] === 'paid') {
-                    $data[] = [
+                    $dataU[] = [
                         'sheet_id'          => $student['sheet_id'],
                         'course_row_number' => $student['course_row_number'],
                         'column'            => "M",
@@ -166,7 +244,7 @@ class UpdateTestsStatus extends Command
                     if ($course['course_id'] === 6) {
                         $levels = ['nivel_basico' => 'V', 'nivel_intermedio' => 'Y', 'nivel_avanzado' => 'AB'];
                         foreach ($levels as $name => $column) {
-                            $data[] = [
+                            $dataU[] = [
                                 'sheet_id'          => $student['sheet_id'],
                                 'course_row_number' => $student['course_row_number'],
                                 'column'            => $column,
@@ -179,7 +257,7 @@ class UpdateTestsStatus extends Command
 
                     if ($course['course_id'] != 6) {
                         $cols = [7 => 'AJ', 8 => 'AJ', 9 => 'AR'];
-                        $data[] = [
+                        $dataU[] = [
                             'sheet_id'          => $student['sheet_id'],
                             'course_row_number' => $student['course_row_number'],
                             'column'            => $cols[$course['course_id']],
@@ -194,7 +272,7 @@ class UpdateTestsStatus extends Command
 
         $google_sheet = new GoogleSheetController();
 
-        $data = $google_sheet->transformData($data);
+        $data = $google_sheet->transformData($dataU);
         $data = $google_sheet->prepareRequests($data);
 
         $google_sheet->updateGoogleSheet($data);

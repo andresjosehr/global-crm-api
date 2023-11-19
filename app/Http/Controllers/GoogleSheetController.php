@@ -152,10 +152,17 @@ class GoogleSheetController extends Controller
 
     public function updateGoogleSheet($requests)
     {
+        $responses = [];
         foreach ($requests as $sheet_id => $updates) {
+
             $batchUpdateRequest = new Google_Service_Sheets_BatchUpdateSpreadsheetRequest(['requests' => $updates]);
             $response = $this->service->spreadsheets->batchUpdate($sheet_id, $batchUpdateRequest);
+            $responses[] = [
+                'sheet_id' => $sheet_id,
+                'response' => $response
+            ];
         }
+        return $responses;
     }
 
     public function columnLetterToNumber($columnLabel)
