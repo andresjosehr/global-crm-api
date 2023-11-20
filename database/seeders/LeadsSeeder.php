@@ -444,9 +444,9 @@ class LeadsSeeder extends Seeder
         DB::select("INSERT INTO `leads` (`id`, `name`, `courses`, `phone`, `status`, `email`, `origin`, `document`, `user_id`, `created_at`, `updated_at`) VALUES (422, 'VILLANO', 'FI', '5215531111740', NULL, NULL, NULL, NULL, NULL, '2023-11-17 23:56:52', '2023-11-17 23:56:52');");
 
         // Update all phone
-        DB::table('leads')->update([
-            'phone' => '584140339097'
-        ]);
+        // DB::table('leads')->update([
+        //     'phone' => '584140339097'
+        // ]);
 
     }
 }
