@@ -53,7 +53,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::get('get-previous-lead', 'App\Http\Controllers\LeadsController@getPreviousLead');
         Route::get('get-current-lead', 'App\Http\Controllers\LeadsController@getCurrentLead');
 
-        Route::post('save-observation/{id}', 'App\Http\Controllers\LeadsController@saveObservation');
+        Route::post('save-observation/{id}/{leadAssignamentId}', 'App\Http\Controllers\LeadsController@saveObservation');
         Route::post('save-basic-data/{id}', 'App\Http\Controllers\LeadsController@saveBasicData');
     });
 	/* Add new routes here */

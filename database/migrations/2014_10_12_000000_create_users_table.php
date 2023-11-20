@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('password');
             $table->bigInteger('role_id')->unsigned()->nullable();
 			$table->foreign('role_id')->references('id')->on('roles');
+            $table->string('zadarma_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

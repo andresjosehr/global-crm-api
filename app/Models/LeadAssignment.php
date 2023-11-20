@@ -28,4 +28,9 @@ class LeadAssignment extends Model
     {
         return $this->belongsTo(Lead::class);
     }
+
+    public function observations()
+    {
+        return $this->hasMany(LeadObservation::class);
+    }
 }

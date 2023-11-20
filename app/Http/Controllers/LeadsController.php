@@ -23,13 +23,12 @@ class LeadsController extends Controller
             self::assignNextLead($user);
         }
 
-        $lead = $user->leadAssignments()->latest('order')->where('active', true)->first()->lead;
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'observations.user')->first();
         // ATTATCH observations.user
-        $lead = Lead::with('observations.user')->find($lead->id);
 
 
 
-        return ApiResponseController::response("Exito", 200, $lead);
+        return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
 
     public function getNextLead(Request $request)
@@ -37,10 +36,10 @@ class LeadsController extends Controller
         $user = $request->user();
 
         self::assignNextLead($user);
-        $lead = $user->leadAssignments()->latest('order')->first()->lead;
-        $lead = Lead::with('observations.user')->find($lead->id);
 
-        return ApiResponseController::response("Exito", 200, $lead);
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'observations.user')->first();
+
+        return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
 
     public function getPreviousLead(Request $request)
@@ -54,9 +53,10 @@ class LeadsController extends Controller
         }
 
         $lead = $previousAssignment->lead;
-        $lead = Lead::with('observations.user')->find($lead->id);
+        // $lead = Lead::with('observations.user')->find($lead->id);
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'observations.user')->first();
 
-        return ApiResponseController::response("Exito", 200, $lead);
+        return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
 
     public function assignNextLead(User $user)
@@ -170,17 +170,23 @@ class LeadsController extends Controller
 
     }
 
-    public function saveObservation(Request $request, $id)
+    public function saveObservation(Request $request, $leadId, $leadAssignamentId)
     {
-        $lead = LeadObservation::create([
-            'user_id' => $request->user()->id,
-            'lead_id' => $id,
-            'call_status' => $request->call_status,
-            'observation' => $request->observation,
+        // Get current lead assignment
+
+
+        $leadObservation = LeadObservation::create([
+            'user_id'            => $request->user()->id,
+            'lead_id'            => $leadId,
+            'call_status'        => $request->call_status,
+            'observation'        => $request->observation,
+            'lead_assignment_id' => $leadAssignamentId
         ]);
 
-        $lead = Lead::with('observations.user')->find($lead->lead_id);
+        $leadObservation = LeadObservation::with('user')->find($leadObservation->id);
 
-        return ApiResponseController::response("Exito", 200, $lead);
+
+
+        return ApiResponseController::response("Exito", 200, $leadObservation);
     }
 }

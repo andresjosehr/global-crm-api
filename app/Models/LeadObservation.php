@@ -13,11 +13,19 @@ class LeadObservation extends Model
         'user_id',
         'lead_id',
         'call_status',
-        'observation'
+        'observation',
+        'lead_assignment_id',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
+    public function leadAssignment()
+    {
+        return $this->belongsTo(LeadAssignment::class);
+    }
+
+
 }
