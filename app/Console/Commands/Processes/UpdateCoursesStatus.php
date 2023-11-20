@@ -43,6 +43,19 @@ class UpdateCoursesStatus extends Command
             // }
 
 
+
+            $course_status_columns = [1 => 'AULA SAP', 2 => 'AULA SAP', 3 => 'AULA SAP', 4 => 'AULA SAP', 5 => 'AULA SAP', 10 => 'AULA SAP', 6 => 'EXCEL', 7 => 'PBI', 8 => 'PBI' ,9 => 'MS PROJECT'];
+            $courses = array_filter($student['courses'], function ($course) use ($course_status_columns, $student) {
+                if($student[$course_status_columns[$course['course_id']]] == 'ABANDONÓ'){
+                    return false;
+                }
+                return true;
+            });
+
+            $courses = array_values($courses);
+
+
+
             $col = [1 => 'CERTIFICADO', 2 => 'CERTIFICADO', 3 => 'CERTIFICADO', 4 => 'CERTIFICADO', 5 => 'CERTIFICADO', 10 => 'CERTIFICADO', 6 => 'EXC CERTIF. AVA', 7 => 'PBI CERTIFICADO', 8 => 'PBI CERTIFICADO', 9 => 'MSP CERTIFICADO'];
             $courses = array_map(function ($course) use ($student, $col) {
                 if (!$course['end'] && !$course['start']) {
@@ -73,7 +86,7 @@ class UpdateCoursesStatus extends Command
                 }
 
                 return $course;
-            }, $student['courses']);
+            }, $courses);
 
             $paidCourses = array_filter($courses, function ($course) {
                 return $course['type'] == 'paid';
