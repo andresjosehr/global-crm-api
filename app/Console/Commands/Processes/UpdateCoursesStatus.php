@@ -34,7 +34,7 @@ class UpdateCoursesStatus extends Command
     {
 
         $data = new StudentsExcelController();
-        $students = $data->index('test');
+        $students = $data->index('prod');
 
 
         $studentsFitered = array_map(function ($student) {

@@ -36,7 +36,7 @@ class UpdateTestsStatus extends Command
 
 
         $data = new StudentsExcelController();
-        $students = $data->index('test');
+        $students = $data->index('prod');
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
