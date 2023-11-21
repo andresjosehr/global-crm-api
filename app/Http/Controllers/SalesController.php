@@ -54,15 +54,22 @@ class SalesController extends Controller
 
 
 
-    public function getZadarmaInfo(){
+    public function getZadarmaInfo(Request $request){
+
+        $user = $request->user();
+
         // Get from .env
         $key    = env('ZADARMA_KEY');
         $secret = env('ZADARMA_SECRET');
 
         $api = new Api($key, $secret);
-        $sip = $api->getWebrtcKey('328959-101');
+        // $sip = $api->getWebrtcKey('328959-101');
+        $sip = $api->getWebrtcKey($user->zadarma_id);
 
-
-        return ApiResponseController::response('Consulta Exitosa', 200, [$sip]);
+        $data = [
+            'key' => $sip->key,
+            'zadarma_id' => $user->zadarma_id,
+        ];
+        return ApiResponseController::response('Consulta Exitosa', 200, $data);
     }
 }

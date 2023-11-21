@@ -127,8 +127,8 @@ class LeadsController extends Controller
         $maxActiveAssignedLeadId = LeadAssignment::where('round', $round)->max('lead_id') ?? 0;
 
         // Encuentra el próximo lead no asignado al usuario
-        $nextLeadId = Lead::whereNotIn('id', $activeAssignedLeadIds)
-            ->where('id', '>', $maxActiveAssignedLeadId)
+        $nextLeadId = Lead::where('id', '>', $maxActiveAssignedLeadId)
+            ->where('status', 'Nuevo')
             ->orderBy('id', 'ASC')
             ->first();
 
@@ -148,12 +148,16 @@ class LeadsController extends Controller
     private function startNewRound()
     {
         // Comienza una nueva vuelta asignando el primer lead disponible
-        return Lead::orderBy('id')->first()->id;
+        return Lead::orderBy('id')->where('status', 'Nuevo')->first()->id;
     }
 
 
     public function saveBasicData(Request $request, $id)
     {
+        $user_id = null;
+        if($request->status == 'Interesado' ||  $request->status == 'No Interesado'){
+            $user_id = $request->user()->id;
+        }
         $lead = Lead::where('id', $id)->update([
             'name' => $request->name,
             'courses' => $request->courses,
@@ -161,7 +165,9 @@ class LeadsController extends Controller
             'status' => $request->status,
             'email' => $request->email,
             'origin' => $request->origin,
-            'document' => $request->document
+            'document' => $request->document,
+            'user_id' => $user_id
+
         ]);
 
         $lead = Lead::with('observations.user')->find($id);
@@ -188,5 +194,33 @@ class LeadsController extends Controller
 
 
         return ApiResponseController::response("Exito", 200, $leadObservation);
+    }
+
+    public function getLeads(Request $request, $mode)
+    {
+        $user = $request->user();
+
+        $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
+        })
+        ->paginate();
+
+        return ApiResponseController::response("Exito", 200, $leads);
+    }
+
+
+    public function getLead(Request $request, $id)
+    {
+        $user = $request->user();
+
+        $lead = Lead::where('id', $id)
+        ->when($user->role->name != 'Administrador', function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
+        })
+        // ->where('user_id', $user->id)
+        ->with('observations.user')
+        ->first();
+
+        return ApiResponseController::response("Exito", 200, $lead);
     }
 }

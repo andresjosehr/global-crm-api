@@ -47,7 +47,8 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::prefix('sales')->group(function (){
         Route::post('import-data', 'App\Http\Controllers\SalesController@importData');
-        Route::get('get-leads', 'App\Http\Controllers\SalesController@getLeads');
+        Route::get('get-leads/{mode?}', 'App\Http\Controllers\LeadsController@getLeads');
+        Route::get('get-lead/{id}', 'App\Http\Controllers\LeadsController@getLead');
         Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
         Route::get('get-next-lead', 'App\Http\Controllers\LeadsController@getNextLead');
         Route::get('get-previous-lead', 'App\Http\Controllers\LeadsController@getPreviousLead');
@@ -84,6 +85,8 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
         Route::get('update-courses-status', 'App\Http\Controllers\ProcessesController@updateCoursesStatus');
         Route::get('update-excel-mails', 'App\Http\Controllers\ProcessesController@updateExcelMails');
         Route::get('update-aula-status', 'App\Http\Controllers\ProcessesController@updateAulaStatus');
+        Route::get('update-unfreezing-texts', 'App\Http\Controllers\ProcessesController@updateUnfreezingTexts');
+        Route::get('update-texts', 'App\Http\Controllers\ProcessesController@updateTexts');
     });
 
     Route::prefix('mails')->group(function (){

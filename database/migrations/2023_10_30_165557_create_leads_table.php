@@ -18,11 +18,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('courses');
             $table->string('phone');
-            $table->string('status')->nullable();
+            $table->string('status')->default('Nuevo');
             $table->string('email')->nullable();
             $table->string('origin')->nullable();
             $table->string('document')->nullable();
-            $table->string('user_id')->nullable();
+            $table->bigInteger('user_id')->unsigned()->nullable();
+            $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
         });
     }

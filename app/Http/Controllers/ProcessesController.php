@@ -37,5 +37,17 @@ class ProcessesController extends Controller
         return Artisan::output();
     }
 
+    public function updateUnfreezingTexts(){
+        Artisan::call('update-unfreezing-texts');
+        return Artisan::output();
+    }
+
+    public function updateTexts(){
+        Artisan::call('update-texts');
+        return Artisan::output();
+    }
+
+
+
     // Le pones mods y juegas a 60
 }

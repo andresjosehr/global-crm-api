@@ -21,7 +21,7 @@ class ModulesRolesSeeder extends Seeder
 		DB::table('modules_roles')->truncate();
 		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        $modules = Module::all();
+        $modules = Module::whereNotIn('name', ["Asignados"])->get();
 
         // All modules to Administrador
         foreach ($modules as $module) {
@@ -40,6 +40,11 @@ class ModulesRolesSeeder extends Seeder
                 'module_id' => self::module('Gestionar leads'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
+            [
+                'module_id' => self::module('Asignados'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
+
         ]);
     }
 
