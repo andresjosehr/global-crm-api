@@ -35,7 +35,7 @@ class UpdateCoursesStatus extends Command
 
         $data = new StudentsExcelController();
         $students = $data->index('prod');
-        return $this->line(json_encode($students));
+        // return $this->line(json_encode($students));
 
         $studentsFitered = array_map(function ($student) {
             // if (!$student['wp_user_id']) {
