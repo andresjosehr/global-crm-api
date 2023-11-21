@@ -69,7 +69,7 @@ class SendUnfreezingMails extends Command
 
                  $now = Carbon::now()->setTimezone('America/Lima');
                  $start = Carbon::parse($course['start'])->setTimezone('America/Lima')->startOfDay(); // Ajustamos al inicio del día
-                 $tomorrow = $now->copy()->startOfDay(); // Ajustamos al inicio del día
+                 $tomorrow = $now->copy()->addDay();
                  // if today is saturday
                  if($now->isSaturday()){
                      $tomorrow->addDay();
@@ -89,6 +89,8 @@ class SendUnfreezingMails extends Command
 
          $students = array_values($students);
 
+        //  return $this->line(json_encode($students));
+
 
          // return ZohoToken::where('token', '<>', '')->first();
 
@@ -97,7 +99,7 @@ class SendUnfreezingMails extends Command
          $dataNueve = self::updateExcel($students);
 
          return $this->line(json_encode(["Data Excel" => $dataNueve]));
-         
+
         return Command::SUCCESS;
     }
 
