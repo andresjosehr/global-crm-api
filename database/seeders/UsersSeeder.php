@@ -100,6 +100,27 @@ class UsersSeeder extends Seeder
                 'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
                 'zadarma_id' => '328959-710'
             ],
+            [
+                'name' => 'Arquimedes Emanuel Castañeda Cova',
+                'email' => 'arquimedescastaneda77@gmail.com',
+                'password' => bcrypt('pN8#fipFZz4@f^#'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'zadarma_id' => '328959-710'
+            ],
+            [
+                'name' => 'Alba Celeste Ceballos Briceño',
+                'email' => 'asesor.gta.22@gmail.com',
+                'password' => bcrypt('joUAi9sEul4gD$o'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'zadarma_id' => '328959-715' // 715
+            ],
+            [
+                'name' => 'Alejandro Barreda',
+                'email' => 'asesor.gta.28@gmail.com',
+                'password' => bcrypt('hx7zJ$Y^HtCvg#s'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'zadarma_id' => '328959-712' // 712
+            ],
 
 
         ]);

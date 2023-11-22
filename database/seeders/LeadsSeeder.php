@@ -16,9 +16,9 @@ class LeadsSeeder extends Seeder
     public function run()
     {
         // Truncate table
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('leads')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // DB::table('leads')->truncate();
+        // DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // DB::select("INSERT INTO `leads` (`id`, `name`, `courses`, `phone`, `email`, `origin`, `document`, `user_id`, `created_at`, `updated_at`) VALUES (1, 'Celeste', 'HCM', '5218115447935', NULL, NULL, NULL, NULL, '2023-11-17 23:56:51', '2023-11-17 23:56:51');");
         // DB::select("INSERT INTO `leads` (`id`, `name`, `courses`, `phone`, `email`, `origin`, `document`, `user_id`, `created_at`, `updated_at`) VALUES (2, 'Vero', 'INTEGRAL', '50251620607', NULL, NULL, NULL, NULL, '2023-11-17 23:56:51', '2023-11-17 23:56:51');");
