@@ -213,11 +213,25 @@ class LeadsController extends Controller
     {
         $user = $request->user();
 
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+
+        $searchString = $request->input('searchString') ? $request->input('searchString') : '';
+        $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
+
         $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
             return $query->where('user_id', $user->id);
-        })->with(['observations' => function ($query) {
+        })->when($searchString, function ($q) use ($searchString) {
+            $q->where('name', 'LIKE', "%$searchString%")
+                ->orWhere('courses', 'LIKE', "%$searchString%")
+                ->orWhere('status', 'LIKE', "%$searchString%")
+                ->orWhere('origin', 'LIKE', "%$searchString%")
+                ->orWhere('phone', 'LIKE', "%$searchString%")
+                ->orWhere('email', 'LIKE', "%$searchString%")
+                ->orWhere('document', 'LIKE', "%$searchString%");
+        })
+        ->with(['observations' => function ($query) {
             return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-        }])->paginate();
+        }])->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
