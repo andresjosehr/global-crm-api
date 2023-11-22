@@ -25,4 +25,7 @@ class Lead extends Model
     {
         return $this->hasMany(LeadObservation::class)->orderBy('created_at', 'desc');
     }
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

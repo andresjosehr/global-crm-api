@@ -231,7 +231,7 @@ class LeadsController extends Controller
         })
         ->with(['observations' => function ($query) {
             return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-        }])->paginate($perPage);
+        }])->with('user')->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
@@ -245,8 +245,7 @@ class LeadsController extends Controller
         ->when($user->role->name != 'Administrador', function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })
-        // ->where('user_id', $user->id)
-        ->with('observations.user')
+        ->with('observations.user', 'user')
         ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
