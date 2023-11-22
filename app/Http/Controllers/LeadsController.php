@@ -7,6 +7,7 @@ use App\Models\Lead;
 use App\Models\LeadAssignment;
 use App\Models\LeadObservation;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class LeadsController extends Controller
@@ -176,17 +177,29 @@ class LeadsController extends Controller
 
     }
 
-    public function saveObservation(Request $request, $leadId, $leadAssignamentId)
+    public function saveObservation(Request $request, $leadId, $leadAssignamentId = null)
     {
         // Get current lead assignment
 
+        $schedule_call_datetime = null;
+        if($request->date && $request->time){
+            $date = Carbon::parse($request->date);
+            $time = Carbon::parse($request->time);
+            $schedule_call_datetime = $date->format('Y-m-d') . ' ' . $time->format('H:i:s');
+
+            Lead::where('id', $leadId)->update([
+                'status' => 'Interesado',
+                'user_id' => $request->user()->id,
+            ]);
+        }
 
         $leadObservation = LeadObservation::create([
-            'user_id'            => $request->user()->id,
-            'lead_id'            => $leadId,
-            'call_status'        => $request->call_status,
-            'observation'        => $request->observation,
-            'lead_assignment_id' => $leadAssignamentId
+            'user_id'                => $request->user()->id,
+            'lead_id'                => $leadId,
+            'call_status'            => $request->call_status,
+            'observation'            => $request->observation,
+            'lead_assignment_id'     => $leadAssignamentId,
+            'schedule_call_datetime' => $schedule_call_datetime
         ]);
 
         $leadObservation = LeadObservation::with('user')->find($leadObservation->id);
@@ -202,8 +215,9 @@ class LeadsController extends Controller
 
         $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
             return $query->where('user_id', $user->id);
-        })
-        ->paginate();
+        })->with(['observations' => function ($query) {
+            return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+        }])->paginate();
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
@@ -219,6 +233,27 @@ class LeadsController extends Controller
         })
         // ->where('user_id', $user->id)
         ->with('observations.user')
+        ->first();
+
+        return ApiResponseController::response("Exito", 200, $lead);
+    }
+
+    public function getNextScheduleCall(Request $request){
+        $user = $request->user();
+
+        $lead = Lead::where('user_id', $user->id)
+        ->where('status', 'Interesado')
+        ->whereHas('observations', function ($query) {
+            $now = Carbon::now()->format('Y-m-d H:i:s');
+            return $query->where('schedule_call_datetime', '<>', NULL)
+            ->where('schedule_call_datetime', '>', $now)
+            ->orderBy('schedule_call_datetime', 'ASC');
+        })->with(['observations' => function ($query) {
+            $now = Carbon::now()->format('Y-m-d H:i:s');
+            return $query->where('schedule_call_datetime', '<>', NULL)
+            ->where('schedule_call_datetime', '>', $now)
+            ->orderBy('schedule_call_datetime', 'ASC');
+        }])
         ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);

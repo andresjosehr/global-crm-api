@@ -26,6 +26,7 @@ return new class extends Migration
             $table->foreign('lead_assignment_id')->references('id')->on('lead_assignments');
 
             $table->longText('call_status');
+            $table->datetime('schedule_call_datetime')->nullable();
             $table->longText('observation')->nullable();
 
 
