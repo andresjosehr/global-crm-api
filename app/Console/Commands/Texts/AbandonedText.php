@@ -24,7 +24,7 @@ class AbandonedText extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return any
      */
     public function handle($students = null)
     {
@@ -34,6 +34,16 @@ class AbandonedText extends Command
             $students = $data->index('test');
         }
 
+        $studentsWithText = self::type1($students);
+        // $students = self::filter($students, $studentsWithText);
+
+        return $studentsWithText;
+
+        return Command::SUCCESS;
+    }
+
+    // PARA EL QUE ABANDONA SAP CON CURSOS DE OBSEQUIO EN CUALQUIER ESTADO Y NO TIENE MÁS CURSOS SAP COMPRADOS
+    public function type1($students){
         $students = array_filter($students, function ($student) {
             $paidCourses1 = array_filter($student['courses'], function ($course) {
                 return $course['type'] == 'paid';
@@ -41,13 +51,40 @@ class AbandonedText extends Command
             $paidCourses2 = array_filter($student['inactive_courses'], function ($course) {
                 return $course['type'] == 'paid';
             });
+            $paidCourses1 = array_values($paidCourses1);
+            $paidCourses2 = array_values($paidCourses2);
             $paid_courses = array_merge($paidCourses1, $paidCourses2);
-            return count($paid_courses) == 1 && $student['AULA SAP'] == 'ABANDONÓ';
+
+            $freeCourses = array_filter($student['courses'], function ($course) {
+                return $course['type'] == 'free';
+            });
+            $freeCourses = array_values($freeCourses);
+            return count($paid_courses) == 1 && $student['AULA SAP'] == 'ABANDONÓ' && count($freeCourses) > 0;
         });
         $students = array_values($students);
         return $students;
+    }
 
+    // PARA EL QUE ABANDONA SAP Y TIENE MÁS CURSOS SAP EN CUALQUIER ESTADO Y TIENE CURSOS OBSEQUIO EN CUALQUIER ESTADO
+    public function type2($student){
 
-        return Command::SUCCESS;
+    }
+
+    // PARA EL QUE ABANDONA CURSO DE OBSEQUIO
+    public function type3($student){
+
+    }
+
+    public function filter($students, $studentsWithText){
+        // remove records in studentsWithText from students by sheet_id and course_row_number
+        $students = array_filter($students, function ($student) use ($studentsWithText) {
+            $studentWithText = array_filter($studentsWithText, function ($studentWithText) use ($student) {
+                return $studentWithText['sheet_id'] == $student['sheet_id'] && $studentWithText['course_row_number'] == $student['course_row_number'];
+            });
+            return count($studentWithText) == 0;
+        });
+        $students = array_values($students);
+
+        return $students;
     }
 }

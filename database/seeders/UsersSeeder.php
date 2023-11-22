@@ -24,35 +24,35 @@ class UsersSeeder extends Seeder
             [
                 'name' => 'José Andrés',
                 'email' => 'andresjosehr@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('TN$$A5&j0S8uDoN'),
                 'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
                 'zadarma_id' => '328959-103',
             ],
             [
                 'name' => 'Marina',
                 'email' => 'marina@globaltecnologiasacademy.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('jNBx$Id2y7*#ihQ'),
                 'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
                 'zadarma_id' => '328959-103',
             ],
             [
                 'name' => 'José Cardozo',
                 'email' => 'jose.cardozo@globaltecnologiasacademy.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('42kVKHJ&&%9c9a9'),
                 'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
                 'zadarma_id' => '328959-103',
             ],
             [
                 'name' => 'Tectico de instalación 1',
                 'email' => 'tecnicoinstalacion@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('29S!D#us#XiuKRf'),
                 'role_id' => DB::table('roles')->where('name', 'Tecnico de instalación')->first()->id,
                 'zadarma_id' => null
             ],
             [
                 'name' => 'Tectico de instalación 2',
                 'email' => 'tecnicoinstalacion2@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('nVvvEu2@7xSEs*p'),
                 'role_id' => DB::table('roles')->where('name', 'Tecnico de instalación')->first()->id,
                 'zadarma_id' => null
             ],
@@ -61,38 +61,54 @@ class UsersSeeder extends Seeder
             [
                 'name' => 'ALDHAIR JOSÉ CARDOZO VILLARROEL',
                 'email' => 'aldhairjcardozov@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('5fChmz8eMlhj5#L'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
                 'zadarma_id' => '328959-103'
             ],
             [
                 'name' => 'Leonardo Dario Valero Hidalgo',
                 'email' => 'leodario28@hotmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('gkQ%2#SXz^NQx3a'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
                 'zadarma_id' => '328959-993'
             ],
             [
                 'name' => 'Moisés Alejandro Dumont Martínez',
                 'email' => 'mdumont359@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('&K7NZiRaOf0C^l4'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
                 'zadarma_id' => '328959-703'
             ],
             [
                 'name' => 'Gabriela Del Valle Manrique Rodriguez',
                 'email' => 'manriquegabriela1@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('wy*y8%cVkT3N&NG'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
                 'zadarma_id' => '328959-701'
             ],
             [
                 'name' => 'Arquimedes Emanuel Castañeda Cova',
                 'email' => 'arquimedescastaneda77@gmail.com',
-                'password' => bcrypt('secret'),
+                'password' => bcrypt('pN8#fipFZz4@f^#'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
                 'zadarma_id' => '328959-710'
+            ],
+            [
+                'name' => 'Arquimedes Emanuel Castañeda Cova',
+                'email' => 'llazayanaalex@gmail.com',
+                'password' => bcrypt('f6P@ixwg^j8xntm'),
+                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'zadarma_id' => '328959-710'
+            ],
+
+            [
+                'name' => 'Alex',
+                'email' => 'llazayanaalex@gmail.com',
+                'password' => bcrypt('FnsBv*vOSD!n7oO'),
+                'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
+                'zadarma_id' => '328959-103'
             ]
+
 
         ]);
 

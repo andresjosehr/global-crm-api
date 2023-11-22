@@ -30,22 +30,23 @@ class CoreTexts extends Command
     public function handle()
     {
         $data = new StudentsExcelController();
-        $students = $data->index('prod');
+        $students = $data->index('test');
 
         $students = array_map(function ($student) {
             $student['include_text'] = false;
             return $student;
         }, $students);
 
-        $unfreezingTexts = new UnfreezingText();
-        $studentsWithText = $unfreezingTexts->handle($students);
-        $students = self::filter($students, $studentsWithText);
+        // $unfreezingTexts = new UnfreezingText();
+        // $studentsWithText = $unfreezingTexts->handle($students);
+        // $students = self::filter($students, $studentsWithText);
 
-        // $abandonedTexts = new AbandonedText();
-        // $studentsWithText = $abandonedTexts->handle($students);
+        $abandonedTexts = new AbandonedText();
+        $studentsWithText = $abandonedTexts->handle($students);
         // $students = self::filter($students, $studentsWithText);
 
 
+        return $this->line(json_encode($studentsWithText));
 
         $dataToUpdate = [];
 

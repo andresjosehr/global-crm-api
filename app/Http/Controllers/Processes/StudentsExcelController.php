@@ -183,16 +183,17 @@ class StudentsExcelController extends Controller
                 if (strpos($course_name, 'SAP') !== false) {
 
                     $c = [
-                        'course_id'   => $course_db->id,
-                        'sap_user'    => $student['USUARIO SAP'],
-                        'name'        => $course_db->name,
-                        'access'      => $student['ACCESOS'],
-                        'start'       => null,
-                        'end'         => null,
-                        'order_id'    => $order_id,
-                        'certificate' => $student['CERTIFICADO'],
-                        'wp_post_id'  => $course_db->wp_post_id,
-                        'type'        => 'paid'
+                        'course_id'              => $course_db->id,
+                        'sap_user'               => $student['USUARIO SAP'],
+                        'name'                   => $course_db->name,
+                        'access'                 => $student['ACCESOS'],
+                        'course_status_original' => $student['AULA SAP'],
+                        'start'                  => null,
+                        'end'                    => null,
+                        'order_id'               => $order_id,
+                        'certificate'            => $student['CERTIFICADO'],
+                        'wp_post_id'             => $course_db->wp_post_id,
+                        'type'                   => 'paid'
                     ];
 
                     if (in_array($course_name, $enable) || $sapNumber == 1) {
@@ -217,7 +218,8 @@ class StudentsExcelController extends Controller
                 }
 
                 // If not include SAP courses
-                $cols = [6 => "EXC ACCESOS", 7 => "PBI ACCESOS", 8 => "PBI ACCESOS", 9 => "MSP ACCESOS"];
+                $colsAccesos      = [6 => "EXC ACCESOS", 7 => "PBI ACCESOS", 8 => "PBI ACCESOS", 9 => "MSP ACCESOS"];
+                $colsCourseStatus = [6 => "EXCEL", 7 => "PBI", 8 => "PBI", 9 => "MS PROJECT"];
                 if (strpos($course_name, 'SAP') === false) {
                     $dates = [
                         // Excel
@@ -243,16 +245,17 @@ class StudentsExcelController extends Controller
 
 
                     $courses[] = [
-                        'course_id'   => $course_db->id,
-                        'sap_user'    => $student['USUARIO SAP'],
-                        'name'        => $course_db->name,
-                        'access'      => $student[$cols[$course_db->id]],
-                        'start'       => $start,
-                        'end'         => $end,
-                        'order_id'    => $order_id,
-                        'certificate' => $student[$dates[$course_db->id]['certificate']],
-                        'wp_post_id'  => $course_db->wp_post_id,
-                        'type'        => 'free'
+                        'course_id'              => $course_db->id,
+                        'sap_user'               => $student['USUARIO SAP'],
+                        'name'                   => $course_db->name,
+                        'access'                 => $student[$colsAccesos[$course_db->id]],
+                        'course_status_original' => $student[$colsCourseStatus[$course_db->id]],
+                        'start'                  => $start,
+                        'end'                    => $end,
+                        'order_id'               => $order_id,
+                        'certificate'            => $student[$dates[$course_db->id]['certificate']],
+                        'wp_post_id'             => $course_db->wp_post_id,
+                        'type'                   => 'free'
                     ];
                 }
             }
