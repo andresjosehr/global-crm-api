@@ -97,17 +97,9 @@ class UsersSeeder extends Seeder
                 'name' => 'Arquimedes Emanuel Castañeda Cova',
                 'email' => 'llazayanaalex@gmail.com',
                 'password' => bcrypt('f6P@ixwg^j8xntm'),
-                'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
                 'zadarma_id' => '328959-710'
             ],
-
-            [
-                'name' => 'Alex',
-                'email' => 'llazayanaalex@gmail.com',
-                'password' => bcrypt('FnsBv*vOSD!n7oO'),
-                'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
-                'zadarma_id' => '328959-103'
-            ]
 
 
         ]);
