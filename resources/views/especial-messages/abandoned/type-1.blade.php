@@ -17,26 +17,109 @@ En este caso, como *estás abandonando el curso principal ({{$sapCourse['name']}
     $freeCourses = array_values($freeCourses);
 @endphp
 
-Aún estás *cursando:*
-CURSO
-Completaste pero *REPROBASTE:*
-CURSO
-*No culminaste:*
-CURSO
-*Abandonaste:*
-CURSO
-Aún tienes *por habilitar:*
-CURSO
-*Aprobaste:*
-CURSO
+
+@php
+
+    $notCompleted = array_filter($freeCourses, function($course) {
+        return $course['course_status_original'] == 'NO CULMINÓ';
+    });
+    $notCompleted = array_values($notCompleted);
+    $abandoned = array_filter($freeCourses, function($course) {
+        return $course['course_status_original'] == 'ABANDONÓ';
+    });
+    $abandoned = array_values($abandoned);
+    $toEnable = array_filter($freeCourses, function($course) {
+        return $course['course_status_original'] == 'POR HABILITAR';
+    });
+    $toEnable = array_values($toEnable);
+
+    $inProgress = array_filter($freeCourses, function($course) {
+        return $course['course_status_original'] == 'CURSANDO SIN CREDLY' || $course['course_status_original'] == 'CURSANDO';
+    });
+    $inProgress = array_values($inProgress);
+
+
+    $freeCoursesWithoutExcel = array_filter($freeCourses, function($course) {
+        return $course['course_id'] != 6;
+    });
+    $reproved = array_filter($freeCoursesWithoutExcel, function($course) {
+        return ($course['course_status_original'] == 'COMPLETA SIN CREDLY' || $course['course_status_original'] == 'COMPLETA') && $course['certifaction_test_original']=="Reprobado";
+    }) ?? [];
+    $reproved = array_values($reproved);
+
+    $aproved = array_filter($freeCoursesWithoutExcel, function($course) {
+        return $course['course_status_original'] == 'APROBADO';
+    }) ?? [];
+    $aproved = array_values($aproved);
+
+    $excel = array_filter($freeCourses, function($course) {
+        return $course['course_id'] == 6;
+    });
+    $excel = count(array_values($excel)) > 0 ? array_values($excel)[0] : null;
+
+    if($excel) {
+        if($excel['nivel_basico']['certifaction_test_original'] == 'Aprobado') {
+            $aproved[] = ['name' => 'Excel Nivel Básico'];
+        } elseif ($excel['nivel_intermedio']['certifaction_test_original'] == 'Aprobado') {
+            $aproved[] = ['name' => 'Excel Nivel Intermedio'];
+        } elseif ($excel['nivel_avanzado']['certifaction_test_original'] == 'Aprobado') {
+            $aproved[] = ['name' => 'Excel Nivel Avanzado'];
+        }
+
+
+        if ($excel['nivel_basico']['certifaction_test_original'] == 'Reprobado') {
+            $reproved[] = ['name' => 'Excel Nivel Avanzado'];
+        } elseif ($excel['nivel_intermedio']['certifaction_test_original'] == 'Reprobado') {
+            $reproved[] = ['name' => 'Excel Nivel Avanzado'];
+        } elseif ($excel['nivel_avanzado']['certifaction_test_original'] == 'Reprobado') {
+            $reproved[] = ['name' => 'Excel Nivel Experto'];
+        }
+
+    }
+
+@endphp
+
+@if (count($inProgress) > 0))
+    - Aún estás *cursando:* @foreach ($inProgress as $status) {{$status['name']}}, @endforeach
+@endif
+@if (count($reproved) > 0)
+    - Completaste pero *REPROBASTE:* @foreach ($reproved as $status) {{$status['name']}}, @endforeach
+@endif
+@if (count($notCompleted) > 0)
+    - *No culminaste:* @foreach ($notCompleted as $status) {{$status['name']}}, @endforeach
+@endif
+@if (count($abandoned) > 0)
+    - *Abandonaste:* @foreach ($abandoned as $status) {{$status['name']}}, @endforeach
+@endif
+@if (count($toEnable) > 0)
+    - Aún tienes *por habilitar:* @foreach ($toEnable as $status) {{$status['name']}}, @endforeach
+@endif
+@if (count($aproved) > 0)
+    - *Aprobaste:* @foreach ($aproved as $status) {{$status['name']}}, @endforeach
+@endif
 
 Por lo que, al abandonar el curso principal, que es SAP:
+
+@if(count($inProgress) > 0)
 Automáticamente pierdes el acceso a este curso, pesar de haberlo iniciado:
-CURSO
+    @foreach($inProgress as $status)
+        - {{$status['name']}}
+    @endforeach
+@endif
+
+@if (count($aproved) > 0)
 Pierdes el acceso al certificado de:
-CURSO
+    @foreach($aproved as $status)
+        - {{$status['name']}}
+    @endforeach
+@endif
+
+@if (count($toEnable) > 0)
 Y ya no podrás habilitar:
-CURSO
+    @foreach($toEnable as $status)
+        - {{$status['name']}}
+    @endforeach
+@endif
 
 Al no tener más cursos pendientes con nosotros, con esto cerramos formalmente tu matrícula.
 

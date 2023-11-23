@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class UsersSeeder extends Seeder
         DB::table('users')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        DB::table('users')->insert([
+        $users = [
             [
                 'name' => 'José Andrés',
                 'email' => 'andresjosehr@gmail.com',
@@ -108,7 +109,21 @@ class UsersSeeder extends Seeder
                 'zadarma_id' => '328959-712' // 712
             ],
 
-        ]);
+            [
+                'name' => 'Oscar',
+                'email' => 'globaltecnologiascc@gmail.com',
+                'password' => bcrypt('DkhyRaLn7jY!41c'),
+                'role_id' => DB::table('roles')->where('name', 'Administrador')->first()->id,
+                'zadarma_id' => '328959-103' // 712
+            ],
+
+        ];
+
+        foreach($users as $user){
+            if(!User::where('email', $user['email'])->first()){
+                User::create($user);
+            }
+        }
 
 
 

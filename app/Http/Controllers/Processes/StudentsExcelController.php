@@ -183,17 +183,18 @@ class StudentsExcelController extends Controller
                 if (strpos($course_name, 'SAP') !== false) {
 
                     $c = [
-                        'course_id'              => $course_db->id,
-                        'sap_user'               => $student['USUARIO SAP'],
-                        'name'                   => $course_db->name,
-                        'access'                 => $student['ACCESOS'],
-                        'course_status_original' => $student['AULA SAP'],
-                        'start'                  => null,
-                        'end'                    => null,
-                        'order_id'               => $order_id,
-                        'certificate'            => $student['CERTIFICADO'],
-                        'wp_post_id'             => $course_db->wp_post_id,
-                        'type'                   => 'paid'
+                        'course_id'                  => $course_db->id,
+                        'sap_user'                   => $student['USUARIO SAP'],
+                        'name'                       => $course_db->name,
+                        'access'                     => $student['ACCESOS'],
+                        'course_status_original'     => $student['AULA SAP'],
+                        'certifaction_test_original' => $student['EXAMEN'],
+                        'start'                      => null,
+                        'end'                        => null,
+                        'order_id'                   => $order_id,
+                        'certificate'                => $student['CERTIFICADO'],
+                        'wp_post_id'                 => $course_db->wp_post_id,
+                        'type'                       => 'paid'
                     ];
 
                     if (in_array($course_name, $enable) || $sapNumber == 1) {
@@ -220,6 +221,9 @@ class StudentsExcelController extends Controller
                 // If not include SAP courses
                 $colsAccesos      = [6 => "EXC ACCESOS", 7 => "PBI ACCESOS", 8 => "PBI ACCESOS", 9 => "MSP ACCESOS"];
                 $colsCourseStatus = [6 => "EXCEL", 7 => "PBI", 8 => "PBI", 9 => "MS PROJECT"];
+
+                $colsCertificationStatus = [7 => "PBI EXAMEN", 8 => "PBI", 9 => "MSP EXAMEN"];
+
                 if (strpos($course_name, 'SAP') === false) {
                     $dates = [
                         // Excel
@@ -244,6 +248,7 @@ class StudentsExcelController extends Controller
                     }
 
 
+
                     $courses[] = [
                         'course_id'              => $course_db->id,
                         'sap_user'               => $student['USUARIO SAP'],
@@ -257,6 +262,10 @@ class StudentsExcelController extends Controller
                         'wp_post_id'             => $course_db->wp_post_id,
                         'type'                   => 'free'
                     ];
+
+                    if($course_db->id != 6){
+                        $courses[count($courses) - 1]['certifaction_test_original'] = $student[$colsCertificationStatus[$course_db->id]];
+                    }
                 }
             }
 
@@ -438,10 +447,12 @@ class StudentsExcelController extends Controller
 
                 if ($course['course_id'] == 6) {
                     $levels = ['nivel_basico' => 'Excel Básico (Nivel I)', 'nivel_intermedio' => 'Excel Intermedio (Nivel II)', 'nivel_avanzado' => 'Excel Avanzado (Nivel III)'];
+                    $certificationTestCols = ['nivel_basico' => 'EXC EXAMEN BÁS.', 'nivel_intermedio' => 'EXC EXAMEN INT.', 'nivel_avanzado' => 'EXC EXAMEN AVA.'];
                     foreach ($levels as $key => $name) {
 
                         $data[$i]['courses'][$j][$key]                      = [];                                                   // Inicialización aquí
                         $data[$i]['courses'][$j][$key]['certificate']       = $student[$certificates[$key]];
+                        $data[$i]['courses'][$j][$key]['certifaction_test_original'] = $student[$certificationTestCols[$key]];
 
                         $lessons_completed = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                             ->where('ref_id', $course['wp_post_id'])
