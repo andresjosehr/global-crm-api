@@ -297,7 +297,9 @@ class LeadsController extends Controller
         // Obtener todos los asesores
         $asesores = User::where('role_id', $roleAsesorId)->get();
 
+
         $reporte = $asesores->map(function ($asesor) use ($start, $end) {
+            $count = 0;
             // Obtener los lead assignments del asesor, agrupados por día y hora
             $assignmentsPorHora = LeadAssignment::where('user_id', $asesor->id)
                 ->whereBetween('assigned_at', [$start, $end])
@@ -319,6 +321,7 @@ class LeadsController extends Controller
 
                     // Verificar si existen datos para la fecha y hora específicas
                     $value = $assignmentsPorHora[$fechaFormato][$horaKey]->value ?? 0;
+                    $count += $value;
 
                     $datos[] = [
                         'datetime' => $fechaFormato . ' ' . $horaKey . ':00:00',
@@ -331,7 +334,7 @@ class LeadsController extends Controller
                 'name'    => $asesor->name,
                 'email'   => $asesor->email,
                 'role_id' => $asesor->role_id,
-                'count'   => $assignmentsPorHora->sum('value'),
+                'count'   => $count,
                 'data'    => $datos
             ];
         });
