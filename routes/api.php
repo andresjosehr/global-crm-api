@@ -56,6 +56,9 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
         Route::get('get-next-schedule-call', 'App\Http\Controllers\LeadsController@getNextScheduleCall');
 
+        Route::get('activity-history', 'App\Http\Controllers\LeadsController@getActivityHistory');
+        Route::get('activity-history-by-user', 'App\Http\Controllers\LeadsController@getActivityHistoryByUser');
+
         Route::post('save-observation/{id}/{leadAssignamentId?}', 'App\Http\Controllers\LeadsController@saveObservation');
         Route::post('save-basic-data/{id}', 'App\Http\Controllers\LeadsController@saveBasicData');
     });

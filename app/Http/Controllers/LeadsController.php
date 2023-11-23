@@ -8,6 +8,8 @@ use App\Models\LeadAssignment;
 use App\Models\LeadObservation;
 use App\Models\User;
 use Carbon\Carbon;
+use DateInterval;
+use DatePeriod;
 use Illuminate\Http\Request;
 
 class LeadsController extends Controller
@@ -133,10 +135,10 @@ class LeadsController extends Controller
             ->orderBy('id', 'ASC')
             ->first();
 
-        if(!$nextLeadId){
+        if (!$nextLeadId) {
             $round++;
             $nextLeadId = $this->startNewRound();
-        } else{
+        } else {
             $nextLeadId = $nextLeadId->id;
         }
 
@@ -156,7 +158,7 @@ class LeadsController extends Controller
     public function saveBasicData(Request $request, $id)
     {
         $user_id = null;
-        if($request->status == 'Interesado' ||  $request->status == 'No Interesado'){
+        if ($request->status == 'Interesado' ||  $request->status == 'No Interesado') {
             $user_id = $request->user()->id;
         }
         $lead = Lead::where('id', $id)->update([
@@ -174,7 +176,6 @@ class LeadsController extends Controller
         $lead = Lead::with('observations.user')->find($id);
 
         return ApiResponseController::response("Exito", 200, $lead);
-
     }
 
     public function saveObservation(Request $request, $leadId, $leadAssignamentId = null)
@@ -182,7 +183,7 @@ class LeadsController extends Controller
         // Get current lead assignment
 
         $schedule_call_datetime = null;
-        if($request->date && $request->time){
+        if ($request->date && $request->time) {
             $date = Carbon::parse($request->date);
             $time = Carbon::parse($request->time);
             $schedule_call_datetime = $date->format('Y-m-d') . ' ' . $time->format('H:i:s');
@@ -229,9 +230,9 @@ class LeadsController extends Controller
                 ->orWhere('email', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
         })
-        ->with(['observations' => function ($query) {
-            return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-        }])->with('user')->paginate($perPage);
+            ->with(['observations' => function ($query) {
+                return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+            }])->with('user')->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
@@ -242,33 +243,99 @@ class LeadsController extends Controller
         $user = $request->user();
 
         $lead = Lead::where('id', $id)
-        ->when($user->role->name != 'Administrador', function ($query) use ($user) {
-            return $query->where('user_id', $user->id);
-        })
-        ->with('observations.user', 'user')
-        ->first();
+            ->when($user->role->name != 'Administrador', function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
+            ->with('observations.user', 'user')
+            ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
     }
 
-    public function getNextScheduleCall(Request $request){
+    public function getNextScheduleCall(Request $request)
+    {
         $user = $request->user();
 
         $lead = Lead::where('user_id', $user->id)
-        ->where('status', 'Interesado')
-        ->whereHas('observations', function ($query) {
-            $now = Carbon::now()->format('Y-m-d H:i:s');
-            return $query->where('schedule_call_datetime', '<>', NULL)
-            ->where('schedule_call_datetime', '>', $now)
-            ->orderBy('schedule_call_datetime', 'ASC');
-        })->with(['observations' => function ($query) {
-            $now = Carbon::now()->format('Y-m-d H:i:s');
-            return $query->where('schedule_call_datetime', '<>', NULL)
-            ->where('schedule_call_datetime', '>', $now)
-            ->orderBy('schedule_call_datetime', 'ASC');
-        }])
-        ->first();
+            ->where('status', 'Interesado')
+            ->whereHas('observations', function ($query) {
+                $now = Carbon::now()->format('Y-m-d H:i:s');
+                return $query->where('schedule_call_datetime', '<>', NULL)
+                    ->where('schedule_call_datetime', '>', $now)
+                    ->orderBy('schedule_call_datetime', 'ASC');
+            })->with(['observations' => function ($query) {
+                $now = Carbon::now()->format('Y-m-d H:i:s');
+                return $query->where('schedule_call_datetime', '<>', NULL)
+                    ->where('schedule_call_datetime', '>', $now)
+                    ->orderBy('schedule_call_datetime', 'ASC');
+            }])
+            ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
+    }
+
+
+    public function getActivityHistory(Request $request)
+    {
+
+        $user = $request->user();
+
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+        $leadAssignament = LeadAssignment::with('user', 'lead', 'observations')->paginate($perPage);
+
+        return ApiResponseController::response("Exito", 200, $leadAssignament);
+    }
+
+    public function getActivityHistoryByUser(Request $request)
+    {
+        $start = Carbon::parse($request->input('start'));
+        // Ajustar la fecha de fin para incluir el final del día
+        $end = Carbon::parse($request->input('end'))->endOfDay();
+
+        $roleAsesorId = 2; // ID del rol de asesor
+
+        // Obtener todos los asesores
+        $asesores = User::where('role_id', $roleAsesorId)->get();
+
+        $reporte = $asesores->map(function ($asesor) use ($start, $end) {
+            // Obtener los lead assignments del asesor, agrupados por día y hora
+            $assignmentsPorHora = LeadAssignment::where('user_id', $asesor->id)
+                ->whereBetween('assigned_at', [$start, $end])
+                ->selectRaw('DATE(assigned_at) as fecha, HOUR(assigned_at) as hora, COUNT(*) as value')
+                ->groupBy('fecha', 'hora')
+                ->get()
+                ->groupBy('fecha')
+                ->mapWithKeys(function ($item) {
+                    return [$item[0]->fecha => $item->keyBy('hora')];
+                });
+
+            $datos = [];
+
+            // Iterar sobre cada día en el rango
+            for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+                $fechaFormato = $date->format('Y-m-d');
+                foreach (range(0, 23) as $hora) {
+                    $horaKey = str_pad($hora, 2, '0', STR_PAD_LEFT);
+
+                    // Verificar si existen datos para la fecha y hora específicas
+                    $value = $assignmentsPorHora[$fechaFormato][$horaKey]->value ?? 0;
+
+                    $datos[] = [
+                        'datetime' => $fechaFormato . ' ' . $horaKey . ':00:00',
+                        'value' => $value
+                    ];
+                }
+            }
+
+            return [
+                'name'    => $asesor->name,
+                'email'   => $asesor->email,
+                'role_id' => $asesor->role_id,
+                'count'   => $assignmentsPorHora->sum('value'),
+                'data'    => $datos
+            ];
+        });
+
+        return ApiResponseController::response("Exito", 200, $reporte);
     }
 }

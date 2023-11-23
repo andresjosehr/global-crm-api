@@ -170,6 +170,15 @@ Te comento sobre ellos:
     - *Aprobaste:* @foreach ($aproved as $status) {{$status['name']}}, @endforeach
 @endif
 
+Recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados, y como reprobaste/abandonaste:
+CURSO
+A pesar de haberlo iniciado, pierdes el acceso a:
+CURSO
+Pierdes el acceso al certificado de:
+CURSO
+Y ya no podrás habilitar:
+CURSO
+
 Al no tener más cursos pendientes con nosotros, con esto cerramos formalmente tu matrícula. Saludos.
 
 Recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados, y al estar abandonando:

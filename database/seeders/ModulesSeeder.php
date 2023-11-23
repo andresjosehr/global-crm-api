@@ -49,6 +49,14 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
+                'name'        => 'Historial de actividades',
+                'description' => '',
+                'icon'        => 'heroicons_outline:list-bullet',
+                'path'        => 'lista/historial-actividad',
+                'type'        => 'basic',
+                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
+            ],
+            [
                 'name'        => 'Asignados',
                 'description' => '',
                 'icon'        => 'heroicons_outline:list-bullet',

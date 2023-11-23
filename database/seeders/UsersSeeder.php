@@ -95,14 +95,14 @@ class UsersSeeder extends Seeder
                 'zadarma_id' => '328959-710'
             ],
             [
-                'name' => 'Alba Celeste Ceballos Briceño',
+                'name' => 'Alba Celeste Ceballos Briceño', // Se le cuelga la llamada al momento de pasar
                 'email' => 'asesor.gta.22@gmail.com',
                 'password' => bcrypt('joUAi9sEul4gD$o'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
                 'zadarma_id' => '328959-715' // 715
             ],
             [
-                'name' => 'Alejandro Barreda',
+                'name' => 'Alejandro Barreda', // Se le desaparece el widget cuando pasa al siguiente lead
                 'email' => 'asesor.gta.28@gmail.com',
                 'password' => bcrypt('hx7zJ$Y^HtCvg#s'),
                 'role_id' => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
