@@ -132,6 +132,10 @@ class AbandonedText extends Command
                     }
                 }
             }
+
+            $student['include_text'] = true;
+            $student['text'] = view('especial-messages.abandoned.type-1', ['student' => $student])->render();
+            $student['text'] = preg_replace("/[\r\n]+/", "\n", $student['text']);
             return $student;
         }, $students);
 
