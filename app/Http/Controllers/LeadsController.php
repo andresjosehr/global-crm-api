@@ -165,7 +165,7 @@ class LeadsController extends Controller
         }
 
         if($user->role_id != 1){
-            if ($request->status == 'Interesado' ||  $request->status == 'Sin interes') {
+            if ($request->status == 'Interesado') {
                 $user_id = $user->id;
             }
         }
