@@ -3,8 +3,8 @@
         return $course['type'] == 'paid';
     });
     $sapCourses = array_values($sapCourse);
-    $inactiveSapCourses = $student['inactive_courses']
-    $allCourses = array_merge($sapCourse, $inactiveSapCourse);
+    $inactiveSapCourses = $student['inactive_courses'];
+    $allCourses = array_merge($sapCourse, $inactiveSapCourses);
 @endphp
 
 Lamentamos no contar con tu participación en la certificación como KEY USER SAP.
@@ -92,6 +92,11 @@ Te comento sobre ellos:
 
 @php
 
+    $freeCourse = array_filter($student['courses'], function($course) {
+        return $course['type'] == 'free';
+    });
+    $freeCourses = array_values($freeCourse);
+
     $notCompletedFree = array_filter($freeCourses, function($course) {
         return $course['course_status_original'] == 'NO CULMINÓ';
     });
@@ -108,7 +113,7 @@ Te comento sobre ellos:
     $inProgressFree = array_filter($freeCourses, function($course) {
         return $course['course_status_original'] == 'CURSANDO SIN CREDLY' || $course['course_status_original'] == 'CURSANDO';
     });
-    $inProgressFree = array_values($inProgress);
+    $inProgressFree = array_values($inProgressFree);
 
 
     $freeCoursesWithoutExcel = array_filter($freeCourses, function($course) {
@@ -217,6 +222,10 @@ Te comento sobre ellos:
 
     @if (count($inProgressFree) > 0)
     A pesar de haberlo iniciado, pierdes el acceso a:
+    @foreach ($inProgressFree as $status)
+        - {{$status['name']}},
+    @endforeach
+    @endif
 
 @endif
 
@@ -238,6 +247,6 @@ CURSO
 @if(count($toEnableFree) > 0)
     Pierdes el acceso al certificado de:
     @foreach ($toEnableFree as $status)
-        - {{$status['name']}},
+        - {{$status['name']}}
     @endforeach
 @endif

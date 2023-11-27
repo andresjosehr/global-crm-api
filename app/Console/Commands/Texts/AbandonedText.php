@@ -35,15 +35,18 @@ class AbandonedText extends Command
             $students = $data->index('test');
         }
 
-        // $studentsWithText = self::type1($students);
-        // $students = self::filter($students, $studentsWithText);
+        $studentsWithText = self::type1($students);
+        $students = self::filter($students, $studentsWithText);
 
-        $studentsWithText = self::type2($students);
-        // $students = self::filter($students, $studentsWithText);
+        $studentsWithText = array_merge($studentsWithText, self::type2($students));
+        $students = self::filter($students, $studentsWithText);
+
+
+        $studentsWithText = array_merge($studentsWithText, self::type3($students));
+        $students = self::filter($students, $studentsWithText);
 
         return $studentsWithText;
 
-        return Command::SUCCESS;
     }
 
     // PARA EL QUE ABANDONA SAP CON CURSOS DE OBSEQUIO EN CUALQUIER ESTADO Y NO TIENE MÁS CURSOS SAP COMPRADOS
@@ -69,7 +72,7 @@ class AbandonedText extends Command
         $students = array_values($students);
 
         $students = array_map(function ($student) {
-            $student['include_text'] = true;
+            $student['include_text'] = 'type-1';
             $student['text'] = view('especial-messages.abandoned.type-1', ['student' => $student])->render();
             $student['text'] = preg_replace("/[\r\n]+/", "\n", $student['text']);
             return $student;
@@ -133,8 +136,8 @@ class AbandonedText extends Command
                 }
             }
 
-            $student['include_text'] = true;
-            $student['text'] = view('especial-messages.abandoned.type-1', ['student' => $student])->render();
+            $student['include_text'] = 'type-2';
+            $student['text'] = view('especial-messages.abandoned.type-2', ['student' => $student])->render();
             $student['text'] = preg_replace("/[\r\n]+/", "\n", $student['text']);
             return $student;
         }, $students);
@@ -145,8 +148,52 @@ class AbandonedText extends Command
     }
 
     // PARA EL QUE ABANDONA CURSO DE OBSEQUIO
-    public function type3($student)
+    public function type3($students)
     {
+        $students = array_filter($students, function ($student) {
+            $freeCourses = array_filter($student['courses'], function ($course) {
+                return $course['type'] == 'free' && $course['course_status_original'] == 'ABANDONÓ';
+            });
+            return count($freeCourses) > 0;
+        });
+
+        $students = array_values($students);
+
+        $students = array_map(function($student){
+            foreach(['ESTADO', 'OBSERVACIONES'] as $column){
+                foreach(['REPROBÓ', 'NO CULMINÓ', 'ABANDONÓ', 'PENDIENTE', 'CERTIFICADO'] as $status){
+                    if (strpos($student[$column], $status) !== false) {
+                        $courses = explode($status, $student[$column])[1];
+                        $courses = explode('/', $courses)[0];
+                        $courses = trim($courses);
+                        $courses = explode(' ', $courses);
+
+                        $student['courses_'.$status] = [];
+
+                        foreach ($courses as $course) {
+                            // If not include SAP
+                            if(!strpos($course, 'SAP')){
+                                $course = 'SAP ' . $course;
+                            }
+
+                            //
+                            if (isset($courses_ids[$course])) {
+                                $index = array_search($courses_ids[$course], array_column($student['inactive_courses'], 'course_id'));
+                                if ($index !== false) {
+                                    $student['inactive_courses'][$index]['course_status_original'] = $status;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $student['include_text'] = 'type-3';
+            $student['text'] = view('especial-messages.abandoned.type-3', ['student' => $student])->render();
+            $student['text'] = preg_replace("/[\r\n]+/", "\n", $student['text']);
+            return $student;
+        }, $students);
+
+        return $students;
     }
 
     public function filter($students, $studentsWithText)

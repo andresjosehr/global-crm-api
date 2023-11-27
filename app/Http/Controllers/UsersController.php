@@ -65,4 +65,19 @@ class UsersController extends Controller
 
         return ApiResponseController::response('Consulta Exitosa', 200, $availableTechnician);
     }
+
+    public function getSellsUsers() {
+        $users = User::where('role_id', 2)->get();
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $users);
+    }
+
+    public function toggleStatus(Request $request) {
+        $user = $request->user();
+
+        $user->active_working = !$user->active_working;
+        $user->save();
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $user);
+    }
 }

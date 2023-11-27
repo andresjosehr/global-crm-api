@@ -26,7 +26,7 @@ class LeadsController extends Controller
             self::assignNextLead($user);
         }
 
-        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'observations.user')->first();
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'lead.user', 'observations.user')->first();
         // ATTATCH observations.user
 
 
@@ -40,7 +40,7 @@ class LeadsController extends Controller
 
         self::assignNextLead($user);
 
-        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'observations.user')->first();
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'lead.user', 'observations.user')->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -57,7 +57,7 @@ class LeadsController extends Controller
 
         $lead = $previousAssignment->lead;
         // $lead = Lead::with('observations.user')->find($lead->id);
-        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'observations.user')->first();
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'lead.user', 'observations.user')->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -158,8 +158,16 @@ class LeadsController extends Controller
     public function saveBasicData(Request $request, $id)
     {
         $user_id = null;
-        if ($request->status == 'Interesado' ||  $request->status == 'No Interesado') {
-            $user_id = $request->user()->id;
+
+        $user = $request->user();
+        if($user->role_id == 1){
+            $user_id = $request->user_id;
+        }
+
+        if($user->role_id != 1){
+            if ($request->status == 'Interesado' ||  $request->status == 'Sin interes') {
+                $user_id = $user->id;
+            }
         }
         $lead = Lead::where('id', $id)->update([
             'name' => $request->name,
@@ -256,6 +264,8 @@ class LeadsController extends Controller
     {
         $user = $request->user();
 
+        $now = Carbon::now()->format('Y-m-d H:i:s');
+
         $lead = Lead::where('user_id', $user->id)
             ->where('status', 'Interesado')
             ->whereHas('observations', function ($query) {
@@ -263,12 +273,7 @@ class LeadsController extends Controller
                 return $query->where('schedule_call_datetime', '<>', NULL)
                     ->where('schedule_call_datetime', '>', $now)
                     ->orderBy('schedule_call_datetime', 'ASC');
-            })->with(['observations' => function ($query) {
-                $now = Carbon::now()->format('Y-m-d H:i:s');
-                return $query->where('schedule_call_datetime', '<>', NULL)
-                    ->where('schedule_call_datetime', '>', $now)
-                    ->orderBy('schedule_call_datetime', 'ASC');
-            }])
+            })->with('observations')
             ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
@@ -281,13 +286,19 @@ class LeadsController extends Controller
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
-        $leadAssignament = LeadAssignment::with('user', 'lead', 'observations')->paginate($perPage);
+        $leadAssignament = LeadAssignment::
+        with('user', 'lead', 'observations')
+        ->when($user->role_id != 1, function ($query) use ($request) {
+            return $query->where('user_id', $request->user()->id);
+        })
+        ->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
 
     public function getActivityHistoryByUser(Request $request)
     {
+        $user = $request->user();
         $start = Carbon::parse($request->input('start'));
         // Ajustar la fecha de fin para incluir el final del día
         $end = Carbon::parse($request->input('end'))->endOfDay();
@@ -295,7 +306,13 @@ class LeadsController extends Controller
         $roleAsesorId = 2; // ID del rol de asesor
 
         // Obtener todos los asesores
-        $asesores = User::where('role_id', $roleAsesorId)->get();
+        $asesores = User::where('role_id', $roleAsesorId)
+        ->when($request->input('user_id'), function ($query) use ($request) {
+            return $query->where('id', $request->input('user_id'));
+        })->when($user->role_id != 1, function ($query) use ($request) {
+            return $query->where('id', $request->user()->id);
+        })
+        ->get();
 
 
         $reporte = $asesores->map(function ($asesor) use ($start, $end) {

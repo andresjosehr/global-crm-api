@@ -37,13 +37,13 @@ class CoreTexts extends Command
             return $student;
         }, $students);
 
-        // $unfreezingTexts = new UnfreezingText();
-        // $studentsWithText = $unfreezingTexts->handle($students);
-        // $students = self::filter($students, $studentsWithText);
+        $unfreezingTexts = new UnfreezingText();
+        $studentsWithText = $unfreezingTexts->handle($students);
+        $students = self::filter($students, $studentsWithText);
 
         $abandonedTexts = new AbandonedText();
         $studentsWithText = $abandonedTexts->handle($students);
-        // $students = self::filter($students, $studentsWithText);
+        $students = self::filter($students, $studentsWithText);
 
 
         return $this->line(json_encode($studentsWithText));

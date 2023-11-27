@@ -100,7 +100,7 @@ class UnfreezingText extends Command
 
 
         $studentsFitered = array_filter($studentsFitered, function ($student) {
-            return $student['include_text'] == true;
+            return $student['include_text'] == 'unfreezing';
         });
 
         $studentsFitered = array_values($studentsFitered);

@@ -44,6 +44,10 @@ class ModulesRolesSeeder extends Seeder
                 'module_id' => self::module('Asignados'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
+            [
+                'module_id' => self::module('Historial de actividades'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
 
         ]);
     }

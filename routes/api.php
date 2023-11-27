@@ -29,10 +29,9 @@ Route::get('messages/extension', 'App\Http\Controllers\Messages\FreeCourseExtens
 Route::get('messages/ponderacion', 'App\Http\Controllers\Messages\FreeCoursesWeightedController@index');
 
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
-    Route::resource('cars', 'App\Http\Controllers\CarsController');
-	Route::get('get-all-cars', 'App\Http\Controllers\CarsController@getAll');
 
     Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
+    Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
     Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
 	Route::resource('students', 'App\Http\Controllers\StudentsController');
@@ -53,6 +52,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::get('get-next-lead', 'App\Http\Controllers\LeadsController@getNextLead');
         Route::get('get-previous-lead', 'App\Http\Controllers\LeadsController@getPreviousLead');
         Route::get('get-current-lead', 'App\Http\Controllers\LeadsController@getCurrentLead');
+        Route::get('get-sells-users', 'App\Http\Controllers\UsersController@getSellsUsers');
 
         Route::get('get-next-schedule-call', 'App\Http\Controllers\LeadsController@getNextScheduleCall');
 
