@@ -148,6 +148,34 @@ class UsersSeeder extends Seeder
                 'zadarma_id' => '328959-103'                                                      // 712
             ],
 
+
+
+
+            [
+                'name'       => 'Eduardo Gomez',
+                'email'      => 'asesor.gta.23@gmail.com',
+                'password'   => bcrypt('sut$k4KsL@79%Rb'),
+                'role_id'    => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'photo'      => null,
+                'zadarma_id' => '328959-711'
+            ],
+            [
+                'name'       => 'Rosmaris Martinez',
+                'email'      => 'asesor.gta.21@gmail.com',
+                'password'   => bcrypt('K$tpO8FsBWxtQBH'),
+                'role_id'    => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'photo'      => null,
+                'zadarma_id' => '328959-714'
+            ],
+            [
+                'name'       => 'Mariel Lopez',
+                'email'      => 'asesor.gta.29@gmail.com',
+                'password'   => bcrypt('d83UMdR4Hb0R%7n'),
+                'role_id'    => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,
+                'photo'      => null,
+                'zadarma_id' => '328959-717'
+            ],
+
         ];
 
         foreach($users as $user){
