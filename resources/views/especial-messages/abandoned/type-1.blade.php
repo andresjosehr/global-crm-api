@@ -6,7 +6,7 @@
 @endphp
 
 Lamentamos no contar con tu participación en la certificación como KEY USER SAP para el curso {{$sapCourse['name']}}.
-
+@php echo "breakline"; @endphp
 En este caso, como *estás abandonando el curso principal ({{$sapCourse['name']}}),* te comento lo siguiente sobre tus cursos de obsequio:
 
 {{-- Foreach --}}
@@ -48,7 +48,7 @@ En este caso, como *estás abandonando el curso principal ({{$sapCourse['name']}
     $reproved = array_values($reproved);
 
     $aproved = array_filter($freeCoursesWithoutExcel, function($course) {
-        return $course['course_status_original'] == 'APROBADO';
+        return $course['certifaction_test_original'] == 'Aprobado';
     }) ?? [];
     $aproved = array_values($aproved);
 
@@ -80,27 +80,53 @@ En este caso, como *estás abandonando el curso principal ({{$sapCourse['name']}
 @endphp
 
 @if (count($inProgress) > 0))
-    - Aún estás *cursando:* @foreach ($inProgress as $status) {{$status['name']}}, @endforeach
+    @php echo "breakline"; @endphp
+    - Aún estás *cursando:*
+    @foreach ($inProgress as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
 @if (count($reproved) > 0)
-    - Completaste pero *REPROBASTE:* @foreach ($reproved as $status) {{$status['name']}}, @endforeach
+    @php echo "breakline"; @endphp
+    - Completaste pero *REPROBASTE:*
+    @foreach ($reproved as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
 @if (count($notCompleted) > 0)
-    - *No culminaste:* @foreach ($notCompleted as $status) {{$status['name']}}, @endforeach
+    - *No culminaste:*
+    @foreach ($notCompleted as $status)
+    {{$status['name']}}
+    @endforeach
 @endif
 @if (count($abandoned) > 0)
-    - *Abandonaste:* @foreach ($abandoned as $status) {{$status['name']}}, @endforeach
+    @php echo "breakline"; @endphp
+    - *Abandonaste:*
+    @foreach ($abandoned as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
 @if (count($toEnable) > 0)
-    - Aún tienes *por habilitar:* @foreach ($toEnable as $status) {{$status['name']}}, @endforeach
+    @php echo "breakline"; @endphp
+    - Aún tienes *por habilitar:*
+    @foreach ($toEnable as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
 @if (count($aproved) > 0)
-    - *Aprobaste:* @foreach ($aproved as $status) {{$status['name']}}, @endforeach
+    @php echo "breakline"; @endphp
+    - *Aprobaste:*
+    @foreach ($aproved as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
+
+@php echo "breakline"; @endphp
 
 Por lo que, al abandonar el curso principal, que es SAP:
 
 @if(count($inProgress) > 0)
+@php echo "breakline"; @endphp
 Automáticamente pierdes el acceso a este curso, pesar de haberlo iniciado:
     @foreach($inProgress as $status)
         - {{$status['name']}}
@@ -108,6 +134,7 @@ Automáticamente pierdes el acceso a este curso, pesar de haberlo iniciado:
 @endif
 
 @if (count($aproved) > 0)
+@php echo "breakline"; @endphp
 Pierdes el acceso al certificado de:
     @foreach($aproved as $status)
         - {{$status['name']}}
@@ -115,11 +142,13 @@ Pierdes el acceso al certificado de:
 @endif
 
 @if (count($toEnable) > 0)
+@php echo "breakline"; @endphp
 Y ya no podrás habilitar:
     @foreach($toEnable as $status)
         - {{$status['name']}}
     @endforeach
 @endif
+@php echo "breakline"; @endphp
 
 Al no tener más cursos pendientes con nosotros, con esto cerramos formalmente tu matrícula.
 

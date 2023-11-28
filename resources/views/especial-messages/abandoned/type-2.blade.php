@@ -8,7 +8,7 @@
 @endphp
 
 Lamentamos no contar con tu participación en la certificación como KEY USER SAP.
-
+@php echo "breakline"; @endphp
 En este caso, te recuerdo que inicialmente te matriculaste en los siguientes cursos SAP:
 @foreach($allCourses as $c)
     - {{$c['name']}}
@@ -19,10 +19,10 @@ $sapInProgress = array_filter($allCourses, function($course) {
     return $course['course_status_original'] == 'CURSANDO';
 });
 $aproved = array_filter($allCourses, function($course) {
-    return $course['course_status_original'] == 'APROBADO' || $course['certifaction_test_original'] == 'APROBADO';
+    return $course['course_status_original'] == 'APROBADO' || $course['certifaction_test_original'] == 'Aprobado';
 });
 $reproved = array_filter($allCourses, function($course) {
-    return ($course['course_status_original'] == 'COMPLETA' && $course['certifaction_test_original'] == 'Reprobado') || $course['course_status_original'] == 'REPROBADO';
+    return ($course['course_status_original'] == 'COMPLETA' && $course['certifaction_test_original'] == 'Reprobado') || $course['course_status_original'] == 'REPROBÓ';
 });
 $abandoned = array_filter($allCourses, function($course) {
     return $course['course_status_original'] == 'ABANDONÓ';
@@ -31,14 +31,15 @@ $notCompleted = array_filter($allCourses, function($course) {
     return $course['course_status_original'] == 'NO CULMINÓ';
 });
 $toEnable = array_filter($allCourses, function($course) {
-    return $course['course_status_original'] == 'POR HABILITAR';
+    return $course['course_status_original'] == 'POR HABILITAR' || $course['course_status_original'] == 'PENDIENTE';
 });
 
 @endphp
-
+@php echo "breakline"; @endphp
 Te comento sobre ellos:
 
 @if(count($sapInProgress) > 0)
+    @php echo "breakline"; @endphp
     Aún estás cursando:
     @foreach($sapInProgress as $c)
         - {{$c['name']}}
@@ -47,6 +48,7 @@ Te comento sobre ellos:
 
 
 @if(count($reproved) > 0)
+    @php echo "breakline"; @endphp
     Completaste pero REPROBASTE:
     @foreach($reproved as $c)
         - {{$c['name']}}
@@ -54,20 +56,23 @@ Te comento sobre ellos:
 @endif
 
 @if(count($abandoned) > 0)
-    No culminaste:
+    @php echo "breakline"; @endphp
+    Abandonaste:
     @foreach($abandoned as $c)
         - {{$c['name']}}
     @endforeach
 @endif
 
 @if(count($notCompleted) > 0)
-    Abandonaste:
+    @php echo "breakline"; @endphp
+    No culminaste:
     @foreach($notCompleted as $c)
         - {{$c['name']}}
     @endforeach
 @endif
 
 @if(count($toEnable) > 0)
+    @php echo "breakline"; @endphp
     Aún tienes por habilitar:
     @foreach($toEnable as $c)
         - {{$c['name']}}
@@ -76,15 +81,9 @@ Te comento sobre ellos:
 @endif
 
 @if(count($aproved) > 0)
+    @php echo "breakline"; @endphp
     Aprobaste:
     @foreach($aproved as $c)
-        - {{$c['name']}}
-    @endforeach
-@endif
-
-@if(count($toEnable) > 0)
-    Aún tienes por habilitar:
-    @foreach($toEnable as $c)
         - {{$c['name']}}
     @endforeach
 @endif
@@ -125,7 +124,7 @@ Te comento sobre ellos:
     $reprovedFree = array_values($reprovedFree);
 
     $aprovedFree = array_filter($freeCoursesWithoutExcel, function($course) {
-        return $course['course_status_original'] == 'APROBADO';
+        return $course['certifaction_test_original'] == 'Aprobado';
     }) ?? [];
     $aprovedFree = array_values($aprovedFree);
 
@@ -156,23 +155,57 @@ Te comento sobre ellos:
 
 @endphp
 
+@if(count($inProgressFree) > 0 || count($reprovedFree) > 0 || count($notCompletedFree) > 0 || count($abandonedFree) > 0 || count($toEnableFree) > 0 || count($aprovedFree) > 0)
+{{-- breakline --}}
+@php echo "breakline"; @endphp
+Y referente a tus cursos de obsequio:
 @if (count($inProgressFree) > 0)
-    - Aún estás *cursando:* @foreach ($inProgressFree as $status) {{$status['name']}}, @endforeach
+    @php echo "breakline"; @endphp
+    - Aún estás *cursando:*
+    @foreach ($inProgressFree as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
+
 @if (count($reprovedFree) > 0)
-    - Completaste pero *REPROBASTE:* @foreach ($reprovedFree as $status) {{$status['name']}}, @endforeach
+@php echo "breakline"; @endphp
+    - Completaste pero *REPROBASTE:*
+    @foreach ($reprovedFree as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
+
 @if (count($notCompletedFree) > 0)
-    - *No culminaste:* @foreach ($notCompletedFree as $status) {{$status['name']}}, @endforeach
+@php echo "breakline"; @endphp
+    - *No culminaste:*
+    @foreach ($notCompletedFree as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
+
 @if (count($abandonedFree) > 0)
-    - *Abandonaste:* @foreach ($abandonedFree as $status) {{$status['name']}}, @endforeach
+@php echo "breakline"; @endphp
+    - *Abandonaste:*
+    @foreach ($abandonedFree as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
+
 @if (count($toEnableFree) > 0)
-    - Aún tienes *por habilitar:* @foreach ($toEnableFree as $status) {{$status['name']}}, @endforeach
+@php echo "breakline"; @endphp
+    - Aún tienes *por habilitar:*
+    @foreach ($toEnableFree as $status)
+        {{$status['name']}}
+    @endforeach
 @endif
+
 @if (count($aprovedFree) > 0)
-    - *Aprobaste:* @foreach ($aprovedFree as $status) {{$status['name']}}, @endforeach
+@php echo "breakline"; @endphp
+    - *Aprobaste:*
+    @foreach ($aprovedFree as $status)
+        {{$status['name']}}
+    @endforeach
+@endif
 @endif
 
 
@@ -181,13 +214,15 @@ Te comento sobre ellos:
     $reprovedOrAbandoned = array_merge($reproved, $abandoned);
 @endphp
 
-@if (count($negativeCourses) > 0 && count($reprovedOrAbandoned) > 1)
+@if (count($negativeCourses) > 1)
+    @php echo "breakline"; @endphp
     Recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados, y como reprobaste/abandonaste:
     @foreach ($negativeCourses as $status)
         - {{$status['name']}},
     @endforeach
 
     @if (count($inProgressFree) > 0)
+    @php echo "breakline"; @endphp
     A pesar de haberlo iniciado, pierdes el acceso a:
     @foreach ($inProgressFree as $status)
         - {{$status['name']}},
@@ -195,6 +230,7 @@ Te comento sobre ellos:
     @endif
 
     @if (count($aprovedFree) > 0)
+    @php echo "breakline"; @endphp
     Pierdes el acceso al certificado de:
     @foreach ($aprovedFree as $status)
         - {{$status['name']}},
@@ -202,51 +238,47 @@ Te comento sobre ellos:
     @endif
 
     @if (count($toEnableFree) > 0)
-    Pierdes el acceso al certificado de:
+    @php echo "breakline"; @endphp
+    Ya no podras habilitar:
     @foreach ($toEnableFree as $status)
         - {{$status['name']}},
     @endforeach
     @endif
 
+    @php echo "breakline"; @endphp
     Al no tener más cursos pendientes con nosotros, con esto cerramos formalmente tu matrícula. Saludos.
 
 @endif
 
 
 
-@if (count($reprovedOrAbandoned) == 1)
+@if (count($negativeCourses) < 2)
+    @php echo "breakline"; @endphp
     Recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados, y al estar abandonando:
     @foreach ($reprovedOrAbandoned as $status)
         - {{$status['name']}},
     @endforeach
 
-    @if (count($inProgressFree) > 0)
-    A pesar de haberlo iniciado, pierdes el acceso a:
-    @foreach ($inProgressFree as $status)
-        - {{$status['name']}},
-    @endforeach
+
+    @php
+        $inProgressOrToEnableAll = array_merge($inProgressFree, $toEnableFree, $sapInProgress, $toEnable);
+    @endphp
+
+    @if (count($inProgressOrToEnableAll) > 0)
+        @php echo "breakline"; @endphp
+        Aún puedes terminar y/o cursar:
+        @foreach ($inProgressOrToEnableAll as $status)
+            - {{$status['name']}},
+        @endforeach
     @endif
 
-@endif
 
+    @if(count($toEnableFree) > 0)
+        @php echo "breakline"; @endphp
+        Teniendo en cuenta que si repruebas o abandonas un curso más, pierdes el acceso a:
+        @foreach ($toEnableFree as $status)
+            - {{$status['name']}}
+        @endforeach
+    @endif
 
-Recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados, y al estar abandonando:
-CURSO
-@php
-    $inProgressOrToEnableFree = array_merge($inProgressFree, $toEnableFree);
-@endphp
-
-@if (count($inProgressOrToEnableFree) > 0)
-    Aún puedes terminar y/o cursar:
-    @foreach ($inProgressOrToEnableFree as $status)
-        - {{$status['name']}},
-    @endforeach
-@endif
-
-
-@if(count($toEnableFree) > 0)
-    Pierdes el acceso al certificado de:
-    @foreach ($toEnableFree as $status)
-        - {{$status['name']}}
-    @endforeach
 @endif

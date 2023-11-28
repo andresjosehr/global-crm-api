@@ -104,7 +104,10 @@ class AbandonedText extends Command
         $students = array_map(function ($student) {
             $student['include_text'] = 'type-1';
             $student['text'] = view('especial-messages.abandoned.type-1', ['student' => $student])->render();
+            $student['text'] = preg_replace("/^\s+/m", "", $student['text']);
             $student['text'] = preg_replace("/[\r\n]+/", "\n", $student['text']);
+            // Replace all "breakline" text to \n
+            $student['text'] = str_replace('breakline', "\n", $student['text']);
             return $student;
         }, $students);
 
@@ -139,7 +142,7 @@ class AbandonedText extends Command
         $courses_ids = DB::table('courses')->select('id', 'short_name')->get()->pluck('id', 'short_name')->toArray();
         $students = array_map(function ($student) use ($courses_ids) {
             foreach(['ESTADO', 'OBSERVACIONES'] as $column){
-                foreach(['REPROBÓ', 'NO CULMINÓ', 'ABANDONÓ', 'PENDIENTE', 'CERTIFICADO'] as $status){
+                foreach(['REPROBÓ', 'NO CULMINÓ', 'ABANDONÓ', 'PENDIENTE', 'CERTIFICADO', 'APROBADO'] as $status){
                     if (strpos($student[$column], $status) !== false) {
                         $courses = explode($status, $student[$column])[1];
                         $courses = explode('/', $courses)[0];
@@ -168,7 +171,10 @@ class AbandonedText extends Command
 
             $student['include_text'] = 'type-2';
             $student['text'] = view('especial-messages.abandoned.type-2', ['student' => $student])->render();
+            $student['text'] = preg_replace("/^\s+/m", "", $student['text']);
             $student['text'] = preg_replace("/[\r\n]+/", "\n", $student['text']);
+            // Replace all "breakline" text to \n
+            $student['text'] = str_replace('breakline', "\n", $student['text']);
             return $student;
         }, $students);
 
@@ -219,7 +225,9 @@ class AbandonedText extends Command
             }
             $student['include_text'] = 'type-3';
             $student['text'] = view('especial-messages.abandoned.type-3', ['student' => $student])->render();
+            $student['text'] = preg_replace("/^\s+/m", "", $student['text']);
             $student['text'] = preg_replace("/[\r\n]+/", "\n", $student['text']);
+            $student['text'] = str_replace('breakline', "\n", $student['text']);
             return $student;
         }, $students);
 
