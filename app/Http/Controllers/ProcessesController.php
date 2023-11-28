@@ -47,6 +47,11 @@ class ProcessesController extends Controller
         return Artisan::output();
     }
 
+    public function updateAbandoned(){
+        Artisan::call('update-abandoned');
+        return Artisan::output();
+    }
+
 
 
     // Le pones mods y juegas a 60

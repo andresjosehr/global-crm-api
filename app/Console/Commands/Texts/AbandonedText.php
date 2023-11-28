@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Texts;
 
+use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Processes\StudentsExcelController;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,7 @@ class AbandonedText extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'update-abandoned';
 
     /**
      * The console command description.
@@ -45,7 +46,36 @@ class AbandonedText extends Command
         $studentsWithText = array_merge($studentsWithText, self::type3($students));
         $students = self::filter($students, $studentsWithText);
 
-        return $studentsWithText;
+        $dataToUpdate = [];
+
+        foreach ($studentsWithText as $student) {
+                $dataToUpdate[] = [
+                    'sheet_id'          => $student['sheet_id'],
+                    'course_row_number' => $student['course_row_number'],
+                    'column'            => "BB",
+                    'email'             => $student['CORREO'],
+                    'tab_id'            => $student['course_tab_id'],
+                    'value'             => $student['text'],
+                ];
+        }
+        foreach($students as $student){
+            $dataToUpdate[] = [
+                'sheet_id'          => $student['sheet_id'],
+                'course_row_number' => $student['course_row_number'],
+                'column'            => "BB",
+                'email'             => $student['CORREO'],
+                'tab_id'            => $student['course_tab_id'],
+                'value'             => '',
+            ];
+        }
+
+        $google_sheet = new GoogleSheetController();
+        $data = $google_sheet->transformData($dataToUpdate);
+        $data = $google_sheet->prepareRequests($data);
+
+        $google_sheet->updateGoogleSheet($data);
+
+        return $this->line(json_encode($studentsWithText));
 
     }
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\Processes\StudentsExcelController;
 use App\Models\Course;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class UnfreezingText extends Command
 {
@@ -44,11 +45,39 @@ class UnfreezingText extends Command
 
         $studentsFitered =  array_values($studentsFitered);
 
-        $studentsFitered = array_map(function ($student) {
+        $courses_ids = DB::table('courses')->select('id', 'short_name')->get()->pluck('id', 'short_name')->toArray();
+
+        $studentsFitered = array_map(function ($student) use ($courses_ids){
             $student['courses'] = array_filter($student['courses'], function ($course) {
                 return $course['type'] == 'paid';
             });
             $student['courses'] = array_values($student['courses']);
+
+            if (strpos($student['ESTADO'], 'DESCONGELADO') !== false) {
+                $courses = explode('DESCONGELADO', $student['ESTADO'])[1];
+                $courses = explode('/', $courses)[0];
+                $courses = trim($courses);
+                $courses = explode(' ', $courses);
+
+                $student['courses_DESCONGELADO'] = [];
+
+                foreach ($courses as $course) {
+                    // If not include SAP
+                    if(!strpos($course, 'SAP')){
+                        $course = 'SAP ' . $course;
+                    }
+
+                    //
+                    if (isset($courses_ids[$course])) {
+                        $index = array_search($courses_ids[$course], array_column($student['courses'], 'course_id'));
+                        if ($index !== false) {
+                            $student['courses'] = [];
+                        }
+                    }
+                }
+            }
+
+
             return $student;
         }, $studentsFitered);
 

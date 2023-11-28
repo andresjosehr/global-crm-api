@@ -286,11 +286,14 @@ class LeadsController extends Controller
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
-        $leadAssignament = LeadAssignment::
-        with('user', 'lead', 'observations')
+        $leadAssignament = LeadAssignment::with('user', 'lead', 'observations')
         ->when($user->role_id != 1, function ($query) use ($request) {
             return $query->where('user_id', $request->user()->id);
         })
+        ->when($request->user_id, function ($query) use ($request) {
+            return $query->where('user_id', $request->user_id);
+        })
+        ->orderBy('assigned_at', 'DESC')
         ->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
@@ -348,11 +351,12 @@ class LeadsController extends Controller
             }
 
             return [
-                'name'    => $asesor->name,
-                'email'   => $asesor->email,
-                'role_id' => $asesor->role_id,
-                'count'   => $count,
-                'data'    => $datos
+                'name'           => $asesor->name,
+                'email'          => $asesor->email,
+                'active_working' => $asesor->active_working,
+                'role_id'        => $asesor->role_id,
+                'count'          => $count,
+                'data'           => $datos
             ];
         });
 

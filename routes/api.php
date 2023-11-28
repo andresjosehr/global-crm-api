@@ -91,7 +91,9 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
         Route::get('update-excel-mails', 'App\Http\Controllers\ProcessesController@updateExcelMails');
         Route::get('update-aula-status', 'App\Http\Controllers\ProcessesController@updateAulaStatus');
         Route::get('update-unfreezing-texts', 'App\Http\Controllers\ProcessesController@updateUnfreezingTexts');
+
         Route::get('update-texts', 'App\Http\Controllers\ProcessesController@updateTexts');
+        Route::get('update-abandoned', 'App\Http\Controllers\ProcessesController@updateAbandoned');
     });
 
     Route::prefix('mails')->group(function (){
