@@ -30,7 +30,7 @@ class CoreTexts extends Command
     public function handle()
     {
         $data = new StudentsExcelController();
-        $students = $data->index('test');
+        $students = $data->index('prod');
 
         $students = array_map(function ($student) {
             $student['include_text'] = false;

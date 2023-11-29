@@ -79,7 +79,7 @@ class ModulesSeeder extends Seeder
                 'path'        => 'gestionar',
                 'type'        => 'basic',
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
-            ]
+            ],
 		]);
 
 
