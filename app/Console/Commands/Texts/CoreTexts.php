@@ -42,13 +42,13 @@ class CoreTexts extends Command
         $students = self::filter($students, $studentsWithText);
 
         $abandonedTexts = new AbandonedText();
-        $studentsWithText = $abandonedTexts->handle($students);
+        $studentsWithText = array_merge($studentsWithText, $abandonedTexts->handle($students));
         $students = self::filter($students, $studentsWithText);
 
 
-        $freeCoursesCompletedText = new FreeCoursesCompletedText();
-        $studentsWithText = array_merge($studentsWithText, $freeCoursesCompletedText->handle($students));
-        $students = self::filter($students, $studentsWithText);
+        // $freeCoursesCompletedText = new FreeCoursesCompletedText();
+        // $studentsWithText = array_merge($studentsWithText, $freeCoursesCompletedText->handle($students));
+        // $students = self::filter($students, $studentsWithText);
 
 
         // return $this->line(json_encode($studentsWithText));
