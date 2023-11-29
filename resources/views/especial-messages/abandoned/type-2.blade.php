@@ -49,7 +49,7 @@ Te comento sobre ellos:
 
 @if(count($reproved) > 0)
     @php echo "breakline"; @endphp
-    Completaste pero REPROBASTE:
+    REPROBASTE:
     @foreach($reproved as $c)
         - {{$c['name']}}
     @endforeach
@@ -133,22 +133,33 @@ Te comento sobre ellos:
     });
     $excel = count(array_values($excel)) > 0 ? array_values($excel)[0] : null;
 
+    $excelAproved = [];
+    $excelReproved = [];
     if($excel) {
         if($excel['nivel_basico']['certifaction_test_original'] == 'Aprobado') {
-            $aproved[] = ['name' => 'Excel Nivel Básico'];
-        } elseif ($excel['nivel_intermedio']['certifaction_test_original'] == 'Aprobado') {
-            $aproved[] = ['name' => 'Excel Nivel Intermedio'];
-        } elseif ($excel['nivel_avanzado']['certifaction_test_original'] == 'Aprobado') {
-            $aproved[] = ['name' => 'Excel Nivel Avanzado'];
+            $excelAproved[] = ['name' => 'Excel Nivel Básico'];
+        }
+        if ($excel['nivel_intermedio']['certifaction_test_original'] == 'Aprobado') {
+            $excelAproved[] = ['name' => 'Excel Nivel Intermedio'];
+        }
+        if ($excel['nivel_avanzado']['certifaction_test_original'] == 'Aprobado') {
+            $excelAproved[] = ['name' => 'Excel Nivel Avanzado'];
         }
 
 
         if ($excel['nivel_basico']['certifaction_test_original'] == 'Reprobado') {
-            $reproved[] = ['name' => 'Excel Nivel Avanzado'];
-        } elseif ($excel['nivel_intermedio']['certifaction_test_original'] == 'Reprobado') {
-            $reproved[] = ['name' => 'Excel Nivel Avanzado'];
-        } elseif ($excel['nivel_avanzado']['certifaction_test_original'] == 'Reprobado') {
-            $reproved[] = ['name' => 'Excel Nivel Experto'];
+            $excelReproved[] = ['name' => 'Excel Nivel Avanzado'];
+        }
+        if ($excel['nivel_intermedio']['certifaction_test_original'] == 'Reprobado') {
+            $excelReproved[] = ['name' => 'Excel Nivel Avanzado'];
+        }
+        if ($excel['nivel_avanzado']['certifaction_test_original'] == 'Reprobado') {
+            $excelReproved[] = ['name' => 'Excel Nivel Experto'];
+        }
+
+        if(count($excelReproved) > 0) {
+            $excel['certifaction_test_original'] = 'Reprobado';
+            $reprovedFree[] = $excel;
         }
 
     }
@@ -167,12 +178,16 @@ Y referente a tus cursos de obsequio:
     @endforeach
 @endif
 
-@if (count($reprovedFree) > 0)
+@if (count($reprovedFree) > 0 || count($excelReproved) > 0)
 @php echo "breakline"; @endphp
-    - Completaste pero *REPROBASTE:*
+    - *REPROBASTE:*
     @foreach ($reprovedFree as $status)
         {{$status['name']}}
     @endforeach
+    @foreach ($excelReproved as $status)
+        {{$status['name']}}
+    @endforeach
+
 @endif
 
 @if (count($notCompletedFree) > 0)
@@ -199,10 +214,13 @@ Y referente a tus cursos de obsequio:
     @endforeach
 @endif
 
-@if (count($aprovedFree) > 0)
+@if (count($aprovedFree) > 0 || count($excelAproved) > 0)
 @php echo "breakline"; @endphp
     - *Aprobaste:*
     @foreach ($aprovedFree as $status)
+        {{$status['name']}}
+    @endforeach
+    @foreach ($excelAproved as $status)
         {{$status['name']}}
     @endforeach
 @endif

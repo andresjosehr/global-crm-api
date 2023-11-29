@@ -1,6 +1,7 @@
 Lamentamos no contar con tu participación en esta certificación.
 
 @php
+
     $mixed1 = array_filter($student['courses'], function($course) {
         return ($course['type'] === 'free' && $course['course_status_original'] === 'CURSANDO') ||
                 ($course['type'] === 'paid' && $course['course_status_original'] === 'CURSANDO' || $course['course_status_original'] === 'COMPLETA');
@@ -59,6 +60,48 @@ Lamentamos no contar con tu participación en esta certificación.
         return ($course['type'] === 'paid' && $course['course_status_original'] === 'CERTIFICADO');
     })));
 
+
+
+    $freeCourses = array_filter($student['courses'], function($course) {
+        return $course['type'] === 'free';
+    });
+
+    $excel = array_filter($freeCourses, function($course) {
+        return $course['course_id'] == 6;
+    });
+    $excel = count(array_values($excel)) > 0 ? array_values($excel)[0] : null;
+
+    $excelAproved = [];
+    $excelReproved = [];
+    if($excel) {
+        if($excel['nivel_basico']['certifaction_test_original'] == 'Aprobado') {
+            $excelAproved[] = ['name' => 'Excel Nivel Básico'];
+        }
+        if ($excel['nivel_intermedio']['certifaction_test_original'] == 'Aprobado') {
+            $excelAproved[] = ['name' => 'Excel Nivel Intermedio'];
+        }
+        if ($excel['nivel_avanzado']['certifaction_test_original'] == 'Aprobado') {
+            $excelAproved[] = ['name' => 'Excel Nivel Avanzado'];
+        }
+
+
+        if ($excel['nivel_basico']['certifaction_test_original'] == 'Reprobado') {
+            $excelReproved[] = ['name' => 'Excel Nivel Avanzado'];
+        }
+        if ($excel['nivel_intermedio']['certifaction_test_original'] == 'Reprobado') {
+            $excelReproved[] = ['name' => 'Excel Nivel Avanzado'];
+        }
+        if ($excel['nivel_avanzado']['certifaction_test_original'] == 'Reprobado') {
+            $excelReproved[] = ['name' => 'Excel Nivel Experto'];
+        }
+
+        if(count($excelReproved) > 0) {
+            $excel['certifaction_test_original'] = 'Reprobado';
+            $mixed2[] = $excel;
+        }
+
+    }
+
 @endphp
 @php echo "breakline"; @endphp
 En esta caso, te haré un resumen sobre los cursos adquiridos:
@@ -71,10 +114,13 @@ Estás *cursando:*
 @endforeach
 @endif
 
-@if(count($mixed2) > 0)
+@if(count($mixed2) > 0 || count($excelReproved) > 0)
 @php echo "breakline"; @endphp
-Completaste pero *REPROBASTE:*
+*REPROBASTE:*
 @foreach($mixed2 as $c)
+    - {{$c['name']}}
+@endforeach
+@foreach($excelReproved as $c)
     - {{$c['name']}}
 @endforeach
 @endif
@@ -102,10 +148,13 @@ Aún tienes *por habilitar:*
 @endforeach
 @endif
 
-@if(count($mixed6) > 0)
+@if(count($mixed6) > 0 || count($excelAproved) > 0)
 @php echo "breakline"; @endphp
 *Aprobaste:*
 @foreach($mixed6 as $c)
+    - {{$c['name']}}
+@endforeach
+@foreach($excelAproved as $c)
     - {{$c['name']}}
 @endforeach
 @endif
@@ -149,6 +198,7 @@ Recuerda que como condición, no puedes reprobar/abandonar dos cursos o más. Y 
 
 
 @php echo "breakline"; @endphp
+
 Por lo que:
 @if(count($freeCoursesInProgress) > 0)
 @php echo "breakline"; @endphp

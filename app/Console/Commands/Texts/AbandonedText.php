@@ -195,7 +195,8 @@ class AbandonedText extends Command
 
         $students = array_values($students);
 
-        $students = array_map(function($student){
+        $courses_ids = DB::table('courses')->select('id', 'short_name')->get()->pluck('id', 'short_name')->toArray();
+        $students = array_map(function($student) use ($courses_ids){
             foreach(['ESTADO', 'OBSERVACIONES'] as $column){
                 foreach(['REPROBÓ', 'NO CULMINÓ', 'ABANDONÓ', 'PENDIENTE', 'CERTIFICADO'] as $status){
                     if (strpos($student[$column], $status) !== false) {
@@ -215,7 +216,9 @@ class AbandonedText extends Command
                             //
                             if (isset($courses_ids[$course])) {
                                 $index = array_search($courses_ids[$course], array_column($student['inactive_courses'], 'course_id'));
+
                                 if ($index !== false) {
+                                    $student['courses_'.$status][] = $status;
                                     $student['inactive_courses'][$index]['course_status_original'] = $status;
                                 }
                             }

@@ -60,22 +60,34 @@ En este caso, como *estás abandonando el curso principal ({{$sapCourse['name']}
     if($excel) {
         if($excel['nivel_basico']['certifaction_test_original'] == 'Aprobado') {
             $aproved[] = ['name' => 'Excel Nivel Básico'];
-        } elseif ($excel['nivel_intermedio']['certifaction_test_original'] == 'Aprobado') {
+        }
+        if ($excel['nivel_intermedio']['certifaction_test_original'] == 'Aprobado') {
             $aproved[] = ['name' => 'Excel Nivel Intermedio'];
-        } elseif ($excel['nivel_avanzado']['certifaction_test_original'] == 'Aprobado') {
+        }
+        if ($excel['nivel_avanzado']['certifaction_test_original'] == 'Aprobado') {
             $aproved[] = ['name' => 'Excel Nivel Avanzado'];
         }
 
 
         if ($excel['nivel_basico']['certifaction_test_original'] == 'Reprobado') {
+            $reproved[] = ['name' => 'Excel Nivel Básico'];
+        }
+        if ($excel['nivel_intermedio']['certifaction_test_original'] == 'Reprobado') {
+            $reproved[] = ['name' => 'Excel Nivel Intermedio'];
+        }
+        if ($excel['nivel_avanzado']['certifaction_test_original'] == 'Reprobado') {
             $reproved[] = ['name' => 'Excel Nivel Avanzado'];
-        } elseif ($excel['nivel_intermedio']['certifaction_test_original'] == 'Reprobado') {
-            $reproved[] = ['name' => 'Excel Nivel Avanzado'];
-        } elseif ($excel['nivel_avanzado']['certifaction_test_original'] == 'Reprobado') {
-            $reproved[] = ['name' => 'Excel Nivel Experto'];
         }
 
     }
+
+    // echo "breakline";
+    // echo "-------------";
+
+    // print_r($excel);
+
+    // echo "-------------";
+    // echo "breakline";
 
 @endphp
 
