@@ -19,7 +19,7 @@ $sapInProgress = array_filter($allCourses, function($course) {
     return $course['course_status_original'] == 'CURSANDO';
 });
 $aproved = array_filter($allCourses, function($course) {
-    return $course['course_status_original'] == 'APROBADO' || $course['certifaction_test_original'] == 'Aprobado';
+    return $course['course_status_original'] == 'APROBADO' || $course['certifaction_test_original'] == 'Aprobado' || $course['course_status_original'] == 'CERTIFICADO';
 });
 $reproved = array_filter($allCourses, function($course) {
     return ($course['course_status_original'] == 'COMPLETA' && $course['certifaction_test_original'] == 'Reprobado') || $course['course_status_original'] == 'REPROBÓ';
@@ -110,7 +110,7 @@ Te comento sobre ellos:
     $toEnableFree = array_values($toEnableFree);
 
     $inProgressFree = array_filter($freeCourses, function($course) {
-        return $course['course_status_original'] == 'CURSANDO SIN CREDLY' || $course['course_status_original'] == 'CURSANDO';
+        return $course['course_status_original'] == 'CURSANDO SIN CREDLY' || $course['course_status_original'] == 'CURSANDO' || $course['course_status_original'] == 'CURSANDO AVANZADO' || $course['course_status_original'] == 'CURSANDO AVANZADO SIN CREDLY';
     });
     $inProgressFree = array_values($inProgressFree);
 

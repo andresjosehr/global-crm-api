@@ -34,7 +34,7 @@ En este caso, como *estás abandonando el curso principal ({{$sapCourse['name']}
     $toEnable = array_values($toEnable);
 
     $inProgress = array_filter($freeCourses, function($course) {
-        return $course['course_status_original'] == 'CURSANDO SIN CREDLY' || $course['course_status_original'] == 'CURSANDO';
+        return $course['course_status_original'] == 'CURSANDO SIN CREDLY' || $course['course_status_original'] == 'CURSANDO' || $course['course_status_original'] == 'CURSANDO AVANZADO' || $course['course_status_original'] == 'CURSANDO AVANZADO SIN CREDLY';
     });
     $inProgress = array_values($inProgress);
 

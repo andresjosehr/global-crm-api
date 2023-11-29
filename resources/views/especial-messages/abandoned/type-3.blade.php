@@ -167,7 +167,7 @@ Aún tienes *por habilitar:*
 
 @php
     $freeCoursesInProgress = array_filter($student['courses'], function($course) {
-        return $course['type'] === 'free' && ($course['course_status_original'] === 'CURSANDO' || $course['course_status_original'] === 'CURSANDO SIN CREDLY');
+        return $course['type'] === 'free' && ($course['course_status_original'] === 'CURSANDO' || $course['course_status_original'] === 'CURSANDO SIN CREDLY' || $course['course_status_original'] === 'CURSANDO AVANZADO' || $course['course_status_original'] === 'CURSANDO AVANZADO SIN CREDLY');
     });
     $freeCoursesInProgress = array_values($freeCoursesInProgress);
 
