@@ -51,7 +51,7 @@ class CoreTexts extends Command
         // $students = self::filter($students, $studentsWithText);
 
 
-        return $this->line(json_encode($studentsWithText));
+        // return $this->line(json_encode($studentsWithText));
 
         $dataToUpdate = [];
 
