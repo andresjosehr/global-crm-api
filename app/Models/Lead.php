@@ -14,6 +14,7 @@ class Lead extends Model
         'name',
         'courses',
         'phone',
+        'lead_project_id'
     ];
 
     public function leadAssignments()
@@ -27,5 +28,9 @@ class Lead extends Model
     }
     public function user(){
         return $this->belongsTo(User::class);
+    }
+
+    public function leadProject(){
+        return $this->belongsTo(LeadProject::class, 'lead_project_id', 'id');
     }
 }

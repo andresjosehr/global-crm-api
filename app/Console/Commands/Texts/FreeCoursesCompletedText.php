@@ -48,6 +48,34 @@ class FreeCoursesCompletedText extends Command
         });
 
 
+        $students = array_filter($students, function ($student) {
+            $freeCoursesCompleted = array_filter($student['courses'], function ($course) use ($student) {
+                $now   = Carbon::now();
+                $start = Carbon::parse($course['end']);
+                // Get diff in days
+                $diff = $start->diffInDays($now) + 1;
+                switch ($diff) {
+                    case 15:
+                        $student['template'] = '15-dias';
+                        break;
+                    case 7:
+                        $student['template'] = '7-dias';
+                        break;
+                    case 4:
+                        $student['template'] = '4-dias';
+                        break;
+                    case 1:
+                        $student['template'] = '2-dias';
+                        break;
+                    default:
+                        $student['template'] = '';
+                        $student['include_text'] = false;
+                    break;
+                }
+            });
+        });
+
+
 
 
         return $students;

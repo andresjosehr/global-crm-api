@@ -160,11 +160,11 @@ class LeadsController extends Controller
         $user_id = null;
 
         $user = $request->user();
-        if($user->role_id == 1){
+        if ($user->role_id == 1) {
             $user_id = $request->user_id;
         }
 
-        if($user->role_id != 1){
+        if ($user->role_id != 1) {
             if ($request->status == 'Interesado') {
                 $user_id = $user->id;
             }
@@ -230,17 +230,22 @@ class LeadsController extends Controller
         $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })->when($searchString, function ($q) use ($searchString) {
-            $q->where('name', 'LIKE', "%$searchString%")
+            return $q->where(function($q) use ($searchString){
+                return $q->where('name', 'LIKE', "%$searchString%")
                 ->orWhere('courses', 'LIKE', "%$searchString%")
                 ->orWhere('status', 'LIKE', "%$searchString%")
                 ->orWhere('origin', 'LIKE', "%$searchString%")
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('email', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
-        })
-            ->with(['observations' => function ($query) {
+            });
+
+        })->when($request->project_id, function ($query) use ($request) {
+            $p = $request->project_id == 'Base' ? null : $request->project_id;
+            return $query->where('lead_project_id', $p);
+        })->with(['observations' => function ($query) {
                 return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-            }])->with('user')->paginate($perPage);
+            }])->with('user', 'leadProject')->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
@@ -287,14 +292,14 @@ class LeadsController extends Controller
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
         $leadAssignament = LeadAssignment::with('user', 'lead', 'observations')
-        ->when($user->role_id != 1, function ($query) use ($request) {
-            return $query->where('user_id', $request->user()->id);
-        })
-        ->when($request->user_id, function ($query) use ($request) {
-            return $query->where('user_id', $request->user_id);
-        })
-        ->orderBy('assigned_at', 'DESC')
-        ->paginate($perPage);
+            ->when($user->role_id != 1, function ($query) use ($request) {
+                return $query->where('user_id', $request->user()->id);
+            })
+            ->when($request->user_id, function ($query) use ($request) {
+                return $query->where('user_id', $request->user_id);
+            })
+            ->orderBy('assigned_at', 'DESC')
+            ->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -310,12 +315,12 @@ class LeadsController extends Controller
 
         // Obtener todos los asesores
         $asesores = User::where('role_id', $roleAsesorId)
-        ->when($request->input('user_id'), function ($query) use ($request) {
-            return $query->where('id', $request->input('user_id'));
-        })->when($user->role_id != 1, function ($query) use ($request) {
-            return $query->where('id', $request->user()->id);
-        })
-        ->get();
+            ->when($request->input('user_id'), function ($query) use ($request) {
+                return $query->where('id', $request->input('user_id'));
+            })->when($user->role_id != 1, function ($query) use ($request) {
+                return $query->where('id', $request->user()->id);
+            })
+            ->get();
 
 
         $reporte = $asesores->map(function ($asesor) use ($start, $end) {

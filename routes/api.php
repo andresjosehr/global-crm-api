@@ -45,7 +45,8 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
 
     Route::prefix('sales')->group(function (){
-        Route::post('import-data', 'App\Http\Controllers\SalesController@importData');
+        Route::post('import-data', 'App\Http\Controllers\LeadProjectsController@importData');
+        Route::get('get-projects', 'App\Http\Controllers\LeadProjectsController@getProjects');
         Route::get('get-leads/{mode?}', 'App\Http\Controllers\LeadsController@getLeads');
         Route::get('get-lead/{id}', 'App\Http\Controllers\LeadsController@getLead');
         Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
