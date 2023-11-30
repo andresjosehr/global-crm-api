@@ -32,6 +32,8 @@ class CoreTexts extends Command
         $data = new StudentsExcelController();
         $students = $data->index('prod');
 
+        return $this->line(json_encode($students));
+
         $students = array_map(function ($student) {
             $student['include_text'] = false;
             return $student;
