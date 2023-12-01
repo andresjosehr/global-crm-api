@@ -21,15 +21,11 @@ class LeadsController extends Controller
 
         $lead = $user->leadAssignments()->latest('order')->where('active', true)->first();
 
-
         if (!$lead) {
             self::assignNextLead($user);
         }
 
         $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'lead.user', 'observations.user')->first();
-        // ATTATCH observations.user
-
-
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -64,6 +60,7 @@ class LeadsController extends Controller
 
     public function assignNextLead(User $user)
     {
+
         // Obtener el último lead asignado al asesor y el orden actual
         $lastAssignment = $user->leadAssignments()->latest('order')->where('active', true)->first();
         $nextOrder = $lastAssignment ? $lastAssignment->order + 1 : 1;
@@ -78,6 +75,9 @@ class LeadsController extends Controller
             // Si no existe, determinar el próximo lead a asignar
             $data = $this->findNextLeadId($user, $lastAssignment);
 
+            if(!$data['nextLeadId']){
+                return null;
+            }
             // Crear la nueva asignación
             $nextAssignment = new LeadAssignment([
                 'lead_id' => $data['nextLeadId'],
@@ -120,7 +120,7 @@ class LeadsController extends Controller
         return $previousAssignment;
     }
 
-    private function findNextLeadId()
+    private function findNextLeadId($user)
     {
         // Obtener todos los leads ya asignados al usuario
         $activeAssignedLeadIds = LeadAssignment::where('active', true)->pluck('lead_id');
@@ -130,14 +130,28 @@ class LeadsController extends Controller
         $maxActiveAssignedLeadId = LeadAssignment::where('round', $round)->max('lead_id') ?? 0;
 
         // Encuentra el próximo lead no asignado al usuario
-        $nextLeadId = Lead::where('id', '>', $maxActiveAssignedLeadId)
+        $projects = $user->projects_pivot->pluck('lead_project_id')->toArray();
+
+        if(count($projects) == 0){
+            return [
+                'round' => $round,
+                'nextLeadId' => null
+            ];
+        }
+
+        $nextLeadId = Lead::
+            whereIn('lead_project_id', $projects)
+            ->when(in_array(null, $projects), function ($query) {
+                return $query->orWhereNull('lead_project_id');
+            })
+            ->where('id', '>', $maxActiveAssignedLeadId)
             ->where('status', 'Nuevo')
             ->orderBy('id', 'ASC')
             ->first();
 
         if (!$nextLeadId) {
             $round++;
-            $nextLeadId = $this->startNewRound();
+            $nextLeadId = $this->startNewRound($projects);
         } else {
             $nextLeadId = $nextLeadId->id;
         }
@@ -148,10 +162,15 @@ class LeadsController extends Controller
         ];
     }
 
-    private function startNewRound()
+    private function startNewRound($projects)
     {
         // Comienza una nueva vuelta asignando el primer lead disponible
-        return Lead::orderBy('id')->where('status', 'Nuevo')->first()->id;
+        $lead = Lead::orderBy('id')
+        ->where('status', 'Nuevo')
+        ->whereIn('lead_project_id', $projects)
+        ->first();
+
+        return $lead ? $lead->id : null;
     }
 
 
@@ -320,6 +339,7 @@ class LeadsController extends Controller
             })->when($user->role_id != 1, function ($query) use ($request) {
                 return $query->where('id', $request->user()->id);
             })
+            ->with('projects_pivot')
             ->get();
 
 
@@ -356,11 +376,13 @@ class LeadsController extends Controller
             }
 
             return [
+                'id'            => $asesor->id,
                 'name'           => $asesor->name,
                 'email'          => $asesor->email,
                 'active_working' => $asesor->active_working,
                 'role_id'        => $asesor->role_id,
                 'count'          => $count,
+                'projects_pivot' => $asesor->projects_pivot,
                 'data'           => $datos
             ];
         });

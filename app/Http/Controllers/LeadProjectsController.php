@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use App\Models\LeadProject;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LeadProjectsController extends Controller
 {
@@ -25,13 +27,13 @@ class LeadProjectsController extends Controller
 
 
             $project_id = null;
-            if($request->project_type=='Nuevo'){
+            if ($request->project_type == 'Nuevo') {
                 $leadProject = LeadProject::create([
                     'name' => $request->project_name
                 ]);
                 $project_id = $leadProject->id;
-            } else{
-                $project_id = $request->project_id=='Base' ? null : $request->project_id;
+            } else {
+                $project_id = $request->project_id == 'Base' ? null : $request->project_id;
             }
 
             $existingLeads = Lead::whereDate('created_at', Carbon::today())->where('lead_project_id', $project_id)->pluck('phone')->toArray();
@@ -63,7 +65,8 @@ class LeadProjectsController extends Controller
         return ApiResponseController::response('Leads importados exitosamente', 200);
     }
 
-    public function getProjects(Request $request){
+    public function getProjects(Request $request)
+    {
 
         // Get projects with leads count
         $projects = LeadProject::withCount('leads')->get();
@@ -79,10 +82,22 @@ class LeadProjectsController extends Controller
         return ApiResponseController::response("Exito", 200, $projects);
     }
 
-    public function updateUserProjects(Request $request){
+    public function updateUserProjects(Request $request)
+    {
 
-        $lead = Lead::find($request->lead_id);
-        $lead->projects()->sync($request->projects);
+        $user = User::find($request->user_id);
+        // Remove projects
+        $user->projects()->detach();
+
+        // Add projects
+        foreach ($request->projects as $project) {
+            DB::table('user_lead_projects')->insert([
+                'user_id' => $user->id,
+                'lead_project_id' => $project,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
+        }
         return ApiResponseController::response("Exito", 200);
     }
 }

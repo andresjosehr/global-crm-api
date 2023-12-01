@@ -294,5 +294,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(LeadProject::class, 'user_lead_projects', 'user_id', 'lead_project_id');
     }
 
+    public function projects_pivot(){
+        return $this->hasMany(UserLeadProject::class);
+    }
+
 
 }
