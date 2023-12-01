@@ -78,4 +78,11 @@ class LeadProjectsController extends Controller
         $projects->prepend($base);
         return ApiResponseController::response("Exito", 200, $projects);
     }
+
+    public function updateUserProjects(Request $request){
+
+        $lead = Lead::find($request->lead_id);
+        $lead->projects()->sync($request->projects);
+        return ApiResponseController::response("Exito", 200);
+    }
 }
