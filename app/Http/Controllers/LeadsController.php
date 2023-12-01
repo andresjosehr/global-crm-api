@@ -210,7 +210,7 @@ class LeadsController extends Controller
         // Get current lead assignment
 
         $schedule_call_datetime = null;
-        if ($request->date && $request->time) {
+        if ($request->date) {
             $date = Carbon::parse($request->date);
             $time = Carbon::parse($request->time);
             $schedule_call_datetime = $date->format('Y-m-d') . ' ' . $time->format('H:i:s');
