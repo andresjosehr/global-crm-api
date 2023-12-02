@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\CallActivity;
 use App\Models\Lead;
 use App\Models\LeadAssignment;
 use App\Models\LeadObservation;
+use App\Models\SaleActivity;
 use App\Models\User;
 use Carbon\Carbon;
 use DateInterval;
@@ -75,7 +77,7 @@ class LeadsController extends Controller
             // Si no existe, determinar el próximo lead a asignar
             $data = $this->findNextLeadId($user, $lastAssignment);
 
-            if(!$data['nextLeadId']){
+            if (!$data['nextLeadId']) {
                 return null;
             }
             // Crear la nueva asignación
@@ -132,15 +134,14 @@ class LeadsController extends Controller
         // Encuentra el próximo lead no asignado al usuario
         $projects = $user->projects_pivot->pluck('lead_project_id')->toArray();
 
-        if(count($projects) == 0){
+        if (count($projects) == 0) {
             return [
                 'round' => $round,
                 'nextLeadId' => null
             ];
         }
 
-        $nextLeadId = Lead::
-            whereIn('lead_project_id', $projects)
+        $nextLeadId = Lead::whereIn('lead_project_id', $projects)
             ->when(in_array(null, $projects), function ($query) {
                 return $query->orWhereNull('lead_project_id');
             })
@@ -166,9 +167,9 @@ class LeadsController extends Controller
     {
         // Comienza una nueva vuelta asignando el primer lead disponible
         $lead = Lead::orderBy('id')
-        ->where('status', 'Nuevo')
-        ->whereIn('lead_project_id', $projects)
-        ->first();
+            ->where('status', 'Nuevo')
+            ->whereIn('lead_project_id', $projects)
+            ->first();
 
         return $lead ? $lead->id : null;
     }
@@ -249,22 +250,21 @@ class LeadsController extends Controller
         $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })->when($searchString, function ($q) use ($searchString) {
-            return $q->where(function($q) use ($searchString){
+            return $q->where(function ($q) use ($searchString) {
                 return $q->where('name', 'LIKE', "%$searchString%")
-                ->orWhere('courses', 'LIKE', "%$searchString%")
-                ->orWhere('status', 'LIKE', "%$searchString%")
-                ->orWhere('origin', 'LIKE', "%$searchString%")
-                ->orWhere('phone', 'LIKE', "%$searchString%")
-                ->orWhere('email', 'LIKE', "%$searchString%")
-                ->orWhere('document', 'LIKE', "%$searchString%");
+                    ->orWhere('courses', 'LIKE', "%$searchString%")
+                    ->orWhere('status', 'LIKE', "%$searchString%")
+                    ->orWhere('origin', 'LIKE', "%$searchString%")
+                    ->orWhere('phone', 'LIKE', "%$searchString%")
+                    ->orWhere('email', 'LIKE', "%$searchString%")
+                    ->orWhere('document', 'LIKE', "%$searchString%");
             });
-
         })->when($request->project_id, function ($query) use ($request) {
             $p = $request->project_id == 'Base' ? null : $request->project_id;
             return $query->where('lead_project_id', $p);
         })->with(['observations' => function ($query) {
-                return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-            }])->with('user', 'leadProject')->paginate($perPage);
+            return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+        }])->with('user', 'leadProject')->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
@@ -376,7 +376,7 @@ class LeadsController extends Controller
             }
 
             return [
-                'id'            => $asesor->id,
+                'id'             => $asesor->id,
                 'name'           => $asesor->name,
                 'email'          => $asesor->email,
                 'active_working' => $asesor->active_working,
@@ -388,5 +388,73 @@ class LeadsController extends Controller
         });
 
         return ApiResponseController::response("Exito", 200, $reporte);
+    }
+
+    public function updateSalesActivity(Request $request)
+    {
+        if ($request->end) {
+            $callActivity = SaleActivity::where('user_id', $request->user_id)
+                ->where('lead_id', $request->lead_id)
+                ->where('end', null)
+                ->where('type', $request->type)
+                ->where('lead_assignment_id', $request->lead_assignment_id)
+                ->first();
+
+            $end = Carbon::now();
+
+            $callActivity->update([
+                'end' => $end
+            ]);
+
+            return ApiResponseController::response("Exito", 200, $callActivity);
+        }
+
+        $start = Carbon::now();
+
+        $saleActivity = SaleActivity::create([
+            'user_id'            => $request->user_id,
+            'lead_id'            => $request->lead_id,
+            'lead_assignment_id' => $request->lead_assignment_id,
+            'type'               => $request->type,
+            'start'              => $start
+        ]);
+
+        return ApiResponseController::response("Exito", 200, $saleActivity);
+    }
+
+    function diconnectCallActivity(Request $request)
+    {
+        if (!(is_array($request->events) && isset($request->events[0]) && $request->events[0]['name'] === 'channel_vacated')) {
+            return ApiResponseController::response("Exito", 200, []);
+        }
+
+        $user_id = explode('.', $request->events[0]['channel'])[1];
+
+        $callActivity = SaleActivity::where('user_id', $user_id)
+            ->where('end', null)
+            ->where('lead_assignment_id', $request->lead_assignment_id)
+            ->get();
+
+        if ($callActivity->count() > 0) {
+            $end = Carbon::now();
+
+            $callActivity->each(function ($item) use ($end) {
+                $item->update([
+                    'end' => $end
+                ]);
+            });
+        }
+        return ApiResponseController::response("Exito", 201, []);
+    }
+
+    function getLastCallActivity(Request $request)
+    {
+        $user = $request->user();
+
+        $callActivity = SaleActivity::where('user_id', $user->id)
+            ->orderBy('end', 'DESC')
+            ->first();
+
+        return ApiResponseController::response("Exito", 200, $callActivity);
     }
 }

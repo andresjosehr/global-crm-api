@@ -28,6 +28,9 @@ Route::prefix('auth')->group(function (){
 Route::get('messages/extension', 'App\Http\Controllers\Messages\FreeCourseExtensions@index');
 Route::get('messages/ponderacion', 'App\Http\Controllers\Messages\FreeCoursesWeightedController@index');
 
+Route::post('sales/call-activity', 'App\Http\Controllers\PusherController@callActivity');
+Route::post('sales/disconnect-call-activity', 'App\Http\Controllers\LeadsController@diconnectCallActivity');
+
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
 
     Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
@@ -55,6 +58,10 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::get('get-previous-lead', 'App\Http\Controllers\LeadsController@getPreviousLead');
         Route::get('get-current-lead', 'App\Http\Controllers\LeadsController@getCurrentLead');
         Route::get('get-sells-users', 'App\Http\Controllers\UsersController@getSellsUsers');
+        Route::post('update-sales-activity', 'App\Http\Controllers\LeadsController@updateSalesActivity');
+        Route::get('last-call-activity', 'App\Http\Controllers\LeadsController@getLastCallActivity');
+
+
 
         Route::get('get-next-schedule-call', 'App\Http\Controllers\LeadsController@getNextScheduleCall');
 

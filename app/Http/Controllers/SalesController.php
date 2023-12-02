@@ -58,16 +58,14 @@ class SalesController extends Controller
 
         $user = $request->user();
 
-        // Get from .env
         $key    = env('ZADARMA_KEY');
         $secret = env('ZADARMA_SECRET');
 
         $api = new Api($key, $secret);
-        // $sip = $api->getWebrtcKey('328959-101');
         $sip = $api->getWebrtcKey($user->zadarma_id);
 
         $data = [
-            'key' => $sip->key,
+            'key'        => $sip->key,
             'zadarma_id' => $user->zadarma_id,
         ];
         return ApiResponseController::response('Consulta Exitosa', 200, $data);
