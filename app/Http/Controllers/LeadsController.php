@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use DateInterval;
 use DatePeriod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LeadsController extends Controller
 {
@@ -297,14 +298,15 @@ class LeadsController extends Controller
                 return $query->where('schedule_call_datetime', '<>', NULL)
                     ->where('schedule_call_datetime', '>', $now)
                     ->orderBy('schedule_call_datetime', 'ASC');
-            })->with('observations')
+            })
+            ->with('observations')
             ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
     }
 
 
-    public function getActivityHistory(Request $request)
+    public function getLeadsAssignments(Request $request)
     {
 
         $user = $request->user();
@@ -317,18 +319,22 @@ class LeadsController extends Controller
             ->when($request->user_id, function ($query) use ($request) {
                 return $query->where('user_id', $request->user_id);
             })
+            ->withCount('calls')
             ->orderBy('assigned_at', 'DESC')
             ->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
 
-    public function getActivityHistoryByUser(Request $request)
+    public function getAssignmentsByHour(Request $request)
     {
         $user = $request->user();
-        $start = Carbon::parse($request->input('start'));
-        // Ajustar la fecha de fin para incluir el final del día
-        $end = Carbon::parse($request->input('end'))->endOfDay();
+        $start = Carbon::now()->startOfDay();
+        $end = Carbon::now()->endOfDay();
+        if ($request->start) {
+            $start = Carbon::parse($request->input('start'));
+            $end = Carbon::parse($request->input('end'))->endOfDay();
+        }
 
         $roleAsesorId = 2; // ID del rol de asesor
 
@@ -451,10 +457,173 @@ class LeadsController extends Controller
     {
         $user = $request->user();
 
-        $callActivity = SaleActivity::where('user_id', $user->id)
+        SaleActivity::where('user_id', $user->id)
             ->orderBy('end', 'DESC')
             ->first();
+    }
 
-        return ApiResponseController::response("Exito", 200, $callActivity);
+    public function getCalls(Request $request)
+    {
+        $user = $request->user();
+
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+        $calls = SaleActivity::where('type', 'Llamada')
+            ->when($user->role_id != 1, function ($query) use ($request) {
+                return $query->where('user_id', $request->user()->id);
+            })
+            ->when($request->user_id, function ($query) use ($request) {
+                return $query->where('user_id', $request->user_id);
+            })
+            ->with('lead')
+            ->orderBy('created_at', 'DESC')
+            ->paginate($perPage);
+
+        $calls->getCollection()->transform(function ($call) {
+            // Añadimos el accesorio al modelo
+            return $call->append('duration');
+        });
+
+        return ApiResponseController::response("Exito", 200, $calls);
+    }
+
+    public function getCallsByHour(Request $request)
+    {
+        $user = $request->user();
+        $start = Carbon::now()->startOfDay();
+        $end = Carbon::now()->endOfDay();
+        if ($request->start) {
+            $start = Carbon::parse($request->input('start'));
+            $end = Carbon::parse($request->input('end'))->endOfDay();
+        }
+
+        $roleAsesorId = 2; // ID del rol de asesor
+
+        // Obtener todos los asesores
+        $asesores = User::where('role_id', $roleAsesorId)
+            ->when($request->input('user_id'), function ($query) use ($request) {
+                return $query->where('id', $request->input('user_id'));
+            })->when($user->role_id != 1, function ($query) use ($request) {
+                return $query->where('id', $request->user()->id);
+            })
+            ->with('projects_pivot')
+            ->get();
+
+
+        $reporte = $asesores->map(function ($asesor) use ($start, $end) {
+            $count = 0;
+
+            $calls = SaleActivity::where('user_id', $asesor->id)
+                ->where('type', 'Llamada')
+                ->whereBetween('created_at', [$start, $end])
+                ->selectRaw('DATE(created_at) as fecha, HOUR(created_at) as hora, COUNT(*) as value')
+                ->groupBy('fecha', 'hora')
+                ->get()
+                ->groupBy('fecha')
+                ->mapWithKeys(function ($item) {
+                    return [$item[0]->fecha => $item->keyBy('hora')];
+                });
+
+            $datos = [];
+
+            // Iterar sobre cada día en el rango
+            for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+                $fechaFormato = $date->format('Y-m-d');
+                foreach (range(0, 23) as $hora) {
+                    $horaKey = str_pad($hora, 2, '0', STR_PAD_LEFT);
+
+                    // Verificar si existen datos para la fecha y hora específicas
+                    $value = $calls[$fechaFormato][$horaKey]->value ?? 0;
+                    $count += $value;
+
+                    $datos[] = [
+                        'datetime' => $fechaFormato . ' ' . $horaKey . ':00:00',
+                        'value' => $value
+                    ];
+                }
+            }
+
+            return [
+                'id'             => $asesor->id,
+                'name'           => $asesor->name,
+                'email'          => $asesor->email,
+                'active_working' => $asesor->active_working,
+                'role_id'        => $asesor->role_id,
+                'count'          => $count,
+                'projects_pivot' => $asesor->projects_pivot,
+                'data'           => $datos
+            ];
+        });
+
+        return ApiResponseController::response("Exito", 200, $reporte);
+    }
+
+
+    public function getMainStats(Request $request)
+    {
+        $user = $request->user();
+        $start = Carbon::now()->startOfDay();
+        $end = Carbon::now()->endOfDay();
+        if ($request->start) {
+            $start = Carbon::parse($request->input('start'));
+            $end = Carbon::parse($request->input('end'))->endOfDay();
+        }
+
+
+        $activities = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
+                return $query->where('user_id', $request->user()->id);
+            })
+            ->when($user->role_id, function ($query) use ($request) {
+                $query->when($request->user_id, function ($query) use ($request) {
+                    return $query->where('user_id', $request->user_id);
+                });
+            })
+            ->where('type', 'Llamada')
+            ->whereBetween('created_at', [$start, $end])
+            ->get();
+
+        $totalSeconds = 0;
+
+        foreach ($activities as $activity) {
+            $_start = Carbon::parse($activity->start);
+            $_end = Carbon::parse($activity->end);
+
+            $totalSeconds += $_end->diffInSeconds($_start);
+        }
+
+        $hours = $totalSeconds / 3600;
+        $hours = number_format($hours, 2, '.', '');
+        // Convert to float
+        $hours = floatval($hours);
+
+
+        $leadCounts = LeadAssignment::when($user->role_id != 1, function ($query) use ($request) {
+                return $query->where('user_id', $request->user()->id);
+            })
+            ->when($user->role_id, function ($query) use ($request) {
+                $query->when($request->user_id, function ($query) use ($request) {
+                    return $query->where('user_id', $request->user_id);
+                });
+            })
+            ->whereBetween('assigned_at', [$start, $end])
+            ->count();
+
+        $callsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
+                return $query->where('user_id', $request->user()->id);
+            })
+            ->when($user->role_id, function ($query) use ($request) {
+                $query->when($request->user_id, function ($query) use ($request) {
+                    return $query->where('user_id', $request->user_id);
+                });
+            })
+            ->where('type', 'Llamada')
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+
+            $data = [
+                'hoursInCall' => $hours,
+                'leadCounts' => $leadCounts,
+                'callsCount' => $callsCount
+            ];
+        return ApiResponseController::response("Exito", 200, $data);
     }
 }

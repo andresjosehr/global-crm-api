@@ -33,4 +33,14 @@ class LeadAssignment extends Model
     {
         return $this->hasMany(LeadObservation::class);
     }
+
+    public function comunications()
+    {
+        return $this->hasMany(SaleActivity::class);
+    }
+
+    public function calls()
+    {
+        return $this->hasMany(SaleActivity::class)->where('type', 'Llamada');
+    }
 }

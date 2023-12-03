@@ -65,7 +65,7 @@ class UsersSeeder extends Seeder
 
 
             [
-                'name'       => 'ALDHAIR JOSÉ CARDOZO VILLARROEL',
+                'name'       => 'Aldhair José Cardozo Villarroel',
                 'email'      => 'aldhairjcardozov@gmail.com',
                 'password'   => bcrypt('5fChmz8eMlhj5#L'),
                 'role_id'    => DB::table('roles')->where('name', 'Asesor de ventas')->first()->id,

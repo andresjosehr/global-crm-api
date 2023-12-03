@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TestController extends Controller
 {
@@ -14,20 +17,63 @@ class TestController extends Controller
      */
     public function index()
     {
-        $student = Student::with('orders.orderCourses.certificationTests', 'orders.orderCourses.course')->get()->map(function ($s) {return $s->attachCertificationTest(); });
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('sales_activities')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        $salesUsers = User::where('role_id', 2)->with('leadAssignments')->get();
+        $faker = \Faker\Factory::create();
 
-        // Filter
-        $student = $student->filter(function ($s) {
-            return $s->orders->filter(function ($o) {
-                return $o->orderCourses->filter(function ($oc) {
-                    return $oc->course->certification_test;
-                });
-            });
-        });
+        foreach ($salesUsers as $user) {
+            for ($i = 0; $i < count($user->leadAssignments) - 1; $i++) {
+                $leadAssignment = $user->leadAssignments[$i];
+                $nextLeadAssignment = $user->leadAssignments[$i + 1];
 
-        return $student;
+                $time1 = Carbon::parse($leadAssignment->created_at);
+                $time2 = Carbon::parse($nextLeadAssignment->created_at);
 
+                $diff = $time1->diffInSeconds($time2);
+                $n = $faker->numberBetween($min = 1, $max = 3);
+
+                $lastEndTime = $time1;
+
+                for ($j = 0; $j < $n; $j++) {
+                    $activityDuration = $faker->numberBetween(1, $diff / $n); // Asegúrese de que la duración no exceda el tiempo disponible
+                    $startTime = (clone $lastEndTime)->addSeconds($faker->numberBetween(1, $diff - $activityDuration)); // Inicia después del final de la actividad anterior
+                    $endTime = (clone $startTime)->addSeconds($activityDuration); // Termina después de la duración de la actividad
+
+                    // Asegurarse de que la actividad termine antes de la siguiente asignación de lead
+                    if ($endTime > $time2) {
+                        $endTime = clone $time2;
+                    }
+
+                    // if more than 30 minutes, skip
+                    if ($endTime->diffInMinutes($startTime) > 30) {
+                        continue;
+                    }
+
+                    $salesActivity = [
+                        'user_id' => $user->id,
+                        'lead_assignment_id' => $leadAssignment->id,
+                        'lead_id' => $leadAssignment->lead_id,
+                        'start' => $startTime,
+                        'end' => $endTime,
+                        'type' => 'Llamada',
+                        'created_at' => $startTime,
+                        'updated_at' => $endTime,
+
+                    ];
+
+                    DB::table('sales_activities')->insert($salesActivity);
+
+                    $lastEndTime = $endTime;
+
+                    // Reducir el tiempo disponible para las siguientes actividades
+                    $diff -= $startTime->diffInSeconds($lastEndTime);
+                }
+            }
+        }
     }
+
 
     /**
      * Store a newly created resource in storage.
