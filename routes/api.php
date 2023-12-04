@@ -33,6 +33,8 @@ Route::post('sales/disconnect-call-activity', 'App\Http\Controllers\LeadsControl
 
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
 
+    Route::get('make-session/{id}', 'App\Http\Controllers\AuthController@makeSession');
+
     Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');

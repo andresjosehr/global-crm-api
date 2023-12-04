@@ -123,4 +123,27 @@ class AuthController extends Controller
 
         return ApiResponseController::response('Contraseña reestablecida, ahora puedes iniciar sesion', 200);
     }
+
+    public function makeSession(Request $request, $id){
+        $user = User::find($id);
+        if (!$user) {
+            return ApiResponseController::response('Usuario no existe', 422);
+        }
+
+        // Configurar el TTL para una semana (60 minutos * 24 horas * 7 días)
+        $myTTL = 60 * 24 * 7;
+        JWTAuth::factory()->setTTL($myTTL);
+
+        // Generar el token con el nuevo TTL
+        $token = JWTAuth::fromUser($user);
+
+        $user->modules = $user->getModules();
+        $data = [
+            'accessToken' => $token,
+            'tokenType' => 'bearer',
+            'user' => $user
+        ];
+
+        return ApiResponseController::response('Autenticacion exitosa', 200, $data);
+    }
 }

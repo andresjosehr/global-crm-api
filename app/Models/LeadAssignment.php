@@ -43,4 +43,9 @@ class LeadAssignment extends Model
     {
         return $this->hasMany(SaleActivity::class)->where('type', 'Llamada');
     }
+
+    public function saleActivities()
+    {
+        return $this->hasMany(SaleActivity::class);
+    }
 }

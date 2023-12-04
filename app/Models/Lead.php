@@ -33,4 +33,9 @@ class Lead extends Model
     public function leadProject(){
         return $this->belongsTo(LeadProject::class, 'lead_project_id', 'id');
     }
+
+    public function saleActivities()
+    {
+        return $this->hasMany(SaleActivity::class);
+    }
 }

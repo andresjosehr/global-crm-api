@@ -19,6 +19,9 @@ class SaleActivity extends Model
         'lead_id',
         'type',
         'lead_assignment_id',
+        'answered',
+        'observation',
+        'schedule_call_datetime',
     ];
 
     public function lead()
@@ -37,17 +40,17 @@ class SaleActivity extends Model
     }
 
     public function getDurationAttribute()
-{
-    $fechaInicio = Carbon::parse($this->start);
-    $fechaFin = Carbon::parse($this->end);
+    {
+        $fechaInicio = Carbon::parse($this->start);
+        $fechaFin = Carbon::parse($this->end);
 
-    $diff = $fechaInicio->diff($fechaFin);
+        $diff = $fechaInicio->diff($fechaFin);
 
-    // Comprobamos si los minutos son 0
-    if ($diff->i == 0) {
-        return $diff->format('%s segundos');
-    } else {
-        return $diff->format('%i minutos %s segundos');
+        // Comprobamos si los minutos son 0
+        if ($diff->i == 0) {
+            return $diff->format('%s segundos');
+        } else {
+            return $diff->format('%i minutos %s segundos');
+        }
     }
-}
 }

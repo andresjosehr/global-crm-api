@@ -28,7 +28,7 @@ class LeadsController extends Controller
             self::assignNextLead($user);
         }
 
-        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'lead.user', 'observations.user')->first();
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.saleActivities.user', 'lead.user', 'saleActivities.user')->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -39,7 +39,7 @@ class LeadsController extends Controller
 
         self::assignNextLead($user);
 
-        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'lead.user', 'observations.user')->first();
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.saleActivities.user', 'lead.user', 'saleActivities.user')->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -56,7 +56,7 @@ class LeadsController extends Controller
 
         $lead = $previousAssignment->lead;
         // $lead = Lead::with('observations.user')->find($lead->id);
-        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.observations.user', 'lead.user', 'observations.user')->first();
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.saleActivities.user', 'lead.user', 'saleActivities.user')->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -279,7 +279,7 @@ class LeadsController extends Controller
             ->when($user->role->name != 'Administrador', function ($query) use ($user) {
                 return $query->where('user_id', $user->id);
             })
-            ->with('observations.user', 'user')
+            ->with('user', 'saleActivities.user')
             ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
@@ -293,13 +293,16 @@ class LeadsController extends Controller
 
         $lead = Lead::where('user_id', $user->id)
             ->where('status', 'Interesado')
-            ->whereHas('observations', function ($query) {
+            ->whereHas('saleActivities', function ($query) use ($now) {
                 $now = Carbon::now()->format('Y-m-d H:i:s');
                 return $query->where('schedule_call_datetime', '<>', NULL)
                     ->where('schedule_call_datetime', '>', $now)
                     ->orderBy('schedule_call_datetime', 'ASC');
             })
-            ->with('observations')
+            ->with(['saleActivities' => function($q){
+                return $q->where('schedule_call_datetime', 'IS NOT', NULL)
+                ->where('schedule_call_datetime', '<>', NULL);
+            }])
             ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
@@ -312,12 +315,15 @@ class LeadsController extends Controller
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
-        $leadAssignament = LeadAssignment::with('user', 'lead', 'observations')
+        $leadAssignament = LeadAssignment::with('user', 'lead', 'observations', 'saleActivities')
             ->when($user->role_id != 1, function ($query) use ($request) {
                 return $query->where('user_id', $request->user()->id);
             })
             ->when($request->user_id, function ($query) use ($request) {
                 return $query->where('user_id', $request->user_id);
+            })
+            ->when($request->start && $request->end, function ($query) use ($request) {
+                return $query->whereBetween('assigned_at', [$request->start, $request->end]);
             })
             ->withCount('calls')
             ->orderBy('assigned_at', 'DESC')
@@ -408,8 +414,16 @@ class LeadsController extends Controller
 
             $end = Carbon::now();
 
+            $schedule_call_datetime = null;
+            if ($request->schedule_call_datetime) {
+                $schedule_call_datetime = Carbon::parse($request->schedule_call_datetime);
+            }
+
             $callActivity->update([
-                'end' => $end
+                'end' => $end,
+                'answered' => $request->answered,
+                'observation' => $request->observation,
+                'schedule_call_datetime' => $schedule_call_datetime
             ]);
 
             return ApiResponseController::response("Exito", 200, $callActivity);
@@ -457,9 +471,11 @@ class LeadsController extends Controller
     {
         $user = $request->user();
 
-        SaleActivity::where('user_id', $user->id)
+        $sale = SaleActivity::where('user_id', $user->id)
             ->orderBy('end', 'DESC')
             ->first();
+
+        return ApiResponseController::response("Exito", 200, $sale);
     }
 
     public function getCalls(Request $request)
@@ -570,8 +586,8 @@ class LeadsController extends Controller
 
 
         $activities = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
-                return $query->where('user_id', $request->user()->id);
-            })
+            return $query->where('user_id', $request->user()->id);
+        })
             ->when($user->role_id, function ($query) use ($request) {
                 $query->when($request->user_id, function ($query) use ($request) {
                     return $query->where('user_id', $request->user_id);
@@ -597,8 +613,8 @@ class LeadsController extends Controller
 
 
         $leadCounts = LeadAssignment::when($user->role_id != 1, function ($query) use ($request) {
-                return $query->where('user_id', $request->user()->id);
-            })
+            return $query->where('user_id', $request->user()->id);
+        })
             ->when($user->role_id, function ($query) use ($request) {
                 $query->when($request->user_id, function ($query) use ($request) {
                     return $query->where('user_id', $request->user_id);
@@ -608,8 +624,8 @@ class LeadsController extends Controller
             ->count();
 
         $callsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
-                return $query->where('user_id', $request->user()->id);
-            })
+            return $query->where('user_id', $request->user()->id);
+        })
             ->when($user->role_id, function ($query) use ($request) {
                 $query->when($request->user_id, function ($query) use ($request) {
                     return $query->where('user_id', $request->user_id);
@@ -619,11 +635,11 @@ class LeadsController extends Controller
             ->whereBetween('created_at', [$start, $end])
             ->count();
 
-            $data = [
-                'hoursInCall' => $hours,
-                'leadCounts' => $leadCounts,
-                'callsCount' => $callsCount
-            ];
+        $data = [
+            'hoursInCall' => $hours,
+            'leadCounts' => $leadCounts,
+            'callsCount' => $callsCount
+        ];
         return ApiResponseController::response("Exito", 200, $data);
     }
 }

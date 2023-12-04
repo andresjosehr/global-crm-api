@@ -51,6 +51,9 @@ class TestController extends Controller
                         continue;
                     }
 
+                    $answered = $faker->boolean(50);
+                    $scheduleCallDatetime = $answered && $faker->boolean(50) ? $faker->dateTimeBetween(Carbon::now()->addDays(1), Carbon::now()->addDays(7)) : null;
+                    $obs = $answered && $faker->boolean(50) ? $faker->text(100) : null;
                     $salesActivity = [
                         'user_id' => $user->id,
                         'lead_assignment_id' => $leadAssignment->id,
@@ -58,6 +61,9 @@ class TestController extends Controller
                         'start' => $startTime,
                         'end' => $endTime,
                         'type' => 'Llamada',
+                        'answered' => $answered,
+                        'observation' => $obs,
+                        'schedule_call_datetime' => $scheduleCallDatetime,
                         'created_at' => $startTime,
                         'updated_at' => $endTime,
 
