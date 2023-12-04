@@ -417,6 +417,12 @@ class LeadsController extends Controller
             $schedule_call_datetime = null;
             if ($request->schedule_call_datetime) {
                 $schedule_call_datetime = Carbon::parse($request->schedule_call_datetime);
+
+                $user = $request->user();
+                Lead::where('id', $request->lead_id)->update([
+                    'status' => 'Interesado',
+                    'user_id' => $user->id,
+                ]);
             }
 
             $callActivity->update([
