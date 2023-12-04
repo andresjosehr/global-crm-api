@@ -87,6 +87,7 @@ class LeadsController extends Controller
                 'round' => $data['round'],
                 'order' => $nextOrder,
                 'active' => true, // El lead se marca como activo por defecto
+                'project_id' => $data['project_id'],
                 'assigned_at' => now(),
             ]);
 
@@ -130,19 +131,26 @@ class LeadsController extends Controller
 
         // Get max activeAssignedLeadIds
         $round = LeadAssignment::max('round') ?? 1;
-        $maxActiveAssignedLeadId = LeadAssignment::where('round', $round)->max('lead_id') ?? 0;
+        $projects = $user->projects_pivot->pluck('lead_project_id')->toArray();
+        $maxActiveAssignedLeadId = LeadAssignment::where('round', $round)
+        ->whereIn('project_id', $projects)
+        ->when(in_array(null, $projects), function ($query) {
+            return $query->orWhereNull('project_id');
+        })
+        ->max('lead_id') ?? 0;
 
         // Encuentra el próximo lead no asignado al usuario
-        $projects = $user->projects_pivot->pluck('lead_project_id')->toArray();
+
 
         if (count($projects) == 0) {
             return [
-                'round' => $round,
+                'round'      => $round,
+                'project_id' => null,
                 'nextLeadId' => null
             ];
         }
 
-        $nextLeadId = Lead::whereIn('lead_project_id', $projects)
+        $nextLead = Lead::whereIn('lead_project_id', $projects)
             ->when(in_array(null, $projects), function ($query) {
                 return $query->orWhereNull('lead_project_id');
             })
@@ -151,16 +159,16 @@ class LeadsController extends Controller
             ->orderBy('id', 'ASC')
             ->first();
 
-        if (!$nextLeadId) {
+
+        if (!$nextLead) {
             $round++;
-            $nextLeadId = $this->startNewRound($projects);
-        } else {
-            $nextLeadId = $nextLeadId->id;
+            $nextLead = $this->startNewRound($projects);
         }
 
         return [
             'round' => $round,
-            'nextLeadId' => $nextLeadId
+            'nextLeadId' => $nextLead->id,
+            'project_id' => $nextLead->lead_project_id
         ];
     }
 
@@ -170,9 +178,12 @@ class LeadsController extends Controller
         $lead = Lead::orderBy('id')
             ->where('status', 'Nuevo')
             ->whereIn('lead_project_id', $projects)
+            ->when(in_array(null, $projects), function ($query) {
+                return $query->orWhereNull('lead_project_id');
+            })
             ->first();
 
-        return $lead ? $lead->id : null;
+        return $lead;
     }
 
 
@@ -417,12 +428,6 @@ class LeadsController extends Controller
             $schedule_call_datetime = null;
             if ($request->schedule_call_datetime) {
                 $schedule_call_datetime = Carbon::parse($request->schedule_call_datetime);
-
-                $user = $request->user();
-                Lead::where('id', $request->lead_id)->update([
-                    'status' => 'Interesado',
-                    'user_id' => $user->id,
-                ]);
             }
 
             $callActivity->update([

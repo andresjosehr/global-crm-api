@@ -16,6 +16,7 @@ class LeadAssignment extends Model
         'assigned_at',
         'order',
         'round',
+        'project_id'
     ];
 
 
