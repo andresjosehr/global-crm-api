@@ -37,15 +37,15 @@ class ModulesRolesSeeder extends Seeder
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
-                'module_id' => self::module('Gestionar leads'),
+                'module_id' => self::module('Gestion de prospectos'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
-                'module_id' => self::module('Asignados'),
+                'module_id' => self::module('Mi base'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
-                'module_id' => self::module('Historial de actividades'),
+                'module_id' => self::module('Panel de reportes'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
 

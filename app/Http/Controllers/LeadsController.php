@@ -133,11 +133,11 @@ class LeadsController extends Controller
         $round = LeadAssignment::max('round') ?? 1;
         $projects = $user->projects_pivot->pluck('lead_project_id')->toArray();
         $maxActiveAssignedLeadId = LeadAssignment::where('round', $round)
-        ->whereIn('project_id', $projects)
-        ->when(in_array(null, $projects), function ($query) {
-            return $query->orWhereNull('project_id');
-        })
-        ->max('lead_id') ?? 0;
+            ->whereIn('project_id', $projects)
+            ->when(in_array(null, $projects), function ($query) {
+                return $query->orWhereNull('project_id');
+            })
+            ->max('lead_id') ?? 0;
 
         // Encuentra el próximo lead no asignado al usuario
 
@@ -260,26 +260,28 @@ class LeadsController extends Controller
         $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
 
         $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
-            return $query->where('user_id', $user->id);
-        })->when($searchString, function ($q) use ($searchString) {
-            return $q->where(function ($q) use ($searchString) {
-                return $q->where('name', 'LIKE', "%$searchString%")
-                    ->orWhere('courses', 'LIKE', "%$searchString%")
-                    ->orWhere('status', 'LIKE', "%$searchString%")
-                    ->orWhere('origin', 'LIKE', "%$searchString%")
-                    ->orWhere('phone', 'LIKE', "%$searchString%")
-                    ->orWhere('email', 'LIKE', "%$searchString%")
-                    ->orWhere('document', 'LIKE', "%$searchString%");
-            });
-        })->when($request->project_id, function ($query) use ($request) {
-            $p = $request->project_id == 'Base' ? null : $request->project_id;
-            return $query->where('lead_project_id', $p);
-        })->with(['observations' => function ($query) {
-            return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-        }])->with('user', 'leadProject', 'saleActivities.user')
-        ->where('status', '<>', 'Archivado')
-        ->orderBy('id', 'DESC')
-        ->paginate($perPage);
+            return $query->where('user_id', $user->id)->where('status', '<>', 'Archivado');
+        })
+            ->when($mode == 'potenciales', function ($q) use ($user) {
+            })
+            ->when($searchString, function ($q) use ($searchString) {
+                return $q->where(function ($q) use ($searchString) {
+                    return $q->where('name', 'LIKE', "%$searchString%")
+                        ->orWhere('courses', 'LIKE', "%$searchString%")
+                        ->orWhere('status', 'LIKE', "%$searchString%")
+                        ->orWhere('origin', 'LIKE', "%$searchString%")
+                        ->orWhere('phone', 'LIKE', "%$searchString%")
+                        ->orWhere('email', 'LIKE', "%$searchString%")
+                        ->orWhere('document', 'LIKE', "%$searchString%");
+                });
+            })->when($request->project_id, function ($query) use ($request) {
+                $p = $request->project_id == 'Base' ? null : $request->project_id;
+                return $query->where('lead_project_id', $p);
+            })->with(['observations' => function ($query) {
+                return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+            }])->with('user', 'leadProject', 'saleActivities.user')
+            ->orderBy('id', 'DESC')
+            ->paginate($perPage);
 
         $leads->getCollection()->transform(function ($leadAssignment) {
             // Añadimos el accesorio al modelo
@@ -339,9 +341,9 @@ class LeadsController extends Controller
                     ->where('schedule_call_datetime', '>', $now)
                     ->orderBy('schedule_call_datetime', 'ASC');
             })
-            ->with(['saleActivities' => function($q){
+            ->with(['saleActivities' => function ($q) {
                 return $q->where('schedule_call_datetime', 'IS NOT', NULL)
-                ->where('schedule_call_datetime', '<>', NULL);
+                    ->where('schedule_call_datetime', '<>', NULL);
             }])
             ->first();
 
@@ -372,15 +374,15 @@ class LeadsController extends Controller
             ->orderBy('assigned_at', 'DESC')
             ->paginate($perPage);
 
-            // attach duration to each sale activity
-            $leadAssignament->getCollection()->transform(function ($leadAssignment) {
-                // Añadimos el accesorio al modelo
-                $leadAssignment->saleActivities->each(function ($saleActivity) {
-                    $saleActivity->append('duration');
-                    return $saleActivity;
-                });
-                return $leadAssignment;
+        // attach duration to each sale activity
+        $leadAssignament->getCollection()->transform(function ($leadAssignment) {
+            // Añadimos el accesorio al modelo
+            $leadAssignment->saleActivities->each(function ($saleActivity) {
+                $saleActivity->append('duration');
+                return $saleActivity;
             });
+            return $leadAssignment;
+        });
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -426,7 +428,7 @@ class LeadsController extends Controller
             // Iterar sobre cada día en el rango
             for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
                 $fechaFormato = $date->format('Y-m-d');
-                foreach (range(0, 23) as $hora) {
+                foreach (range(8, 23) as $hora) {
                     $horaKey = str_pad($hora, 2, '0', STR_PAD_LEFT);
 
                     // Verificar si existen datos para la fecha y hora específicas
@@ -439,8 +441,8 @@ class LeadsController extends Controller
                 }
             }
             $count = 0;
-            foreach($assignmentsPorHora as $key => $value){
-                foreach($value as $key2 => $value2){
+            foreach ($assignmentsPorHora as $key => $value) {
+                foreach ($value as $key2 => $value2) {
                     $count += $value2->value;
                 }
             }
@@ -471,12 +473,17 @@ class LeadsController extends Controller
                 ->where('lead_assignment_id', $request->lead_assignment_id)
                 ->first();
 
+            if (!$callActivity) {
+                return ApiResponseController::response("Exito", 200, []);
+            }
+
             $end = Carbon::now();
 
             $schedule_call_datetime = null;
             if ($request->schedule_call_datetime) {
                 $schedule_call_datetime = Carbon::parse($request->schedule_call_datetime);
             }
+
 
             $callActivity->update([
                 'end' => $end,
@@ -488,15 +495,24 @@ class LeadsController extends Controller
             return ApiResponseController::response("Exito", 200, $callActivity);
         }
 
-        $start = Carbon::now();
+        $start = Carbon::now()->format('Y-m-d H:i:s');
 
-        $saleActivity = SaleActivity::create([
-            'user_id'            => $request->user_id,
-            'lead_id'            => $request->lead_id,
-            'lead_assignment_id' => $request->lead_assignment_id,
-            'type'               => $request->type,
-            'start'              => $start
-        ]);
+        $saleActivityExists = SaleActivity::where('user_id', $request->user_id)
+            ->where('lead_id', $request->lead_id)
+            ->where('end', null)
+            ->where('type', $request->type)
+            ->where('lead_assignment_id', $request->lead_assignment_id)
+            ->first();
+
+        if ($saleActivityExists) {
+            $saleActivity = SaleActivity::create([
+                'user_id'            => $request->user_id,
+                'lead_id'            => $request->lead_id,
+                'lead_assignment_id' => $request->lead_assignment_id,
+                'type'               => $request->type,
+                'start'              => $start
+            ]);
+        }
 
         return ApiResponseController::response("Exito", 200, $saleActivity);
     }

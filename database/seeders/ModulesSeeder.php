@@ -49,15 +49,15 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
-                'name'        => 'Historial de actividades',
+                'name'        => 'Panel de reportes',
                 'description' => '',
-                'icon'        => 'heroicons_outline:list-bullet',
+                'icon'        => 'heroicons_outline:chart-bar',
                 'path'        => 'lista/historial-actividad',
                 'type'        => 'basic',
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
-                'name'        => 'Asignados',
+                'name'        => 'Mi base',
                 'description' => '',
                 'icon'        => 'heroicons_outline:list-bullet',
                 'path'        => 'lista/potenciales',
@@ -65,7 +65,7 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
-                'name'        => 'Subir documento',
+                'name'        => 'Nube de documentos',
                 'description' => '',
                 'icon'        => 'heroicons_outline:document-text',
                 'path'        => 'importar',
@@ -73,13 +73,33 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
-                'name'        => 'Gestionar leads',
+                'name'        => 'Gestion de prospectos',
                 'description' => '',
                 'icon'        => 'heroicons_outline:phone',
                 'path'        => 'gestionar',
                 'type'        => 'basic',
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
+
+            [
+                'name'        => 'Equipo de asesores',
+                'description' => '',
+                'icon'        => 'heroicons_outline:identification',
+                'path'        => '1',
+                'type'        => 'basic',
+                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
+            ],
+
+            [
+                'name'        => 'Agenda activa',
+                'description' => '',
+                'icon'        => 'heroicons_outline:calendar',
+                'path'        => '2',
+                'type'        => 'basic',
+                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
+            ],
+
+
 		]);
 
 
