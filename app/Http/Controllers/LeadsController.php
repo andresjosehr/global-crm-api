@@ -276,7 +276,10 @@ class LeadsController extends Controller
             return $query->where('lead_project_id', $p);
         })->with(['observations' => function ($query) {
             return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-        }])->with('user', 'leadProject')->paginate($perPage);
+        }])->with('user', 'leadProject')
+        ->where('status', '<>', 'Archivado')
+        ->orderBy('id', 'DESC')
+        ->paginate($perPage);
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
@@ -292,6 +295,21 @@ class LeadsController extends Controller
             })
             ->with('user', 'saleActivities.user')
             ->first();
+
+        return ApiResponseController::response("Exito", 200, $lead);
+    }
+
+    public function archiveLead(Request $request, $id)
+    {
+        $user = $request->user();
+
+        $lead = Lead::where('id', $id)
+            ->when($user->role->name != 'Administrador', function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
+            ->update([
+                'status' => 'Archivado'
+            ]);
 
         return ApiResponseController::response("Exito", 200, $lead);
     }
@@ -323,6 +341,7 @@ class LeadsController extends Controller
     public function getLeadsAssignments(Request $request)
     {
 
+
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
@@ -334,11 +353,23 @@ class LeadsController extends Controller
                 return $query->where('user_id', $request->user_id);
             })
             ->when($request->start && $request->end, function ($query) use ($request) {
-                return $query->whereBetween('assigned_at', [$request->start, $request->end]);
+                $start = Carbon::parse($request->start)->startOfDay();
+                $end = Carbon::parse($request->end)->endOfDay();
+                return $query->whereBetween('assigned_at', [$start, $end]);
             })
             ->withCount('calls')
             ->orderBy('assigned_at', 'DESC')
             ->paginate($perPage);
+
+            // attach duration to each sale activity
+            $leadAssignament->getCollection()->transform(function ($leadAssignment) {
+                // Añadimos el accesorio al modelo
+                $leadAssignment->saleActivities->each(function ($saleActivity) {
+                    $saleActivity->append('duration');
+                    return $saleActivity;
+                });
+                return $leadAssignment;
+            });
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -367,10 +398,9 @@ class LeadsController extends Controller
 
 
         $reporte = $asesores->map(function ($asesor) use ($start, $end) {
-            $count = 0;
             // Obtener los lead assignments del asesor, agrupados por día y hora
             $assignmentsPorHora = LeadAssignment::where('user_id', $asesor->id)
-                ->whereBetween('assigned_at', [$start, $end])
+                ->whereBetween('assigned_at', [$start->startOfDay()->format('Y-m-d H:i:s'), $end->endOfDay()->format('Y-m-d H:i:s')])
                 ->selectRaw('DATE(assigned_at) as fecha, HOUR(assigned_at) as hora, COUNT(*) as value')
                 ->groupBy('fecha', 'hora')
                 ->get()
@@ -389,12 +419,17 @@ class LeadsController extends Controller
 
                     // Verificar si existen datos para la fecha y hora específicas
                     $value = $assignmentsPorHora[$fechaFormato][$horaKey]->value ?? 0;
-                    $count += $value;
 
                     $datos[] = [
                         'datetime' => $fechaFormato . ' ' . $horaKey . ':00:00',
                         'value' => $value
                     ];
+                }
+            }
+            $count = 0;
+            foreach($assignmentsPorHora as $key => $value){
+                foreach($value as $key2 => $value2){
+                    $count += $value2->value;
                 }
             }
 
@@ -406,7 +441,8 @@ class LeadsController extends Controller
                 'role_id'        => $asesor->role_id,
                 'count'          => $count,
                 'projects_pivot' => $asesor->projects_pivot,
-                'data'           => $datos
+                'data'           => $datos,
+                'datica'         => $assignmentsPorHora
             ];
         });
 
@@ -626,7 +662,7 @@ class LeadsController extends Controller
         $leadCounts = LeadAssignment::when($user->role_id != 1, function ($query) use ($request) {
             return $query->where('user_id', $request->user()->id);
         })
-            ->when($user->role_id, function ($query) use ($request) {
+            ->when($user->role_id == 1, function ($query) use ($request) {
                 $query->when($request->user_id, function ($query) use ($request) {
                     return $query->where('user_id', $request->user_id);
                 });
