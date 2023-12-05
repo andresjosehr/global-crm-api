@@ -276,10 +276,21 @@ class LeadsController extends Controller
             return $query->where('lead_project_id', $p);
         })->with(['observations' => function ($query) {
             return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-        }])->with('user', 'leadProject')
+        }])->with('user', 'leadProject', 'saleActivities.user')
         ->where('status', '<>', 'Archivado')
         ->orderBy('id', 'DESC')
         ->paginate($perPage);
+
+        $leads->getCollection()->transform(function ($leadAssignment) {
+            // Añadimos el accesorio al modelo
+            $leadAssignment->saleActivities->each(function ($saleActivity) {
+                $saleActivity->append('duration');
+                return $saleActivity;
+            });
+            return $leadAssignment;
+        });
+
+
 
         return ApiResponseController::response("Exito", 200, $leads);
     }
