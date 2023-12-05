@@ -67,7 +67,9 @@ class UsersController extends Controller
     }
 
     public function getSellsUsers() {
-        $users = User::where('role_id', 2)->get();
+        $users = User::where('role_id', 2)
+        ->where('active', 1)
+        ->get();
 
         return ApiResponseController::response('Consulta Exitosa', 200, $users);
     }
