@@ -393,6 +393,7 @@ class LeadsController extends Controller
             })->when($user->role_id != 1, function ($query) use ($request) {
                 return $query->where('id', $request->user()->id);
             })
+            ->where('active', true)
             ->with('projects_pivot')
             ->get();
 
