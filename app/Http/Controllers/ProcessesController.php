@@ -52,6 +52,11 @@ class ProcessesController extends Controller
         return Artisan::output();
     }
 
+    public function updateCompleteFreeCoursesText(){
+        Artisan::call('update-complete-free-courses-text');
+        return Artisan::output();
+    }
+
 
 
     // Le pones mods y juegas a 60

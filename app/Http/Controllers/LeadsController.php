@@ -514,7 +514,7 @@ class LeadsController extends Controller
             ]);
         }
 
-        return ApiResponseController::response("Exito", 200, $saleActivity);
+        return ApiResponseController::response("Exito", 200, []);
     }
 
     function diconnectCallActivity(Request $request)
