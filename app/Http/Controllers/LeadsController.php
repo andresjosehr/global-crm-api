@@ -504,7 +504,8 @@ class LeadsController extends Controller
             ->where('lead_assignment_id', $request->lead_assignment_id)
             ->first();
 
-        if ($saleActivityExists) {
+        $saleActivity = null;
+        if (!$saleActivityExists) {
             $saleActivity = SaleActivity::create([
                 'user_id'            => $request->user_id,
                 'lead_id'            => $request->lead_id,
@@ -514,7 +515,7 @@ class LeadsController extends Controller
             ]);
         }
 
-        return ApiResponseController::response("Exito", 200, []);
+        return ApiResponseController::response("Exito", 200, $saleActivity);
     }
 
     function diconnectCallActivity(Request $request)
