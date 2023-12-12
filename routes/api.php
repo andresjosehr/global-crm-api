@@ -120,6 +120,11 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
         Route::get('update-texts', 'App\Http\Controllers\ProcessesController@updateTexts');
         Route::get('update-abandoned', 'App\Http\Controllers\ProcessesController@updateAbandoned');
         Route::get('update-complete-free-courses-text', 'App\Http\Controllers\ProcessesController@updateCompleteFreeCoursesText');
+
+        Route::post('import-leads-from-liveconnect', 'App\Http\Controllers\ProcessesController@importLeadsFromLiveconnect');
+
+
+        Route::get('free-courses-text', 'App\Http\Controllers\ProcessesController@freeCoursesTexts');
     });
 
     Route::prefix('mails')->group(function (){

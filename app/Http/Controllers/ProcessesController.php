@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\LiveConnectRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
@@ -53,6 +54,27 @@ class ProcessesController extends Controller
     }
 
     public function updateCompleteFreeCoursesText(){
+        Artisan::call('update-complete-free-courses-text');
+        return Artisan::output();
+    }
+
+
+
+    public function importLeadsFromLiveconnect(Request $request){
+
+        $headers = $request->headers->all();
+        $body = $request->all();
+
+        LiveConnectRequest::create([
+            'headers' => null,
+            'body' => null
+        ]);
+
+
+        return ApiResponseController::response('Exito', 201);
+    }
+
+    public function freeCoursesTexts(){
         Artisan::call('update-complete-free-courses-text');
         return Artisan::output();
     }

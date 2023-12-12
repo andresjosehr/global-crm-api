@@ -31,8 +31,10 @@ class SendUnfreezingMails extends Command
      */
     public function handle()
     {
+        $times = [];
+        $startTime = microtime(true);
          // return ZohoToken::where('token', '<>', '')->first();
-         $mode = 'prod';
+         $mode = 'test';
 
          // Memory limit
          ini_set('memory_limit', -1);
@@ -40,6 +42,10 @@ class SendUnfreezingMails extends Command
          $data = new StudentsExcelController();
          $students = $data->index($mode);
          // return json_encode($students);
+
+         $endTime = microtime(true);
+         $times['ConsultaDatos'] = $endTime - $startTime;
+         $startTime = $endTime;
 
          $students = array_map(function ($student) {
              $student['courses'] = array_map(function ($course) use ($student) {
@@ -89,16 +95,19 @@ class SendUnfreezingMails extends Command
 
          $students = array_values($students);
 
-        //  return $this->line(json_encode($students));
+        $endTime = microtime(true);
+        $times['FiltrarDatos'] = $endTime - $startTime;
+        $startTime = $endTime;
 
 
-         // return ZohoToken::where('token', '<>', '')->first();
+        //  self::sendMails($students);
 
-
-         self::sendMails($students);
          $dataNueve = self::updateExcel($students);
+         $endTime = microtime(true);
+        $times['ActualizarExcel'] = $endTime - $startTime;
 
-         return $this->line(json_encode(["Data Excel" => $dataNueve]));
+
+         return $this->line(json_encode(["Data Excel" => $times]));
 
         return Command::SUCCESS;
     }
