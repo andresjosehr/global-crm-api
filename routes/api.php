@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 $basePathController = 'App\Http\Controllers\\';
 
-Route::prefix('auth')->group(function (){
+Route::prefix('auth')->group(function () {
     Route::post('sign-in', [AuthController::class, 'signIn'])->name('auth.sign-in');
     Route::post('check-auth', [AuthController::class, 'checkAuth'])->name('auth.check-auth')->middleware(['api_access']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('passwords.sent');
@@ -39,7 +39,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
     Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
-	Route::resource('students', 'App\Http\Controllers\StudentsController');
+    Route::resource('students', 'App\Http\Controllers\StudentsController');
     Route::resource('orders', 'App\Http\Controllers\OrdersController');
     Route::get('student-orders/get-options', 'App\Http\Controllers\OrdersController@getOptions');
 
@@ -49,7 +49,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::resource('messages', 'App\Http\Controllers\MessagesController');
 
 
-    Route::prefix('sales')->group(function (){
+    Route::prefix('sales')->group(function () {
         Route::post('import-data', 'App\Http\Controllers\LeadProjectsController@importData');
         Route::post('update-user-projects', 'App\Http\Controllers\LeadProjectsController@updateUserProjects');
         Route::get('get-projects', 'App\Http\Controllers\LeadProjectsController@getProjects');
@@ -75,7 +75,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::post('save-basic-data/{id}', 'App\Http\Controllers\LeadsController@saveBasicData');
 
 
-        Route::prefix('activity')->group(function (){
+        Route::prefix('activity')->group(function () {
 
             Route::get('get-leads-assignments', 'App\Http\Controllers\LeadsController@getLeadsAssignments');
             Route::get('get-assignments-by-hour', 'App\Http\Controllers\LeadsController@getAssignmentsByHour');
@@ -84,10 +84,9 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::get('get-calls-by-hour', 'App\Http\Controllers\LeadsController@getCallsByHour');
 
             Route::get('get-main-stats', 'App\Http\Controllers\LeadsController@getMainStats');
-
         });
     });
-	/* Add new routes here */
+    /* Add new routes here */
 });
 
 Route::resource('document-types', 'App\Http\Controllers\DocumentTypesController');
@@ -110,7 +109,7 @@ Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 
 Route::group(['middleware' => ['environment_access']], function () use ($basePathController) {
-    Route::prefix('processes')->group(function (){
+    Route::prefix('processes')->group(function () {
         Route::get('update-test-status', 'App\Http\Controllers\ProcessesController@updateTestsStatus');
         Route::get('update-courses-status', 'App\Http\Controllers\ProcessesController@updateCoursesStatus');
         Route::get('update-excel-mails', 'App\Http\Controllers\ProcessesController@updateExcelMails');
@@ -120,9 +119,10 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
         Route::get('update-texts', 'App\Http\Controllers\ProcessesController@updateTexts');
         Route::get('update-abandoned', 'App\Http\Controllers\ProcessesController@updateAbandoned');
         Route::get('update-complete-free-courses-text', 'App\Http\Controllers\ProcessesController@updateCompleteFreeCoursesText');
+        Route::get('update-complete-free-courses-onemonth', 'App\Http\Controllers\ProcessesController@updatecompletefreecoursesonemonth');
     });
 
-    Route::prefix('mails')->group(function (){
+    Route::prefix('mails')->group(function () {
         Route::get('send-unfreezings-emails', 'App\Http\Controllers\ProcessesController@sendUnfreezingsEmails');
     });
 });
