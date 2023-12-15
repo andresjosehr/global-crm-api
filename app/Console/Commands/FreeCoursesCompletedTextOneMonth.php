@@ -30,9 +30,17 @@ class FreeCoursesCompletedTextOneMonth extends Command
     public function handle($students = null)
     {
         if (!$students) {
-            $data = new StudentsExcelController();
-            $students = $data->index('test');
+            // $data = new StudentsExcelController();
+            // $students = $data->index('test');
+
+            $students = json_decode(file_get_contents(storage_path('app/public/data.json')), true);
         }
+
+        // Get data from storage/app/public/data.json
+
+
+
+        return $this->line(json_encode($students));
         // Filtrar estudiantes que tienen cursos de tipo "free", course_status_original COMPLETA  o COMPLETA SIN CREDLY y
         //certifaction_test_original 'Sin Intentos Gratis'
         $students = array_filter($students, function ($student) {

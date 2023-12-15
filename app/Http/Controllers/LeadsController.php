@@ -28,7 +28,15 @@ class LeadsController extends Controller
             self::assignNextLead($user);
         }
 
-        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.saleActivities.user', 'lead.user', 'saleActivities.user')->first();
+        $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)
+        ->with('lead.user')
+        ->with(['lead.saleActivities' => function ($query) use ($user) {
+            return $query->with('user')->orderBy('id', 'DESC');
+        }])
+        ->with(['saleActivities.user' => function ($query) use ($user) {
+            return $query->orderBy('id', 'DESC');
+        }])
+        ->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -492,6 +500,8 @@ class LeadsController extends Controller
                 'schedule_call_datetime' => $schedule_call_datetime
             ]);
 
+            $callActivity = SaleActivity::where('id', $callActivity->id)->with('user')->first();
+
             return ApiResponseController::response("Exito", 200, $callActivity);
         }
 
@@ -515,7 +525,9 @@ class LeadsController extends Controller
             ]);
         }
 
-        return ApiResponseController::response("Exito", 200, $saleActivity);
+        $activity = self::getLastCallActivity($request, true);
+
+        return ApiResponseController::response("Exito", 200, $activity);
     }
 
     function diconnectCallActivity(Request $request)
@@ -543,15 +555,18 @@ class LeadsController extends Controller
         return ApiResponseController::response("Exito", 201, []);
     }
 
-    function getLastCallActivity(Request $request)
+    function getLastCallActivity(Request $request, $self = false)
     {
         $user = $request->user();
 
-        $sale = SaleActivity::where('user_id', $user->id)
+        $sale = SaleActivity::
+            where('user_id', $user->id)
+            ->with('user')
             ->orderBy('end', 'DESC')
             ->first();
 
-        return ApiResponseController::response("Exito", 200, $sale);
+
+        return $self ? $sale : ApiResponseController::response("Exito", 200, $sale);
     }
 
     public function getCalls(Request $request)
