@@ -33,28 +33,38 @@ class ProcessesController extends Controller
         return Artisan::output();
     }
 
-    public function sendUnfreezingsEmails(){
+    public function sendUnfreezingsEmails()
+    {
         Artisan::call('send-unfreezing-mails');
         return Artisan::output();
     }
 
-    public function updateUnfreezingTexts(){
+    public function updateUnfreezingTexts()
+    {
         Artisan::call('update-unfreezing-texts');
         return Artisan::output();
     }
 
-    public function updateTexts(){
+    public function updateTexts()
+    {
         Artisan::call('update-texts');
         return Artisan::output();
     }
 
-    public function updateAbandoned(){
+    public function updateAbandoned()
+    {
         Artisan::call('update-abandoned');
         return Artisan::output();
     }
 
-    public function updateCompleteFreeCoursesText(){
+    public function updateCompleteFreeCoursesText()
+    {
         Artisan::call('update-complete-free-courses-text');
+        return Artisan::output();
+    }
+    public function updatecompletefreecoursesonemonth()
+    {
+        Artisan::call('update-complete-free-courses-onemonth');
         return Artisan::output();
     }
 
