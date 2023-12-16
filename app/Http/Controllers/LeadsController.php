@@ -492,6 +492,8 @@ class LeadsController extends Controller
                 'schedule_call_datetime' => $schedule_call_datetime
             ]);
 
+            $callActivity = SaleActivity::with('user')->find($callActivity->id);
+
             return ApiResponseController::response("Exito", 200, $callActivity);
         }
 

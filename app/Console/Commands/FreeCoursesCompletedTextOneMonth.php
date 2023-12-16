@@ -193,7 +193,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 $excel['nivel_basico']['certifaction_test_original'] == 'Sin Intentos Gratis'
                 || $excel['nivel_intermedio']['certifaction_test_original'] == 'Sin Intentos Gratis'
                 || $excel['nivel_avanzado']['certifaction_test_original'] == 'Sin Intentos Gratis')) {
-                $text .= "🚨 Actualmente estos cursos *se encuentran reprobados y para Excel, debes aprobar los 3 niveles,* 
+                $text .= "🚨 Actualmente estos cursos *se encuentran reprobados y para Excel, debes aprobar los 3 niveles,*
             porque no brindamos certificados por participación, ni por nivel independiente, y este es el estado de cada nivel del curso:" . "\n";
                 $text .= "- NIVEL BASICO ESTADO: " . "\n";
                 $text .= $excel['nivel_basico']['certifaction_test_original'] . "\n";
@@ -256,7 +256,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
 
             //falta la linea 48
 
-            // linea 49, los cursos pbi o msp estan en $mbi_and_msp_siF si es 1 puede ser mbp/ms  por lo tanto cualquier de los dos 
+            // linea 49, los cursos pbi o msp estan en $mbi_and_msp_siF si es 1 puede ser mbp/ms  por lo tanto cualquier de los dos
             if ($student['EXAMEN'] == 'aprobado' || ($student['PONDERADO SAP'] == 'pagado' && $mbi_and_msp_siF >= 1)) {
                 $text .= 'Y de esta manera obtener tu certificado.' . "\n";
             }
@@ -295,7 +295,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     ($student['CERTIFICADO'] != 'EMITIDO') &&
                     ($course['course_status_original'] == 'CURSANDO')
                 ) {
-                    $text .= 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados*, 
+                    $text .= 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados*,
                         y aún no te certificas en SAP. Por lo que podrías perder el acceso, a pesar de haber iniciado, si no pagas el ponderado de: ' . "\n";
                 }
                 //linea 57
@@ -361,7 +361,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                         $course_por_cursando[] = $course;
                     }
 
-                    // linea 70 
+                    // linea 70
                     $status_obsequi_aprobado = self::getCourseByCertificate($course, 'aprobado');
                     if ($status_obsequi_aprobado) {
                         $status_certifi_aprobado++;
@@ -369,7 +369,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     }
 
 
-                    // linea 73   
+                    // linea 73
                     $status_obsequi_reprobado = self::getCourseByCertificate($course, 'reprobado');
                     if ($status_obsequi_reprobado)
                         $cant_courses_reprobado++;
@@ -428,7 +428,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
 
             // linea 73
             if ($student['AULA SAP'] == 'cursando') {
-                $text .= 'Ya que tendrías (' . $cant_courses_reprobado . ') cursos reprobados/abandonados, así que 
+                $text .= 'Ya que tendrías (' . $cant_courses_reprobado . ') cursos reprobados/abandonados, así que
                 *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*' . $salto;
             }
 
@@ -488,14 +488,14 @@ class FreeCoursesCompletedTextOneMonth extends Command
                         $course_por_cursandoculminado[] = $course;
                     }
 
-                    //linea 96 condicion 
+                    //linea 96 condicion
                     if (($course['course_status_original'] == 'CURSANDO') &&
                         ($course['month_days'] != $course['diff_days'])
                     ) {
                         $codicion_96[] = $course;
                     }
 
-                    // linea 97 
+                    // linea 97
                     $status_obsequi_aprobadoculminado = self::getCourseByCertificate($course, 'APROBADO');
                     if ($status_obsequi_aprobadoculminado) {
                         $status_certifi_aprobadoculminado++;
@@ -536,7 +536,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
             if (($student['AULA SAP'] == 'cursando' || $student['AULA SAP'] == 'completa') &&
                 ($student['CERTIFICADO'] != 'EMITIDO') && ($course_no_culminado)
             ) {
-                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o 
+                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o
                 más cursos *reprobados o abandonados,* y
                 no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
@@ -560,15 +560,15 @@ class FreeCoursesCompletedTextOneMonth extends Command
             }
             // linea 100 REvisar, me trae el excel solamente!!!
             if (($student['AULA SAP'] == 'cursando')) {
-                $text .= 'Ya que tendrías (' . $cant_coursesreprobado . ') cursos reprobados/abandonados, 
+                $text .= 'Ya que tendrías (' . $cant_coursesreprobado . ') cursos reprobados/abandonados,
                 así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*' . $salto;
             }
             //102 y 103
             if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
-                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* 
+                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,*
                 y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
-            // 105 y 106 
+            // 105 y 106
             if (sizeof($course_por_habilitarculminado) > 0) {
                 $text .= self::setCourses($course_por_habilitarculminado, 'A pesar de quedar pendiente, no podrás habilitar:');
             }
@@ -683,12 +683,12 @@ class FreeCoursesCompletedTextOneMonth extends Command
             }
             //linea 127
             if (($student['AULA SAP'] == 'cursando')) {
-                $text .= 'Ya que tendrías (' . $cant_coursesreprobadoAbandono . ') cursos reprobados/abandonados, 
+                $text .= 'Ya que tendrías (' . $cant_coursesreprobadoAbandono . ') cursos reprobados/abandonados,
                 así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*' . $salto;
             }
             //linea 129 y 130
             if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
-                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* 
+                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,*
                 y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
             //linea 132 y 133
@@ -795,12 +795,12 @@ class FreeCoursesCompletedTextOneMonth extends Command
             }
             // linea 153
             if (($student['AULA SAP'] == 'cursando')) {
-                $text .= 'Ya que tendrías (' . $cant_coursesreprobadoHabilitar . ') cursos reprobados/abandonados, 
+                $text .= 'Ya que tendrías (' . $cant_coursesreprobadoHabilitar . ') cursos reprobados/abandonados,
                 así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*' . $salto;
             }
             //linea 155 y 156
             if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
-                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* 
+                $text .= self::setCourses($curso_obsequio, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,*
                 y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
             //linea 158 y 159
@@ -1001,6 +1001,34 @@ class FreeCoursesCompletedTextOneMonth extends Command
         $text = '';
         foreach ($courses as $course) {
             $text .= $course['name'] . "\n";
+        }
+        return $text;
+    }
+
+
+
+    public function replaceText($text, $diff){
+
+        $str = [
+            [
+                'orginal' => '🚨 Actualmente este curso se encuentra reprobado y no brindamos certificados por participación.',
+                '15'      => '⚠️ Informamos que este curso no ha cumplido con los estándares requeridos y, lamentablemente, no emitimos certificados por la participación en él.',
+                '5'       => '🔔 Aviso importante: Este curso no ha alcanzado los criterios de aprobación necesarios. Por este motivo, no podemos ofrecer certificados de participación.',
+                '1'       => ' Importante: Este curso no ha superado la evaluación requerida y, por lo tanto, no se emitirán certificados para los participantes.',
+            ],
+            [
+                'original' => '🚩 🚩 Pero no todo está perdido. Puedes realizar el pago para ponderar los intentos de examen que reprobaste',
+                '15'       => '💡💡 A pesar de los obstáculos, aún puedes cambiar el resultado. Realiza un pago para reexaminar los intentos de prueba que no fueron exitosos.',
+                '5'        => '🌟🌟 No todo está decidido aún. Tienes la oportunidad de hacer un pago para reevaluar los intentos fallidos en tus exámenes.',
+                '1'        => '✨✨ Aunque la situación es desafiante, aún hay una solución. Considera la opción de pagar para reconsiderar los exámenes que no aprobaste.',
+
+            ]
+        ];
+
+        foreach($str as $key => $value){
+            if($key == $diff){
+                $text = str_replace($value['orginal'], $value[$diff], $text);
+            }
         }
         return $text;
     }
