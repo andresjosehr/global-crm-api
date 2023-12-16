@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\LiveConnectRequest;
+use App\Models\Lead;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class ProcessesController extends Controller
 {
@@ -69,27 +71,54 @@ class ProcessesController extends Controller
     }
 
 
-
-    public function importLeadsFromLiveconnect(Request $request){
-
+    public function importLeadsFromLiveconnect(Request $request)
+    {
         $headers = $request->headers->all();
-        $body = $request->all();
+        $headers = json_encode($headers);
 
-        LiveConnectRequest::create([
-            'headers' => null,
-            'body' => null
+        $body = $request->getContent();
+        DB::table('live_connect_requests')->insert([
+            'headers' => $headers,
+            'body' => $body,
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
 
-        return ApiResponseController::response('Exito', 201);
+        $courses_ids = [
+            26845 => 'MM',
+            26846 => 'FI',
+            26849 => 'PM',
+            26850 => 'PP',
+            26851 => 'HCM',
+            26852 => 'INTEGRAL',
+            26874 => 'TODOS',
+            0     => 'Ninguno'
+        ];
+
+        $courses = array_map(function ($course) use ($courses_ids) {
+            return $courses_ids[$course];
+        }, $request->chat['contacto']['etiquetas']);
+
+        $courses = implode(',', $courses);
+
+        $lead = [
+            'name'            => $request->chat['contacto']['nombre'] . ' ' . $request->chat['contacto']['apellidos'],
+            'phone'           => $request->chat['contacto']['celular'],
+            'status'          => 'Nuevo',
+            'channel_id'      => $request->chat['id_canal'],
+            'lead_project_id' => NULL,
+            'email'           => NULL,
+            'document'        => NULL,
+            'user_id'         => NULL,
+            'courses'         => $courses,
+            'chat_date'       => Carbon::parse($request->chat['fecha'])->format('Y-m-d H:i:s'),
+        ];
+
+        Lead::create($lead);
+
+
+
+        return ApiResponseController::response('ok', 200);
     }
-
-    public function freeCoursesTexts(){
-        Artisan::call('update-complete-free-courses-text');
-        return Artisan::output();
-    }
-
-
-
-    // Le pones mods y juegas a 60
 }
