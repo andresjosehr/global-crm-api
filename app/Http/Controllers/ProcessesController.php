@@ -93,14 +93,14 @@ class ProcessesController extends Controller
             26851 => 'HCM',
             26852 => 'INTEGRAL',
             26874 => 'TODOS',
-            0     => 'Ninguno'
+            0     => ''
         ];
 
         $courses = array_map(function ($course) use ($courses_ids) {
             return $courses_ids[$course];
         }, $request->chat['contacto']['etiquetas']);
 
-        $courses = implode(',', $courses);
+        $courses = implode(' ', $courses);
 
         $lead = [
             'name'            => $request->chat['contacto']['nombre'] . ' ' . $request->chat['contacto']['apellidos'],

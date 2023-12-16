@@ -285,7 +285,11 @@ class LeadsController extends Controller
             })->when($request->project_id, function ($query) use ($request) {
                 $p = $request->project_id == 'Base' ? null : $request->project_id;
                 return $query->where('lead_project_id', $p);
-            })->with(['observations' => function ($query) {
+            })
+            ->when($request->automatic_import==='true', function ($query) use ($request) {
+                return $query->where('channel_id', '<>', NULL);
+            })
+            ->with(['observations' => function ($query) {
                 return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
             }])->with('user', 'leadProject', 'saleActivities.user')
             ->orderBy('id', 'DESC')
