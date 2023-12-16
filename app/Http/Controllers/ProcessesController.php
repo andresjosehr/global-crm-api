@@ -76,6 +76,15 @@ class ProcessesController extends Controller
         $headers = $request->headers->all();
         $headers = json_encode($headers);
 
+        $body = $request->getContent();
+        DB::table('live_connect_requests')->insert([
+            'headers' => $headers,
+            'body' => $body,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+
         $courses_ids = [
             26845 => 'MM',
             26846 => 'FI',
@@ -109,13 +118,7 @@ class ProcessesController extends Controller
         Lead::create($lead);
 
 
-        $body = $request->getContent();
-        DB::table('live_connect_requests')->insert([
-            'headers' => $headers,
-            'body' => $body,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+
         return ApiResponseController::response('ok', 200);
     }
 }
