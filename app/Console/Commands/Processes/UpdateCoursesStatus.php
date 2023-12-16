@@ -103,7 +103,7 @@ class UpdateCoursesStatus extends Command
                     $course['course_status'] = 'CURSANDO SIN CREDLY';
                 } elseif (!($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO'] != 'EMITIDO') && $course['course_status'] == 'CURSANDO') {
                     $course['course_status'] = 'CURSANDO';
-                } elseif (($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO'] != 'EMITIDO') && $course['course_status'] == 'COMPLETA') {
+                } elseif (($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO'] != 'EMITIDO') && $course['course_status'] == 'COMPLETA' && $student["AULA SAP"] != 'NO APLICA') {
                     $course['course_status'] = 'COMPLETA SIN CREDLY';
                 } elseif (!($student['EXAMEN'] != 'Aprobado' && $student['CERTIFICADO'] != 'EMITIDO') && $course['course_status'] == 'CURSANDO') {
                     $course['course_status'] = 'COMPLETA';

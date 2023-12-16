@@ -124,10 +124,12 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
         Route::get('free-courses-text', 'App\Http\Controllers\ProcessesController@freeCoursesTexts');
 
         Route::get('update-complete-free-courses-onemonth', 'App\Http\Controllers\ProcessesController@updatecompletefreecoursesonemonth');
-        Route::post('import-leads-from-liveconnect', 'App\Http\Controllers\ProcessesController@importLeadsFromLiveconnect');
     });
 
     Route::prefix('mails')->group(function () {
         Route::get('send-unfreezings-emails', 'App\Http\Controllers\ProcessesController@sendUnfreezingsEmails');
     });
+});
+Route::prefix('processes')->group(function () {
+    Route::post('import-leads-from-liveconnect', 'App\Http\Controllers\ProcessesController@importLeadsFromLiveconnect');
 });
