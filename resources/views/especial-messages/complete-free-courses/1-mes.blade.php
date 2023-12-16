@@ -1,5 +1,4 @@
-Hola!!
- {{$student['NOMBRE']}}
+
  
  
 {{$text}}
