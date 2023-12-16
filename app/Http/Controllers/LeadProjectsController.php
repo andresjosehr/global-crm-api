@@ -68,8 +68,16 @@ class LeadProjectsController extends Controller
     public function getProjects(Request $request)
     {
 
+        $user = $request->user();
         // Get projects with leads count
-        $projects = LeadProject::withCount('leads')->get();
+        $projects = LeadProject::
+        withCount('leads')
+        ->when(!$user->role_id == 1, function ($query) use ($user) {
+            return $query->whereHas('users', function ($q) use ($user) {
+                return $q->where('user_id', $user->id);
+            });
+        })
+        ->get();
 
         $base = [
             'id' => 'Base',
@@ -78,7 +86,9 @@ class LeadProjectsController extends Controller
         ];
 
         // $projects->push($base);
-        $projects->prepend($base);
+        if($user->role_id == 1){
+            $projects->prepend($base);
+        }
         return ApiResponseController::response("Exito", 200, $projects);
     }
 
