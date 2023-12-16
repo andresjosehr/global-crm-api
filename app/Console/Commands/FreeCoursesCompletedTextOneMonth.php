@@ -177,6 +177,8 @@ class FreeCoursesCompletedTextOneMonth extends Command
         }
 
         if (sizeof($one_month) > 0) {
+            $text .= '¡Hola!' . "\n";
+            $text .= $student['NOMBRE'] . "\n";
 
             if (sizeof($one_month) == 1) {
                 $text .= 'Está por vencer tu curso: ' . "\n";
@@ -225,25 +227,30 @@ class FreeCoursesCompletedTextOneMonth extends Command
             $text .= '*Puedes realizar el pago para ponderar los intentos de examen que reprobaste*' . "\n";
 
             // linea 44 y 45
-            if ($mbi_and_msp_siF > 1) {
-                $text .= 'CURSOS y ';
-            } elseif ($mbi_and_msp_siF == 1) {
-                $text .= 'CURSO y ';
+            if ($excel_siF > 0) {
+                if ($mbi_and_msp_siF > 0) {
+                    if ($mbi_and_msp_siF > 1) {
+                        $text .= 'CURSOS y ';
+                    } elseif ($mbi_and_msp_siF == 1) {
+                        $text .= 'CURSO y ';
+                    }
+                }
+
+                if ($excel_siF > 1) {
+                    $text .= 'NIVELES DE EXCEL SIN INTENTOS GRATIS' . "\n";
+                } elseif ($excel_siF == 1) {
+                    $text .= 'NIVEL DE EXCEL SIN INTENTOS GRATIS' . "\n";
+                }
+
+                foreach ($couse_name_mpb_and_pbi as $mpb_pbi) {
+                    $text .= '-' . $mpb_pbi['name']  . "\n";
+                }
+
+                foreach ($excel_level_siF as $level) {
+                    $text .= '-Nivel ' . $level['name'] . ' excel' . "\n";
+                }
             }
 
-            if ($excel_siF > 1) {
-                $text .= 'NIVELES DE EXCEL SIN INTENTOS GRATIS' . "\n";
-            } elseif ($excel_siF == 1) {
-                $text .= 'NIVEL DE EXCEL SIN INTENTOS GRATIS' . "\n";
-            }
-
-            foreach ($couse_name_mpb_and_pbi as $mpb_pbi) {
-                $text .= '-' . $mpb_pbi['name']  . "\n";
-            }
-
-            foreach ($excel_level_siF as $level) {
-                $text .= '-Nivel ' . $level['name'] . ' excel' . "\n";
-            }
 
             // LINEA 46
             if (($student['AULA SAP'] == 'CURSANDO') && ($mbi_and_msp_siF > 0 || $excel_siF  > 0)) {
@@ -347,6 +354,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $status_por_habilitar++;
                     $course_por_habilitar[] = $course;
                 }
+
 
 
                 // linea 68
@@ -484,70 +492,91 @@ class FreeCoursesCompletedTextOneMonth extends Command
             $course_por_aprobadoculminado = [];
             $course_por_habilitarculminado = [];
             $course_por_cursandoculminado = [];
+            $condicion_89 = [];
             $codicion_96 = [];
-            $codicion_98 = [];
-            foreach ($course_no_culminado as $key => $course) {
+            $condicion_98 = [];
 
+            foreach ($student['courses'] as $key => $course) {
+                $has_status_habilitarculminado = self::getCourseByStatus($course, 'POR HABILITAR');
+                if ($has_status_habilitarculminado) {
+                    $status_por_habilitarculminado++;
+                    $course_por_habilitarculminado[] = $course;
+                }
+
+                $has_status_cursandoculminado = self::getCourseByStatus($course, 'CURSANDO');
+                if ($has_status_cursandoculminado) {
+                    $status_por_cursandoculminado++;
+                    $course_por_cursandoculminado[] = $course;
+                }
+
+
+                //linea 96 condicion 
+                if (($course['course_status_original'] == 'CURSANDO') &&
+                    ($course['month_days'] != $course['diff_days']) && $course['type'] == 'free'
+                ) {
+                    $codicion_96[] = $course;
+                }
+
+                // linea 97 
+                $status_obsequi_aprobadoculminado = self::getCourseByCertificate($course, 'APROBADO');
+                if ($status_obsequi_aprobadoculminado) {
+                    $status_certifi_aprobadoculminado++;
+                    $course_por_aprobadoculminado[] = $course;
+                }
+                // linea condicion 100
+                $status_obsequiReprobado = self::getCourseByCertificate($course, 'REPROBADO');
+                if ($status_obsequiReprobado)
+                    $cant_coursesreprobado++;
+
+                // LINEA CONDICION 98
                 if (isset($course['certifaction_test_original'])) {
-
-                    $has_status_habilitarculminado = self::getCourseByStatus($course, 'POR HABILITAR');
-                    if ($has_status_habilitarculminado) {
-                        $status_por_habilitarculminado++;
-                        $course_por_habilitarculminado[] = $course;
-                    }
-
-                    $has_status_cursandoculminado = self::getCourseByStatus($course, 'CURSANDO');
-                    if ($has_status_cursandoculminado) {
-                        $status_por_cursandoculminado++;
-                        $course_por_cursandoculminado[] = $course;
-                    }
-
-                    //linea 96 condicion 
-                    if (($course['course_status_original'] == 'CURSANDO') &&
-                        ($course['month_days'] != $course['diff_days'])
+                    if (
+                        $course['certifaction_test_original'] == 'APROBADO' &&
+                        $course['month_days'] != $course['diff_days'] &&  $course['type'] == 'free'
                     ) {
-                        $codicion_96[] = $course;
+                        $condicion_98[] = $course;
                     }
+                } else {
+                    $nivelbasico = $course['nivel_basico']['certifaction_test_original'] == 'APROBADO';
+                    $nivelintermedio = $course['nivel_intermedio']['certifaction_test_original'] == 'APROBADO';
+                    $nivelavanzado = $course['nivel_avanzado']['certifaction_test_original'] == 'APROBADO';
 
-                    // linea 97 
-                    $status_obsequi_aprobadoculminado = self::getCourseByCertificate($course, 'APROBADO');
-                    if ($status_obsequi_aprobadoculminado) {
-                        $status_certifi_aprobadoculminado++;
-                        $course_por_aprobadoculminado[] = $course;
-                    }
-                    // linea condicion 100
-                    $status_obsequiReprobado = self::getCourseByCertificate($course, 'REPROBADO');
-                    if ($status_obsequiReprobado)
-                        $cant_coursesreprobado++;
-
-                    // LINEA CONDICION 98
-                    if (($course['certifaction_test_original'] == 'APROBADO') &&
-                        ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null))
+                    if (
+                        $nivelbasico || $nivelintermedio || $nivelavanzado &&
+                        $course['month_days'] != $course['diff_days'] &&  $course['type'] == 'free'
                     ) {
-                        $codicion_98[] = $course;
+                        $condicion_98[] = $course;
                     }
+                }
+
+
+                if (($course['course_status_original'] == 'NO CULMINÓ' || $course['course_status_original'] == 'NO CULMINO'
+                ) &&  $course['type'] == 'free') {
+                    $condicion_89[] = $course;
                 }
             }
 
 
             //linea 88 COMIENZO
-            if (sizeof($course_no_culminado) > 0)
+            if (($course_no_culminado))
                 $text .= '👀 *OJO: recuerda que no culminaste:*' . "\n";
             //linea 89
-            $text .= self::setCoursesName($course_no_culminado);
-            $text .= 'HASTAAAA AQUI ' . "\n";
+            $text .= self::setCoursesName($condicion_89);
+
             //linea 90 y 91
-            if (($student['AULA SAP'] == 'cursando' || $student['AULA SAP'] == 'completa') &&
-                ($student['CERTIFICADO'] != 'EMITIDO') && ($course_no_culminado)
+            if (($student['AULA SAP'] == 'CURSANDO' || $student['AULA SAP'] == 'COMPLETA') &&
+                ($student['CERTIFICADO'] != 'EMITIDO') && ($condicion_89)
             ) {
                 $text .= self::setCourses($one_month, 'Recuerda que como condición no puedes tener dos o 
                 más cursos *reprobados o abandonados,* y
                 no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
+
             //linea 93 y 94
             if (sizeof($course_por_habilitarculminado) > 0) {
                 $text .= self::setCourses($course_por_habilitarculminado, 'A pesar de quedar pendiente, no podrás habilitar:');
             }
+
             //linea 95 y 96
             if ((sizeof($course_por_cursandoculminado) > 0)) {
                 $text .= 'A pesar de haber iniciado, perderías el acceso a:' . $salto;
@@ -555,27 +584,33 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_96);
                 }
             }
+
             // linea 97 y 98
             if ((sizeof($course_por_aprobadoculminado) > 0)) {
                 $text .= 'A pesar de haber aprobado, perderías el acceso al certificado internacional:' . $salto;
-                if ($codicion_98) {
-                    $text .= self::setCoursesName($codicion_98);
+                if ($condicion_98) {
+                    $text .= self::setCoursesName($condicion_98);
                 }
             }
+
             // linea 100 REvisar, me trae el excel solamente!!!
-            if (($student['AULA SAP'] == 'cursando')) {
+            if (($student['AULA SAP'] == 'CURSANDO')) {
                 $text .= 'Ya que tendrías (' . $cant_coursesreprobado . ') cursos reprobados/abandonados, 
                 así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*' . $salto;
             }
+
             //102 y 103
-            if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
+            if ($student['EXAMEN'] == 'REPROBADO' || ($student['EXAMEN'] == 'Sin Intentos Gratis')) {
                 $text .= self::setCourses($one_month, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* 
                 y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
+
+
             // 105 y 106 
             if (sizeof($course_por_habilitarculminado) > 0) {
                 $text .= self::setCourses($course_por_habilitarculminado, 'A pesar de quedar pendiente, no podrás habilitar:');
             }
+
 
             //107 y 108
             if ((sizeof($course_por_cursandoculminado) > 0)) {
@@ -585,16 +620,17 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 }
             }
 
+
             //linea 109 y 110
             if ((sizeof($course_por_aprobadoculminado) > 0)) {
                 $text .= 'A pesar de haber aprobado, perderías el acceso al certificado internacional:' . $salto;
-                if ($codicion_98) {
-                    $text .= self::setCoursesName($codicion_98);
+                if ($condicion_98) {
+                    $text .= self::setCoursesName($condicion_98);
                 }
             }
 
             //linea 112
-            if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
+            if ($student['EXAMEN'] == 'REPROBADO' || ($student['EXAMEN'] == 'Sin Intentos Gratis')) {
                 $text .= 'Ya que tendrías (' .  $cant_coursesreprobado . ') cursos reprobados/abandonados,
                  *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*' . $salto;
             }
@@ -607,70 +643,95 @@ class FreeCoursesCompletedTextOneMonth extends Command
             $course_por_habilitarabandono = [];
             $course_por_cursandoAbandono = [];
             $course_por_aprobadoAbandono = [];
+            $condicion_116 = [];
             $codicion_123 = [];
             $codicion_125 = [];
 
-            foreach ($course_abandonado as $key => $course) {
+            foreach ($student['courses'] as $key => $course) {
+
+
+                $has_status_por_habilitarabandono = self::getCourseByStatus($course, 'POR HABILITAR');
+                if ($has_status_por_habilitarabandono) {
+                    $status_por_habilitarAbandono++;
+                    $course_por_habilitarabandono[] = $course;
+                }
+
+                $has_status_cursandoabandono = self::getCourseByStatus($course, 'CURSANDO');
+                if ($has_status_cursandoabandono) {
+                    $status_por_cursandoAbandono++;
+                    $course_por_cursandoAbandono[] = $course;
+                }
+
+                // lines condicion 116
+                if (
+                    ($course['course_status_original'] == 'ABANDONÓ' || $course['course_status_original'] == 'ABANDONO') &&
+                    $course['type'] == 'free' &&
+                    ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null))
+                ) {
+                    $condicion_116[] = $course;
+                }
+
+
+                //linea 123
+                if (($course['course_status_original'] == 'CURSANDO') && $course['type'] == 'free' &&
+                    ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null))
+                ) {
+                    $codicion_123[] = $course;
+                }
+
+                $status_obsequi_aprobadoabandono = self::getCourseByCertificate($course, 'APROBADO');
+                if ($status_obsequi_aprobadoabandono) {
+                    $status_certifi_aprobadoAbandono++;
+                    $course_por_aprobadoAbandono[] = $course;
+                }
+
+                $status_obsequiReprobadoAbandono = self::getCourseByCertificate($course, 'REPROBADO');
+                if ($status_obsequiReprobadoAbandono)
+                    $cant_coursesreprobadoAbandono++;
+
+                // linea 125
                 if (isset($course['certifaction_test_original'])) {
-
-                    $has_status_por_habilitarabandono = self::getCourseByStatus($course, 'POR HABILITAR');
-                    if ($has_status_por_habilitarabandono) {
-                        $status_por_habilitarAbandono++;
-                        $course_por_habilitarabandono[] = $course;
-                    }
-
-                    $has_status_cursandoabandono = self::getCourseByStatus($course, 'CURSANDO');
-                    if ($has_status_cursandoabandono) {
-                        $status_por_cursandoAbandono++;
-                        $course_por_cursandoAbandono[] = $course;
-                    }
-                    //linea 123
-                    if (($course['course_status_original'] == 'CURSANDO') &&
-                        ($course['month_days'] != $course['diff_days'])
+                    if (
+                        $course['certifaction_test_original'] == 'APROBADO' &&
+                        ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null)) &&  $course['type'] == 'free'
                     ) {
-                        $codicion_123[] = $course;
+                        $codicion_125[] = $course;
                     }
+                } else {
+                    $nivelbasico = $course['nivel_basico']['certifaction_test_original'] == 'APROBADO';
+                    $nivelintermedio = $course['nivel_intermedio']['certifaction_test_original'] == 'APROBADO';
+                    $nivelavanzado = $course['nivel_avanzado']['certifaction_test_original'] == 'APROBADO';
 
-                    $status_obsequi_aprobadoabandono = self::getCourseByCertificate($course, 'APROBADO');
-                    if ($status_obsequi_aprobadoabandono) {
-                        $status_certifi_aprobadoAbandono++;
-                        $course_por_aprobadoAbandono[] = $course;
-                    }
-
-                    $status_obsequiReprobadoAbandono = self::getCourseByCertificate($course, 'REPROBADO');
-                    if ($status_obsequiReprobadoAbandono)
-                        $cant_coursesreprobadoAbandono++;
-
-                    // linea 125
-                    if (($course['certifaction_test_original'] == 'APROBADO') &&
-                        ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null))
+                    if (
+                        $nivelbasico || $nivelintermedio || $nivelavanzado &&
+                        ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null)) &&  $course['type'] == 'free'
                     ) {
                         $codicion_125[] = $course;
                     }
                 }
             }
 
-            /* $has_excelreprobadoAbandono = self::excelreprobado($excel);
-            if ($student_condition && $has_excelreprobadoAbandono) {
-                $cant_coursesreprobadoAbandono++;
-            } */
+
 
             //linea 115 COMIENZO
-            if (sizeof($course_abandonado) > 0)
-                $text .= '👀 *OJO: recuerda que no culminaste:*' . "\n";
+            if ($course_abandonado)
+                $text .= '👀 *OJO: recuerda que abandonaste:*' . "\n";
             //linea 116
-            $text .= self::setCoursesName($course_abandonado);
+            $text .= self::setCoursesName($condicion_116);
+
             //linea 117 Y 118
-            if (($student['AULA SAP'] == 'cursando' || $student['AULA SAP'] == 'completa') &&
-                ($student['CERTIFICADO'] != 'EMITIDO') && ($course_abandonado)
+            if (($student['AULA SAP'] == 'CURSANDO' || $student['AULA SAP'] == 'COMPLETA') &&
+                ($student['CERTIFICADO'] != 'EMITIDO') && ($condicion_116)
             ) {
                 $text .= self::setCourses($one_month, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y
             y aún no te certificas en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
+
             //120 y 121
             if (sizeof($course_por_habilitarabandono) > 0) {
                 $text .= self::setCourses($course_por_habilitarabandono, 'A pesar de quedar pendiente, no podrás habilitar:');
             }
+
             //122 y 123
             if ((sizeof($course_por_cursandoAbandono) > 0)) {
                 $text .= 'A pesar de haber iniciado, perderías el acceso a:' . $salto;
@@ -678,6 +739,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_123);
                 }
             }
+
             // linea 124 y 125
             if ((sizeof($course_por_aprobadoAbandono) > 0)) {
                 $text .= 'A pesar de haber aprobado, perderías el acceso al certificado internacional:' . $salto;
@@ -685,20 +747,24 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_125);
                 }
             }
+
             //linea 127
-            if (($student['AULA SAP'] == 'cursando')) {
+            if (($student['AULA SAP'] == 'CURSANDO')) {
                 $text .= 'Ya que tendrías (' . $cant_coursesreprobadoAbandono . ') cursos reprobados/abandonados, 
                 así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*' . $salto;
             }
+
             //linea 129 y 130
-            if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
+            if ($student['EXAMEN'] == 'REPROBADO' || ($student['EXAMEN'] == 'Sin Intentos Gratis')) {
                 $text .= self::setCourses($one_month, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* 
                 y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
+
             //linea 132 y 133
             if (sizeof($course_por_habilitarabandono) > 0) {
                 $text .= self::setCourses($course_por_habilitarabandono, 'A pesar de quedar pendiente, no podrás habilitar:');
             }
+
             //linea 134 y 135
             if ((sizeof($course_por_cursandoAbandono) > 0)) {
                 $text .= 'A pesar de haber iniciado, perderías el acceso a:' . $salto;
@@ -706,6 +772,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_123);
                 }
             }
+
             //linea 136 y 137
             if ((sizeof($course_por_aprobadoAbandono) > 0)) {
                 $text .= 'A pesar de haber aprobado, perderías el acceso al certificado internacional:' . $salto;
@@ -713,8 +780,9 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_125);
                 }
             }
+
             //linea 139
-            if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
+            if ($student['EXAMEN'] == 'REPROBADO' || ($student['EXAMEN'] == 'Sin Intentos Gratis')) {
                 $text .= 'Ya que tendrías (' .  $cant_coursesreprobadoAbandono . ') cursos reprobados/abandonados,
                  *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*' . $salto;
             }
@@ -725,59 +793,78 @@ class FreeCoursesCompletedTextOneMonth extends Command
             $cant_coursesreprobadoHabilitar = 0;
             $course_por_cursandohabilitar = [];
             $course_por_aprobadohabilitar = [];
+            $condicion_144 = [];
             $codicion_145 = [];
             $codicion_149 = [];
             $codicion_151 = [];
 
-            foreach ($course_porhabilitar as $key => $course) {
+
+
+            foreach ($student['courses'] as $key => $course) {
+                // linea 144
+                if (
+                    $course['course_status_original'] == 'POR HABILITAR' &&
+                    $course['type'] == 'free'
+                ) {
+                    $condicion_144[] = $course;
+                }
+
+                // linea 145
+                if ($course['course_status_original'] == 'ABANDONÓ' || $course['course_status_original'] == 'ABANDONO') {
+                    $codicion_145[] = $course;
+                }
+                // linea 148
+                $has_status_cursandohabilitar = self::getCourseByStatus($course, 'CURSANDO');
+                if ($has_status_cursandohabilitar) {
+                    $status_por_cursandohabilitar++;
+                    $course_por_cursandohabilitar[] = $course;
+                }
+
+                $status_obsequi_aprobadohabilitar = self::getCourseByCertificate($course, 'APROBADO');
+                if ($status_obsequi_aprobadohabilitar) {
+                    $status_certifi_aprobadohabilitar++;
+                    $course_por_aprobadohabilitar[] = $course;
+                }
+
+                $status_obsequiReprobadohabilitar = self::getCourseByCertificate($course, 'REPROBADO');
+                if ($status_obsequiReprobadohabilitar)
+                    $cant_coursesreprobadoHabilitar++;
+
+                if (($course['course_status_original'] == 'CURSANDO') &&
+                    ($course['month_days'] != $course['diff_days'])
+                ) {
+                    $codicion_149[] = $course;
+                }
+
+                // condicion 151
                 if (isset($course['certifaction_test_original'])) {
-                    // linea 145
-                    if ($course['course_status_original'] == 'ABANDONÓ' || $course['course_status_original'] == 'ABANDONO') {
-                        $codicion_145[] = $course;
-                    }
-                    // linea 148
-                    $has_status_cursandohabilitar = self::getCourseByStatus($course, 'CURSANDO');
-                    if ($has_status_cursandohabilitar) {
-                        $status_por_cursandohabilitar++;
-                        $course_por_cursandohabilitar[] = $course;
-                    }
-
-                    $status_obsequi_aprobadohabilitar = self::getCourseByCertificate($course, 'APROBADO');
-                    if ($status_obsequi_aprobadohabilitar) {
-                        $status_certifi_aprobadohabilitar++;
-                        $course_por_aprobadohabilitar[] = $course;
-                    }
-
-                    $status_obsequiReprobadohabilitar = self::getCourseByCertificate($course, 'REPROBADO');
-                    if ($status_obsequiReprobadohabilitar)
-                        $cant_coursesreprobadoHabilitar++;
-
-                    if (($course['course_status_original'] == 'CURSANDO') &&
-                        ($course['month_days'] != $course['diff_days'])
+                    if (
+                        $course['certifaction_test_original'] == 'APROBADO' &&
+                        ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null)) &&  $course['type'] == 'free'
                     ) {
-                        $codicion_149[] = $course;
+                        $codicion_151[] = $course;
                     }
+                } else {
+                    $nivelbasico = $course['nivel_basico']['certifaction_test_original'] == 'APROBADO';
+                    $nivelintermedio = $course['nivel_intermedio']['certifaction_test_original'] == 'APROBADO';
+                    $nivelavanzado = $course['nivel_avanzado']['certifaction_test_original'] == 'APROBADO';
 
-                    if (($course['certifaction_test_original'] == 'APROBADO') &&
-                        ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null))
+                    if (
+                        $nivelbasico || $nivelintermedio || $nivelavanzado &&
+                        ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null)) &&  $course['type'] == 'free'
                     ) {
                         $codicion_151[] = $course;
                     }
                 }
             }
-            // $has_excelreprobadohabilitar = self::excelreprobado($excel);
-            // if ($student_condition && $has_excelreprobadohabilitar) {
-            //     $cant_coursesreprobadoHabilitar++;
-            // }
-
 
             //Linea 143 COMIENZO
-            if (sizeof($course_porhabilitar) > 0)
+            if ($course_porhabilitar)
                 $text .= '👀 *OJO tienes por habilitar:*' . "\n";
-            //linea 144 y 146
-            $text .= self::setCoursesName($course_porhabilitar);
+            //linea 144 
+            $text .= self::setCoursesName($condicion_144);
             // linea 145 y 146
-            if (($student['AULA SAP'] == 'cursando' || $student['AULA SAP'] == 'completa') &&
+            if (($student['AULA SAP'] == 'CURSANDO' || $student['AULA SAP'] == 'COMPLETA') &&
                 ($student['CERTIFICADO'] != 'EMITIDO') && ($codicion_145)
             ) {
                 $text .= self::setCourses($one_month, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y
@@ -797,16 +884,19 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_151);
                 }
             }
+
             // linea 153
-            if (($student['AULA SAP'] == 'cursando')) {
+            if (($student['AULA SAP'] == 'CURSANDO')) {
                 $text .= 'Ya que tendrías (' . $cant_coursesreprobadoHabilitar . ') cursos reprobados/abandonados, 
                 así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*' . $salto;
             }
+
             //linea 155 y 156
-            if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
+            if ($student['EXAMEN'] == 'REPROBADO' || ($student['EXAMEN'] == 'Sin Intentos Gratis')) {
                 $text .= self::setCourses($one_month, 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* 
                 y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:');
             }
+
             //linea 158 y 159
             if ((sizeof($course_por_cursandohabilitar) > 0)) {
                 $text .= 'A pesar de haber iniciado, perderías el acceso a:' . $salto;
@@ -814,6 +904,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_149);
                 }
             }
+
             // linea 160 y 161
             if ((sizeof($course_por_aprobadohabilitar) > 0)) {
                 $text .= 'A pesar de haber aprobado, perderías el acceso al certificado internacional:' . $salto;
@@ -821,8 +912,9 @@ class FreeCoursesCompletedTextOneMonth extends Command
                     $text .= self::setCoursesName($codicion_151);
                 }
             }
+
             // linea 163
-            if ($student['EXAMEN'] == 'reprobado' || ($student['EXAMEN'] == 'sin intentos gratis')) {
+            if ($student['EXAMEN'] == 'REPROBADO' || ($student['EXAMEN'] == 'Sin Intentos Gratis')) {
                 $text .= 'Ya que tendrías (' .  $cant_coursesreprobadoHabilitar . ') cursos reprobados/abandonados,
                  *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*' . $salto;
             }
@@ -830,12 +922,135 @@ class FreeCoursesCompletedTextOneMonth extends Command
             $text .= '*Si tienes más dudas de esta condición, consúltame para explicarte y puedas tomar tus decisiones.*' . $salto;
             $text .= '📌 Ya que este pago, lo debes realizar antes del: ' . $salto;
             foreach ($one_month as $course) {
-                $text .= '-' . $course['end'] . "\n";
+                $text .= '- ' . $course['end'] . "\n";
             }
 
             $text .= '⚠️ Recuerda que este día, se eliminarán tus accesos de manera automática a las 23:59. ' . $salto;
             $text .= '*Aprovecho para comentarte que toda solicitud y pago de ponderado, debe ser dentro de mi horario laboral: Lun-Vier 9:00am a 7:00pm y Sáb. 9:00am a 5:00pm (HORA PERÚ).*' . $salto;
             $text .= 'Quedo al pendiente de tu respuesta y si necesitas alguna ayuda o que te brindemos opciones.' . $salto;
+        }
+        //dd($text);
+        $text = self::replaceText($text, "1");
+        dd($text);
+        return $text;
+    }
+    public static function replaceText($text, $diff)
+    {
+
+        $str = [
+            //linea 1
+            [
+                'original' => '¡Hola!',
+                '15'      => '⚠️ ¡Atención urgente! ⏳',
+                '7'       => '',
+                '4'       => '',
+                '1'       => '¡Tenemos noticias lamentables! Si no recibimos respuestas de tu parte:',
+
+            ],
+            //linea 2
+            [
+                'original' => 'Está por vencer tu curso:',
+                '15'      => 'Está por vencer tu curso:',
+                '7'       => 'Está por vencer tu curso:',
+                '4'       => '¡Urgente, tu curso está en peligro! ⚠️',
+                '1'       => 'Te envío la última información de tu curso:',
+
+            ],
+            [
+                'original' => 'Están por vencer tus cursos:',
+                '15'      => 'Están por vencer tus cursos:',
+                '7'       => 'Están por vencer tus cursos:',
+                '4'       => '¡Urgente, tus cursos están en peligro! ⚠️',
+                '1'       => 'Te envío la última información de tus cursos:',
+
+            ],
+            [
+                'original' => 'Están por vencer tus cursos:',
+                '15'      => 'Están por vencer tus cursos:',
+                '7'       => 'Están por vencer tus cursos:',
+                '4'       => '¡Urgente, tus cursos están en peligro! ⚠️',
+                '1'       => 'Te envío la última información de tus cursos:',
+
+            ],
+            [
+                'original' => '🚨 Actualmente este curso se encuentra reprobado y no brindamos certificados por participación.',
+                '15'      => '🚨 Sé que reprobaste este curso y lamentablemente no brindamos certificados por participación.',
+                '7'       => '🚨 Una vez más te indico que este curso está reprobado y que aún no has optado por realizar el pago del ponderado.',
+                '4'       => '🚨 Recuerda que te comentamos la opción de optar por el ponderado, pero no hemos recibido tu pago, lo cual  es una lástima, porque no contaremos con tu participación en esta certificación.',
+                '1'       => 'Y a la hora que te envío este mensaje, el estado de tu curso es *reprobado.*',
+
+            ],
+            [
+                'original' => '🚨 Actualmente estos cursos se encuentran reprobados y no brindamos certificados por participación.',
+                '15'      => '🚨 Sé que reprobaste estos cursos y lamentablemente no brindamos certificados por participación.',
+                '7'       => '🚨 Una vez más te indico que estos cursos están reprobados y que aún no has optado por realizar el pago del ponderado.',
+                '4'       => '🚨 Recuerda que te comentamos la opción de optar por el ponderado, pero no hemos recibido tu pago, lo cual es una lástima, porque no contaremos con tu participación en estas certificaciones.',
+                '1'       => 'Y a la hora que te envío este mensaje, el estado de tus cursos es *reprobado.*',
+
+            ],
+            [
+                'original' => '🚨 Actualmente estos cursos *se encuentran reprobados y para Excel, debes aprobar los 3 niveles,* porque no brindamos certificados por participación, ni por nivel independiente, y este es el estado de cada nivel del curso:',
+                '15'      => '🚨 Sé que reprobaste estos cursos, y *para Excel, debes aprobar los 3 niveles,* porque no brindamos certificados por nivel independiente, y este es el estado de cada nivel:',
+                '7'       => '🚨 Una vez más te indico que estos cursos están reprobados y *para Excel, debes aprobar los 3 niveles,* y este es el estado de cada nivel:',
+                '4'       => '🚨 Recuerda que te comentamos la opción de optar por el ponderado, pero no hemos recibido tu pago, lo cual es una lástima, porque no estaremos contando con tu participación en la certificación de estos cursos porque están reprobados, ya que Excel tiene:',
+                '1'       => 'Y a la hora que te envío este mensaje, el estado de tu curso es *reprobado,* porque culminaste con cada nivel de la siguiente manera:',
+
+            ],
+            [
+                'original' => '🚨 A continuación te indico el estado actual de cada nivel:',
+                '15'      => '🚨 Necesito que sepas el estado actual de cada nivel:',
+                '7'       => '🚨 Necesito que sepas el estado actual de cada nivel:',
+                '4'       => '🚨 Recuerda que te comentamos la opción de optar por el ponderado, pero no hemos recibido tu pago, lo cual es una lástima, porque no estaremos contando con tu participación en la certificación, porque reprobaste el nivel:',
+                '1'       => 'Y a la hora que te envío este mensaje, el estado de tus cursos es *reprobado,* porque con Excel culminaste con cada nivel de la siguiente manera:',
+
+            ],
+            [
+                'original' => 'Recordándote que debes *aprobar los 3 niveles,* porque no brindamos certificados por participación, ni por nivel independiente',
+                '15'      => 'Recordándote que debes *aprobar los 3 niveles,* porque no brindamos certificados por participación, ni por nivel independiente. Así que, en este momento, el curso se encuentra *REPROBADO.*',
+                '7'       => 'Recordándote que debes *aprobar los 3 niveles,* porque no brindamos certificados por nivel independiente. Así que en este momento, el curso se encuentra *REPROBADO,* ya que aún no has optado por el pago del ponderado.',
+                '4'       => 'Y no ofrecemos certificado de participación por haber completado algún curso, ni por niveles independientes.',
+                '1'       => 'Es decir, que *aunque hayas aprobado ese nivel, no recibirás certificación alguna porque la condición para certificar Excel Empresarial, es que hayas aprobado todos los niveles que lo comprenden.*',
+
+            ],
+            [
+                'original' => '🚩 🚩 *Pero no todo está perdido.*',
+                '15'      => '🚩 🚩 *Pero todavía hay posibles soluciones:*',
+                '7'       => '🚩 🚩 Si aún estás considerando realizar tu pago, te recuerdo que debe ser en estos días, ya que la fecha fin es el:',
+                '4'       => '',
+                '1'       => '',
+
+            ],
+            [
+                'original' => '*Puedes realizar el pago para ponderar los intentos de examen que reprobaste*',
+                '15'      => '*Puedes realizar el pago para ponderar los intentos de examen que reprobaste*',
+                '7'       => '',
+                '4'       => '',
+                '1'       => '',
+
+            ],
+            [
+                'original' => 'Están por vencer tus cursos:',
+                '15'      => 'Están por vencer tus cursos:',
+                '7'       => 'Están por vencer tus cursos:',
+                '4'       => '¡Urgente, tus cursos están en peligro! ⚠️',
+                '1'       => 'Te envío la última información de tus cursos:',
+            ],
+            // [
+            //     'original' => 'Están por vencer tus cursos:',
+            //     '15'      => 'Están por vencer tus cursos:',
+            //     '7'       => 'Están por vencer tus cursos:',
+            //     '4'       => '¡Urgente, tus cursos están en peligro! ⚠️',
+            //     '1'       => 'Te envío la última información de tus cursos:',
+
+            // ],
+        ];
+
+        foreach ($str as $key => $value) {
+            foreach ($value as $key => $val) {
+                if ($key == $diff) {
+                    $text = str_replace($value['original'], $value[$diff], $text);
+                }
+            }
         }
 
         return $text;
@@ -857,7 +1072,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
     public static function hasCoursenoCulminado($courses)
     {
 
-        $has_course = [];
+        $has_course = false;
         foreach ($courses as $key => $course) {
 
             if (
@@ -865,7 +1080,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 $course['type'] == 'free' &&
                 ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null))
             ) {
-                $has_course[] = $course;
+                $has_course = true;
             }
         }
 
@@ -874,11 +1089,11 @@ class FreeCoursesCompletedTextOneMonth extends Command
 
     public static function hasCourseHabilitar($courses)
     {
-        $has_course = [];
+        $has_course = false;
         foreach ($courses as $key => $course) {
 
             if ($course['course_status_original'] == 'POR HABILITAR' && $course['type'] == 'free') {
-                $has_course[] = $course;
+                $has_course = true;
             }
         }
 
@@ -887,7 +1102,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
 
     public static function hasCourseAbandonado($courses)
     {
-        $has_course = [];
+        $has_course = false;
         foreach ($courses as $key => $course) {
 
             if (
@@ -895,7 +1110,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 $course['type'] == 'free' &&
                 ($course['month_days'] != $course['diff_days'] || ($course['start'] == null && $course['end'] == null))
             ) {
-                $has_course[] = $course;
+                $has_course[] = true;
             }
         }
 
@@ -944,6 +1159,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
     // }
     public static function getCourseByStatus($course, $status)
     {
+
         if ($course['course_status_original'] == $status)
             return true;
         return false;
