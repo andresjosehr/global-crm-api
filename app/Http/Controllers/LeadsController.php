@@ -286,6 +286,9 @@ class LeadsController extends Controller
                 $p = $request->project_id == 'Base' ? null : $request->project_id;
                 return $query->where('lead_project_id', $p);
             })
+            ->when(!$request->project_id, function ($query) use ($request) {
+                return $query->where('lead_project_id', "Base");
+            })
             ->when($request->automatic_import==='true', function ($query) use ($request) {
                 return $query->where('channel_id', '<>', NULL);
             })
