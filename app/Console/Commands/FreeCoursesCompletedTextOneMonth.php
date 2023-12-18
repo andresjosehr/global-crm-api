@@ -941,12 +941,12 @@ class FreeCoursesCompletedTextOneMonth extends Command
             //linea 1
             [
                 'original' => '¡Hola!',
-                '15'      => '⚠️ ¡Atención urgente! ⏳',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '¡Tenemos noticias lamentables! Si no recibimos respuestas de tu parte:',
-
+                '15' => '⚠️ ¡Atención urgente! ⏳',
+                '7' => '🌟 ¡Importante actualización! 📢',
+                '4' => '🔔 ¡Notificación crucial! 🚨',
+                '1' => '¡Tenemos noticias lamentables! Si no recibimos respuestas de tu parte:',
             ],
+
             //linea 2
             [
                 'original' => 'Está por vencer tu curso:',
@@ -1014,55 +1014,54 @@ class FreeCoursesCompletedTextOneMonth extends Command
             ],
             [
                 'original' => '🚩 🚩 *Pero no todo está perdido.*',
-                '15'      => '🚩 🚩 *Pero todavía hay posibles soluciones:*',
-                '7'       => '🚩 🚩 Si aún estás considerando realizar tu pago, te recuerdo que debe ser en estos días, ya que la fecha fin es el:',
-                '4'       => '',
-                '1'       => '',
-
+                '15' => '🚩 🚩 *Pero todavía hay posibles soluciones:*',
+                '7' => '🚩 🚩 Si aún estás considerando realizar tu pago, te recuerdo que debe ser en estos días, ya que la fecha fin es el:',
+                '4' => '📆 🚩 *¡Importante recordatorio de fecha!*',
+                '1' => '🚩 🚩 *Mensaje urgente:*',
             ],
             [
                 'original' => '*Puedes realizar el pago para ponderar los intentos de examen que reprobaste*',
-                '15'      => '*Puedes realizar el pago para ponderar los intentos de examen que reprobaste*',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '',
-
+                '15' => '*Puedes realizar el pago para ponderar los intentos de examen que reprobaste*',
+                '7' => '💡 *Importante opción para mejorar:* Si aún estás considerando mejorar tus resultados, esta es tu oportunidad. Realizar el pago te permitirá ponderar los intentos de examen que reprobaste.',
+                '4' => '📆 *Fecha límite de pago*',
+                '1' => '⚠️ *Acción necesaria:*',
             ],
+
             [
                 'original' => 'CURSO y NIVEL DE EXCEL "SIN INTENTOS GRATIS"',
-                '15'      => 'CURSO y NIVEL DE EXCEL "SIN INTENTOS GRATIS"',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '',
+                '15' => 'CURSO y NIVEL DE EXCEL "SIN INTENTOS GRATIS"',
+                '7' => '🔍 *Recursos adicionales:*',
+                '4' => '📌 *Información adicional:*',
+                '1' => '💡 *Consideración esencial:*',
             ],
             [
                 'original' => 'NIVEL DE EXCEL "SIN INTENTOS GRATIS"',
                 '15'      => 'NIVEL DE EXCEL "SIN INTENTOS GRATIS"',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '',
+                '7'       => 'NIVEL DE EXCEL "SIN INTENTOS GRATIS"',
+                '4'       => '💡 *Información adicional:*',
+                '1'       => '📌 *Aviso destacado:*',
 
             ],
             [
                 'original' => 'Y de esta manera obtener tus certificados cuando te certifiques en SAP.',
-                '15'      => 'Y de esta manera obtener tus certificados cuando te certifiques en SAP.',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '',
-
+                '15' => 'Y de esta manera obtener tus certificados cuando te certifiques en SAP.',
+                '7' => '🚀 *Pasos para el éxito:* Sigue estos pasos para asegurarte de obtener tus certificados en SAP.',
+                '4' => '📋 *Información importante:*',
+                '1' => '💡 *Consejo valioso:*',
             ],
+
             [
                 'original' => 'Y de esta manera obtener tus certificados.',
-                '15'      => 'Y de esta manera obtener tus certificados.',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '',
-
+                '15' => 'Y de esta manera obtener tus certificados.',
+                '7' => '🚀 *Pasos esenciales:* Sigue estos pasos clave para garantizar la obtención de tus certificados.',
+                '4' => '📋 *Detalles importantes:*',
+                '1' => '💡 *Consejo útil:*',
             ],
+
             [
                 'original' => 'Y de esta manera obtener tu certificado.',
                 '15'      => 'Y de esta manera obtener tu certificado.',
-                '7'       => '',
+                '7'       => 'Y de esta manera obtener tu certificado.',
                 '4'       => 'Y no ofrecemos certificado de participación por haber completado algún curso, ni por niveles independientes.',
                 '1'       => 'Es decir, que *aunque hayas aprobado ese nivel, no recibirás certificación alguna porque la condición para certificar Excel Empresarial, es que hayas aprobado todos los niveles que lo comprenden.*',
 
@@ -1070,18 +1069,18 @@ class FreeCoursesCompletedTextOneMonth extends Command
             [
                 'original' => '¡Estás a tan solo un paso de lograrlo! Ya tienes aprobado un nivel, no pierdas la oportunidad.',
                 '15'      => '¡Estás a tan solo un paso de lograrlo! Ya tienes aprobado un nivel, no pierdas la oportunidad.',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '',
-
+                '7'       => 'Has avanzado significativamente. Mantén ese impulso y sigue adelante hacia tus metas.',
+                '4'       => 'Cada paso que tomas te acerca más al éxito. ¡Sigue así y alcanzarás tus objetivos!',
+                '1'       => 'Bien hecho por comenzar este viaje. Aprovecha esta oportunidad para aprender y crecer.',
             ],
             [
                 'original' => '¡Estás a tan solo un paso de lograrlo! Ya tienes aprobados dos niveles, no pierdas la oportunidad.',
                 '15'      => '¡Estás a tan solo un paso de lograrlo! Ya tienes aprobados dos niveles, no pierdas la oportunidad.',
-                '7'       => '',
-                '4'       => '',
-                '1'       => '',
+                '7'       => 'Tu dedicación se refleja en tus logros. Sigue avanzando con confianza hacia nuevos desafíos.',
+                '4'       => 'Dos niveles completados, ¡fantástico! Continúa construyendo tu éxito con cada paso que das.',
+                '1'       => 'Cada inicio es un logro en sí mismo. Estás en el camino correcto, sigue avanzando con determinación.',
             ],
+
             [
                 'original' => '👀 *OJO aún estás cursando:*',
                 '15'      => '👀 *OJO, como aún no te has certificado en SAP y aún estás cursando:*',
@@ -1095,13 +1094,13 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 '15'      => 'Esto significa que, incluso si has comenzado, corres el riesgo de perder el acceso si no completas el pago del ponderado de:',
                 '7'       => 'Esto significa que, incluso si has comenzado, corres el riesgo de perder el acceso si no completas el pago del ponderado de:',
                 '4'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y aún no te certificas en SAP. Por lo que podrías perder el acceso, a pesar de haber iniciado, si no pagas el ponderado de:',
-                '1'       => '',
+                '1'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y aún no te certificas en SAP.',
 
             ],
             [
                 'original' => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que está en peligro el acceso, si no pagas el ponderado de:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que está en peligro el acceso, si no pagas el ponderado de:',
+                '7'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que está en peligro el acceso, si no pagas el ponderado de:',
                 '4'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que está en peligro el acceso, si no pagas el ponderado de:',
                 '1'       => 'Como aún no te certificas en SAP, al haber reprobado solo un curso, aún mantienes el acceso a:',
 
@@ -1119,7 +1118,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 '15'      => 'Si no realizas el pago del ponderado de:',
                 '7'       => 'Si no realizas el pago del ponderado de:',
                 '4'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y aún no te certificas en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '1'       => '',
+                '1'       => 'Recuerda la importancia de cumplir con el pago del ponderado para asegurar tu progreso académico. Evita tener pendientes dos o más cursos reprobados o abandonados y certifícate en SAP. Tu compromiso con el pago del ponderado de: ',
 
             ],
             [
@@ -1156,41 +1155,41 @@ class FreeCoursesCompletedTextOneMonth extends Command
             ],
             [
                 'original' => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
+                '7'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
                 '4'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
                 '1'       => 'Como aún no te certificas en SAP, al haber reprobado estos  cursos:',
 
             ],
             [
                 'original' => 'A pesar de quedar pendiente, no podrás habilitar:',
-                '15'      => '',
-                '7'       => '',
-                '4'       => '',
+                '15'      => 'A pesar de quedar pendiente, no podrás habilitar:',
+                '7'       => 'A pesar de quedar pendiente, no podrás habilitar:',
+                '4'       => 'A pesar de quedar pendiente, no podrás habilitar:',
                 '1'       => 'No podrás habilitar:',
 
             ],
             [
                 'original' => 'A pesar de haber iniciado, perderías el acceso a:',
-                '15'      => '',
-                '7'       => '',
-                '4'       => '',
+                '15'      => 'A pesar de haber iniciado, perderías el acceso a:',
+                '7'       => 'A pesar de haber iniciado, perderías el acceso a:',
+                '4'       => 'A pesar de haber iniciado, perderías el acceso a:',
                 '1'       => 'Pierdes el acceso a:',
 
             ],
             [
                 'original' => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
-                '15'      => '',
-                '7'       => '',
-                '4'       => '',
+                '15'      => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
+                '7'       => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
+                '4'       => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
                 '1'       => 'Pierdes el acceso al certificado internacional:',
 
             ],
             [
                 'original' => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
-                '15'      => '',
-                '7'       => '',
-                '4'       => '',
+                '15'      => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
+                '7'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
+                '4'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
                 '1'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*',
 
             ],
@@ -1244,40 +1243,40 @@ class FreeCoursesCompletedTextOneMonth extends Command
             ],
             [
                 'original' => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
+                '7'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
                 '4'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '1'       => '',
+                '1'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. ',
 
             ],
             [
                 'original' => 'A pesar de quedar pendiente, no podrás habilitar:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Aunque esté pendiente, la habilitación no será posible:',
+                '7'       => 'No será posible habilitar, incluso si queda pendiente:',
                 '4'       => 'A pesar de quedar pendiente, no podrás habilitar:',
-                '1'       => '',
+                '1'       => 'no podrás habilitar:',
 
             ],
             [
                 'original' => 'A pesar de haber iniciado, perderías el acceso a:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Aunque hayas comenzado, perderías el acceso a:',
+                '7'       => 'Incluso después de iniciar, perderías el acceso a:',
                 '4'       => 'A pesar de haber iniciado, perderías el acceso a:',
-                '1'       => '',
+                '1'       => 'perderías el acceso a:',
 
             ],
             [
                 'original' => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
-                '15'      => '',
-                '7'       => '',
-                '4'       => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
-                '1'       => '',
-
+                '15' => 'Incluso habiendo aprobado, perderías el acceso al certificado internacional:',
+                '7' => 'Aprobación no garantiza acceso al certificado internacional:',
+                '4' => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
+                '1' => 'Perderías el acceso al certificado internacional:',
             ],
+
             [
                 'original' => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
+                '7'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
                 '4'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
                 '1'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
 
@@ -1287,7 +1286,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 '15'      => '👀 *OJO: como aún no te has certificado en SAP y abandonaste:*',
                 '7'       => '👀 *Como aún no te has certificado en SAP y abandonaste:*',
                 '4'       => '👀 *OJO: recuerda que abandonaste:*',
-                '1'       => '',
+                '1'       => '👀 *OJO: recuerda que abandonaste:*',
 
             ],
             [
@@ -1332,40 +1331,39 @@ class FreeCoursesCompletedTextOneMonth extends Command
             ],
             [
                 'original' => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
+                '7'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
                 '4'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '1'       => '',
+                '1'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP.',
 
             ],
             [
                 'original' => 'A pesar de quedar pendiente, no podrás habilitar:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Aunque esté pendiente, no podrás habilitar:',
+                '7'       => 'A pesar de estar pendiente, la habilitación no será posible:',
                 '4'       => 'A pesar de quedar pendiente, no podrás habilitar:',
-                '1'       => '',
+                '1'       => 'No podrás habilitar:',
 
             ],
             [
                 'original' => 'A pesar de haber iniciado, perderías el acceso a:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Aunque hayas iniciado, perderías el acceso a:',
+                '7'       => 'Incluso después de haber iniciado, perderías el acceso a:',
                 '4'       => 'A pesar de haber iniciado, perderías el acceso a:',
-                '1'       => '',
+                '1'       => 'Piedes el acceso a:',
 
             ],
             [
                 'original' => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
-                '15'      => '',
-                '7'       => '',
-                '4'       => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
-                '1'       => '',
-
+                '15' => 'Incluso habiendo aprobado, perderías el acceso al certificado internacional:',
+                '7' => 'Aprobación no garantiza acceso al certificado internacional:',
+                '4' => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
+                '1' => 'A pesar de aprobar, perderías el acceso al certificado internacional:'
             ],
             [
                 'original' => 'Ya que tendrías ( ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Ya que tendrías ( ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
+                '7'       => 'Ya que tendrías ( ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
                 '4'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
                 '1'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
 
@@ -1412,32 +1410,32 @@ class FreeCoursesCompletedTextOneMonth extends Command
             ],
             [
                 'original' => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
+                '7'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
                 '4'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no realizas el pago del ponderado de:',
-                '1'       => '',
+                '1'       => 'Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. ',
 
             ],
             [
                 'original' => 'A pesar de haber iniciado, perderías el acceso a:',
-                '15'      => '',
-                '7'       => '',
-                '4'       => 'A pesar de haber iniciado, perderías el acceso a:',
-                '1'       => '',
-
+                '15' => 'Aunque hayas iniciado, perderías el acceso a:',
+                '7' => 'Incluso después de haber iniciado, perderías el acceso a:',
+                '4' => 'A pesar de haber iniciado, perderías el acceso a:',
+                '1' => 'A pesar de iniciar, perderías el acceso a:'
             ],
+
             [
                 'original' => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
-                '15'      => '',
-                '7'       => '',
-                '4'       => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
-                '1'       => '',
-
+                '15' => 'Incluso habiendo aprobado, perderías el acceso al certificado internacional:',
+                '7' => 'Aprobación no garantiza acceso al certificado internacional:',
+                '4' => 'A pesar de haber aprobado, perderías el acceso al certificado internacional:',
+                '1' => 'A pesar de aprobar, perderías el acceso al certificado internacional:'
             ],
+
             [
                 'original' => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
-                '15'      => '',
-                '7'       => '',
+                '15'      => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
+                '7'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
                 '4'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
                 '1'       => 'Ya que tendrías (  ) cursos reprobados/abandonados, *siendo tu último procedimiento con nosotros, porque no tendrías más cursos por habilitar.*',
 
