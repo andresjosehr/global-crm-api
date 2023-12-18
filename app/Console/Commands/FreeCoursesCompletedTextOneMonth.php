@@ -78,7 +78,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
                 $dataToUpdate[] = [
                     'sheet_id'          => $student['sheet_id'],
                     'course_row_number' => $student['course_row_number'],
-                    'column'            => "BA",
+                    'column'            => "BB",
                     'email'             => $student['CORREO'],
                     'tab_id'            => $student['course_tab_id'],
                     'value'             => $student['text'],
