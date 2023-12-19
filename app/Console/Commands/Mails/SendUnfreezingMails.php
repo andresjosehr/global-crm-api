@@ -34,7 +34,7 @@ class SendUnfreezingMails extends Command
         $times = [];
         $startTime = microtime(true);
          // return ZohoToken::where('token', '<>', '')->first();
-         $mode = 'test';
+         $mode = 'prod';
 
          // Memory limit
          ini_set('memory_limit', -1);
@@ -95,19 +95,13 @@ class SendUnfreezingMails extends Command
 
          $students = array_values($students);
 
-        $endTime = microtime(true);
-        $times['FiltrarDatos'] = $endTime - $startTime;
-        $startTime = $endTime;
+
+         self::sendMails($students);
+         self::updateExcel($students);
 
 
-        //  self::sendMails($students);
 
-         $dataNueve = self::updateExcel($students);
-         $endTime = microtime(true);
-        $times['ActualizarExcel'] = $endTime - $startTime;
-
-
-         return $this->line(json_encode(["Data Excel" => $times]));
+         return $this->line(json_encode(["Data Excel" => $students]));
 
         return Command::SUCCESS;
     }
