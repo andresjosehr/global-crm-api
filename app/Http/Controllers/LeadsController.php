@@ -43,7 +43,9 @@ class LeadsController extends Controller
 
     public function getNextLead(Request $request)
     {
+
         $user = $request->user();
+
 
         self::assignNextLead($user);
 
@@ -134,22 +136,18 @@ class LeadsController extends Controller
 
     private function findNextLeadId($user)
     {
-        // Obtener todos los leads ya asignados al usuario
-        $activeAssignedLeadIds = LeadAssignment::where('active', true)->pluck('lead_id');
 
-        // Get max activeAssignedLeadIds
+
+        // Obtener la ronda actual de asignaciones
         $round = LeadAssignment::max('round') ?? 1;
+
+        // Obtener todos los leads ya asignados al usuario
+        $assignedLeadsIds = LeadAssignment::where('round', $round)->pluck('lead_id');
+
+        // Obtener los IDs de los proyectos asignados al usuario
         $projects = $user->projects_pivot->pluck('lead_project_id')->toArray();
-        $maxActiveAssignedLeadId = LeadAssignment::where('round', $round)
-            ->whereIn('project_id', $projects)
-            ->when(in_array(null, $projects), function ($query) {
-                return $query->orWhereNull('project_id');
-            })
-            ->max('lead_id') ?? 0;
 
-        // Encuentra el próximo lead no asignado al usuario
-
-
+        // Verificar si el usuario no tiene proyectos asignados
         if (count($projects) == 0) {
             return [
                 'round'      => $round,
@@ -158,25 +156,27 @@ class LeadsController extends Controller
             ];
         }
 
+        // Intentar encontrar el lead más reciente no asignado al usuario
         $nextLead = Lead::whereIn('lead_project_id', $projects)
             ->when(in_array(null, $projects), function ($query) {
                 return $query->orWhereNull('lead_project_id');
             })
-            ->where('id', '>', $maxActiveAssignedLeadId)
+            ->whereNotIn('id', $assignedLeadsIds)
             ->where('status', 'Nuevo')
-            ->orderBy('id', 'ASC')
+            ->orderBy('created_at', 'DESC') // Ordenar por fecha de creación, no por ID
             ->first();
 
-
+        // Si no hay leads nuevos, iniciar una nueva ronda
         if (!$nextLead) {
             $round++;
             $nextLead = $this->startNewRound($projects);
         }
 
+        // Devolver el ID del próximo lead a asignar, la ronda y el ID del proyecto
         return [
             'round' => $round,
-            'nextLeadId' => $nextLead->id,
-            'project_id' => $nextLead->lead_project_id
+            'nextLeadId' => $nextLead ? $nextLead->id : null,
+            'project_id' => $nextLead ? $nextLead->lead_project_id : null
         ];
     }
 
