@@ -17,6 +17,7 @@ class Lead extends Model
         'lead_project_id',
         'channel_id',
         'chat_date',
+        'status'
     ];
 
     public function leadAssignments()
