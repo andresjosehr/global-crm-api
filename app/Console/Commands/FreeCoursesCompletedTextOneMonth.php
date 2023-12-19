@@ -34,7 +34,7 @@ class FreeCoursesCompletedTextOneMonth extends Command
         // return "Hola";
         if (!$students) {
             $data = new StudentsExcelController();
-            $students = $data->index('test');
+            $students = $data->index('prod');
             //$students = json_decode(file_get_contents(storage_path('app/public/data.json')), true);
         }
 
