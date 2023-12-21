@@ -132,4 +132,5 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
 });
 Route::prefix('processes')->group(function () {
     Route::post('import-leads-from-liveconnect', 'App\Http\Controllers\ProcessesController@importLeadsFromLiveconnect');
+    Route::post('generate-message', 'App\Http\Controllers\ProcessesController@generateMessage');
 });
