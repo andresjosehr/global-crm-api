@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\Texts\UnfreezingText;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Processes\StudentsExcelController;
 use App\Models\Lead;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -120,5 +122,30 @@ class ProcessesController extends Controller
 
 
         return ApiResponseController::response('ok', 200);
+    }
+
+    public function generateMessage(Request $request)
+    {
+        $student = $request->data;
+
+        // Convert string to array
+        $student = json_decode($student, true);
+
+
+
+
+
+        $excelController = new StudentsExcelController();
+        $data = $excelController->formatCourses([$student]);
+        $data = $excelController->formatProgress($data);
+
+        $unfreezingTexts = new UnfreezingText();
+        $studentsWithText = $unfreezingTexts->handle($data);
+
+        if (count($studentsWithText) > 0) {
+            return $studentsWithText[0]['text'];
+        }
+
+        return '';
     }
 }
