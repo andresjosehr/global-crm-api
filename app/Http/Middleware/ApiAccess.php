@@ -34,6 +34,15 @@ class ApiAccess
             }
         }
 
-				return $next($request);
+        // Get user
+
+        $user = JWTAuth::parseToken()->authenticate();
+
+        // if user have $active = false return error
+        if(!$user->active){
+            return ApiResponseController::response('Usuario inactivo', 401);
+        }
+
+	    return $next($request);
     }
 }
