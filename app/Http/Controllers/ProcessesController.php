@@ -131,20 +131,28 @@ class ProcessesController extends Controller
         // Convert string to array
         $student = json_decode($student, true);
 
-
-
-
-
         $excelController = new StudentsExcelController();
         $data = $excelController->formatCourses([$student]);
         $data = $excelController->formatProgress($data);
 
+
+
+        // Inicio Comprobacion de texto
         $unfreezingTexts = new UnfreezingText();
         $studentsWithText = $unfreezingTexts->handle($data);
 
         if (count($studentsWithText) > 0) {
             return $studentsWithText[0]['text'];
         }
+        // Fin de comprobacion
+
+
+
+
+
+
+
+
 
         return '';
     }
