@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\Texts\UnfreezingText;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Processes\StudentsExcelController;
 use App\Models\Lead;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+
+use App\Services\StudentMessageService;
 
 class ProcessesController extends Controller
 {
@@ -120,5 +124,57 @@ class ProcessesController extends Controller
 
 
         return ApiResponseController::response('ok', 200);
+    }
+
+    /**
+     * Acción de Controlador que Genera el mensaje para el estudiante.
+     * Lo llama la API: "/api/processes/generate-message" (ver rutas)
+     * El body request es del tipo FORM URL ENCODED donde hay una variable "data" con una cadena JSON
+     * 	"data"='{"row_number": 288,"NOMBRE": "Agustín salas Muñoz",...}'
+     * 
+     * IMPORTANTE: solo recibe el dato de un estudiante ("{}") y no de varios ("[{},{}]")
+     */
+    public function generateMessage(Request $request)
+    {
+        $student = $request->data;
+        // echo "<hr>";
+        // var_dump($student);
+        // return "I'm here";
+
+        // Convert string to array
+        $student = json_decode($student, true);
+        // echo "<hr>";
+        // var_dump($student);
+        // return "I'm here";
+
+        // Formatea los datos de los alumnos en los cursos
+        // Atención Retorna un ARRAY de estudiantes. solo usar el primer estudiante del array
+        $excelController = new StudentsExcelController();
+        $data = $excelController->formatCourses([$student]);
+        $data = $excelController->formatProgress($data);
+
+
+        // echo "<hr>";
+        // hardcodea el estudiante
+        $data[0]["courses"][0]["end"] = "2024-01-26";
+        // echo $data[0]["courses"];
+        echo json_encode($data);
+
+        // @todo Descomentar estas lineas para obtener el texto de desbloqueo
+        // //  Obtiene el texto de desbloqueo
+        // $unfreezingTexts = new UnfreezingText();
+        // $studentsWithText = $unfreezingTexts->handle($data);
+
+        // if (count($studentsWithText) > 0) {
+        //     return $studentsWithText[0]['text'];
+        // }
+
+        // Obtiene el texto para SAP
+
+        echo "<hr>";
+        $studentMessageService = new StudentMessageService();
+        $message = $studentMessageService->getMessageForSAPCourseCertification($data[0], Carbon::now());
+
+        return '';
     }
 }

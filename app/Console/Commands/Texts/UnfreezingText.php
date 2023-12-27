@@ -28,7 +28,7 @@ class UnfreezingText extends Command
     /**
      * Execute the console command.
      *
-     * @return any
+     *
      */
     public function handle($students = null)
     {
