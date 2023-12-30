@@ -175,7 +175,10 @@ class ProcessesController extends Controller
         // $message = $studentMessageService->getMessageForSAPAndFreeCourseCertification($data[0], Carbon::now());
         // return sprintf("<pre>asddas</pre>");
 
-        $message = $studentMessageService->getMessageForInProgressFreeCourse(Carbon::now());
+        // $message = $studentMessageService->getMessageForInProgressFreeCourse(Carbon::now());
+
+        $message = $studentMessageService->getMessageForCompletedFreeCourse(Carbon::now());
+        
 
         return sprintf("<pre>%s</pre>", $message);
     }
