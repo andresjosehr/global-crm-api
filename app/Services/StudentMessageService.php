@@ -864,6 +864,11 @@ class StudentMessageService
                 }
                 Log::debug(sprintf("Curso %s - es un curso de obsequuio con estado completo ", $course['name']));
 
+                // Solo cursos con ESTADO EXAMEN "APROBADO" o "SIN INTENTOS GRATIS"
+                if ($course["certifaction_test_original"] != "APROBADO" && $course["noFreeAttempts"] == false) :
+                    continue;
+                endif;
+
                 // si el curso no tiene fecha de fin, sigue procesando el siguiente curso
                 if (empty($course['end']) == true) {
                     continue;
@@ -909,10 +914,10 @@ class StudentMessageService
                 if ($course["isSpecializedCourse"] == true) :
                     $hasSpecializedCoursesToNotify = true;
                 endif;
-                if($course['noFreeAttempts'] == true) :
+                if ($course['noFreeAttempts'] == true) :
                     $tmpNoFreeCertificationAttemptsFlag = true;
                 endif;
-                if($course['certifaction_test_original'] == "APROBADO") :
+                if ($course['certifaction_test_original'] == "APROBADO") :
                     $tmpApprovedSapCourseFlag = true;
                 endif;
             endforeach;
@@ -1147,7 +1152,9 @@ class StudentMessageService
     {
 
         // Claves que deben existir en el array de $studentData para que no falle la vista Blade
-        $requiredKeys = ["AULA SAP", "EXAMEN", "CERTIFICADO", "NOMBRE", "PONDERADO SAP", "LEVELS"]; // LEVELS es para Excel
+        // LEVELS es para almacenar niveles de Excel
+        // APPROVED_LEVELS_COUNT es para almacenar la cantidad de niveles de Excel aprobados
+        $requiredKeys = ["AULA SAP", "EXAMEN", "CERTIFICADO", "NOMBRE", "PONDERADO SAP", "LEVELS", "APPROVED_LEVELS_COUNT"]; 
 
         // Verificar y establecer las claves si no existen
         foreach ($requiredKeys as $key) :
@@ -1173,6 +1180,8 @@ class StudentMessageService
             if (isset($course['end']) == false) {
                 $course['end'] = null;
             }
+            $course['APPROVED_LEVELS_COUNT'] = 0;
+
             // Aplana cursos de Excel con sus flags
             if ($course['isExcelCourse'] == true) :
                 $course['LEVELS'] = []; // Excel tiene los niveles
@@ -1185,11 +1194,19 @@ class StudentMessageService
 
                     $course['LEVELS'][] = $level; // agrega el nivel al procesamiento
                     $course[$level]['name'] = $level; // asigna el nombre del nivel
+                    if($course[$level]['status'] == 'APROBADO') :
+                        $course['APPROVED_LEVELS_COUNT']++;
+                    endif;
 
                     if (isset($course[$level]['certifaction_test_original']) == true) :
-                        // "|" el or es por si ya estaba el true antes
-                        $course['hasPendingAttempts'] =  $course['hasPendingAttempts'] | (stripos($course[$level]['certifaction_test_original'], 'Intentos pendientes') !== false);
-                        $course['noFreeAttempts'] =  $course['noFreeAttempts'] | (stripos($course[$level]['certifaction_test_original'], 'Sin intentos Gratis') !== false);
+                        // flag para NIVELES de cursos con intentos pendientes
+                        $course[$level]['hasPendingAttempts'] = (stripos($course[$level]['certifaction_test_original'], 'Intentos pendientes') !== false);
+                        // flag para cursos sin intentos gratis
+                        $course[$level]['noFreeAttempts'] = (stripos($course[$level]['certifaction_test_original'], 'Sin intentos Gratis') !== false);
+
+                        // flag para el CURSO. "|" el or es por si ya estaba el true antes
+                        $course['hasPendingAttempts'] =  $course['hasPendingAttempts'] | $course[$level]['hasPendingAttempts'];
+                        $course['noFreeAttempts'] =  $course['noFreeAttempts'] | $course[$level]['noFreeAttempts'];
                     endif;
                 endforeach;
             endif;
