@@ -153,9 +153,6 @@ Recuerda que como condición no puedes tener dos o más cursos *reprobados o aba
 
     Ya que tendrías ({{count(array_filter($otherFreeCourses, function ($course) {return $course['course_status_original'] === 'REPROBADO';}))}}) cursos reprobados/abandonados, así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*
     @endif
-
-
-
 @endif
 
 {{-- Fila 75: Si en ESTADO EXAMEN de SAP dice REPROBADO o SIN INTENTOS GRATIS --}}
@@ -213,6 +210,7 @@ Ya que tendrías ({{count(array_filter($otherFreeCourses, function ($course) {re
         @endforeach
 
     Ya que tendrías ({{count(array_filter($otherFreeCourses, function ($course) {return $course['course_status_original'] === 'REPROBADO';}))}}) cursos reprobados/abandonados, , así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*
+    @endif
 @endif
 
 {{-- VARIANTE Fila 102: Si en ESTADO EXAMEN de SAP dice REPROBADO o SIN INTENTOS GRATIS --}}
