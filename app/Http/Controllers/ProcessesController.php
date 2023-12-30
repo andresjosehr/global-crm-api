@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 use App\Services\StudentMessageService;
 
@@ -136,6 +137,7 @@ class ProcessesController extends Controller
      */
     public function generateMessage(Request $request)
     {
+
         $student = $request->data;
         // echo "<hr>";
         // var_dump($student);
@@ -143,22 +145,18 @@ class ProcessesController extends Controller
 
         // Convert string to array
         $student = json_decode($student, true);
-        // echo "<hr>";
-        // var_dump($student);
-        // return "I'm here";
 
         // Formatea los datos de los alumnos en los cursos
         // Atención Retorna un ARRAY de estudiantes. solo usar el primer estudiante del array
+        // @todo REHABILITAR esta parte. Se hardcodea el estudiante para pruebas
+        /*
         $excelController = new StudentsExcelController();
         $data = $excelController->formatCourses([$student]);
         $data = $excelController->formatProgress($data);
+        */
+        $data = $student;
 
-
-        // echo "<hr>";
-        // hardcodea el estudiante
-        $data[0]["courses"][0]["end"] = "2024-01-26";
-        // echo $data[0]["courses"];
-        echo json_encode($data);
+        // Log::info(json_encode($data));
 
         // @todo Descomentar estas lineas para obtener el texto de desbloqueo
         // //  Obtiene el texto de desbloqueo
@@ -169,12 +167,16 @@ class ProcessesController extends Controller
         //     return $studentsWithText[0]['text'];
         // }
 
+        $studentMessageService = new StudentMessageService($data[0]); // gestiona la lógica de los mensajes para los estudiantes
+
         // Obtiene el texto para SAP
+        // $message = $studentMessageService->getMessageForSAPCourseCertification($data[0], Carbon::now());
+        // Obtiene el texto para SAP y cursos de Obsequio        
+        // $message = $studentMessageService->getMessageForSAPAndFreeCourseCertification($data[0], Carbon::now());
+        // return sprintf("<pre>asddas</pre>");
 
-        echo "<hr>";
-        $studentMessageService = new StudentMessageService();
-        $message = $studentMessageService->getMessageForSAPCourseCertification($data[0], Carbon::now());
+        $message = $studentMessageService->getMessageForInProgressFreeCourse(Carbon::now());
 
-        return '';
+        return sprintf("<pre>%s</pre>", $message);
     }
 }

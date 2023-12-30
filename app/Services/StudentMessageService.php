@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Stmt\TryCatch;
 
 /**
  * Clase que contiene la lógica de negocio de los mensajes de los estudiantes
@@ -18,6 +19,16 @@ use Illuminate\Support\Facades\Log;
  */
 class StudentMessageService
 {
+    private $__studentData;
+
+
+
+    public function __construct($studentData = null)
+    {
+        $this->__studentData = $studentData;
+        $this->__inflateStudentData();
+    }
+
     /**
      * Obtiene el mensaje para el estudiante que está cursando y aún no certifica alguno de los cursos SAP
      * Reglas:
@@ -282,14 +293,11 @@ class StudentMessageService
             'toEnableFreeCoursesDates' => $toEnableFreeCoursesDates,
             'toEnableSapCoursesDates' => $toEnableSapCoursesDates,
         ];
-        $text = view($templateFilename, $s)->render();
-        // remove \n consecutives. Only two \n
-        $text = preg_replace("/\n\n+/", "\n\n", $text);
 
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $text: ' . $text);
+        $message = self::__buildMessage($templateFilename, $s);
+        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $message: ' . $message);
 
-        // Lógica del servicio
-        return $text;
+        return $message;
     }
 
 
@@ -572,7 +580,7 @@ class StudentMessageService
         $noFreeAttemptsFreeCoursesToNotifyCount = 0;
 
         foreach ($coursesToNotify as $course) :
-            if(stripos($course['certifaction_test_original'], 'Intentos pendientes') !== false) :
+            if (stripos($course['certifaction_test_original'], 'Intentos pendientes') !== false) :
                 $pendingCoursesToNotifyNames[] = $course['name'];
             endif;
             if (stripos($course['certifaction_test_original'], 'Sin intentos Gratis') !== false) :
@@ -644,16 +652,181 @@ class StudentMessageService
             'noFreeAttemptsSapCoursesToNotifyCount' => $noFreeAttemptsSapCoursesToNotifyCount,
             'nofreeAttemptsFreeCoursesToNotifyCount' => $noFreeAttemptsFreeCoursesToNotifyCount,
         ];
-        $message = view($templateFilename, $s)->render();
+
+        $message = self::__buildMessage($templateFilename, $s);
+
+        Log::debug('StudentMessageService::getMessageForSAPAndFreeCourseCertification: $message: ' . $message);
+        return $message;
+    }
+
+    /**
+     * Obtiene el mensaje para el estudiante que está cursando cursos gratuitos
+     * @param $processDate Fecha de procesamiento. Por lo general es la fecha actual ("hoy"). También puede ser "mañana" y "pasado mañana" para procesar los fines de semana y días festivos.
+     */
+    public function getMessageForInProgressFreeCourse($processDate)
+    {
+        // try {
+
+        $validDaysAhead = [30, 15, 7, 4, 1]; // días de adelanto: pueden 30, 15, 7, 4 y 1 día
+        $irregularCourseStatuses = ['REPROBADO', 'ABANDONADO', 'NO CULMINÓ'];
+
+
+        $coursesToNotify = []; // curso a notificar
+        $hasExcelCourseToNotify = false; // si hay cursos de Excel a notificar
+        $hasSpecializedCoursesToNotify = false; // si hay cursos de Especialización a notificar
+        $otherSapCourses = []; // almacen solo los cursos SAP que no se notifican
+        $otherFreeCourses = []; // almacena solo los cursos de obsequio que no se notifican
+
+        $showDissaprovedOtherCourses = false; // si se muestra la seccion de cursos reprobados
+        $showDroppedOtherCourses = false; // si se muestra la seccion de cursos abandonados
+        $showInProgressOtherCourses = false; // si se muestra la seccion de cursos "cursando"
+        $showToEnableOtherCourses = false; // si se muestra la seccion de cursos "por habilitar"
+        $showUnfinishedOtherCourses = false; // si se muestra la seccion de cursos "no culminados"
+
+        //********* */
+        $endCourseDaysAhead = 999; // dias de adelanto: pueden 30, 15, 7, 4 y 1 día. 999 significa que no hay cursos SAP a notificar
+
+
+        /* Precondiciones:
+            - hay un curso OBsequio con vencimiento a los 30 días, 15 días, 7 días, 4 días y 1 día de la fecha $processDate
+            - el estado del Examen de ese curso es "Intentos pendientes"
+             */
+        if (empty($this->__studentData) == true || isset($this->__studentData['courses']) == false) :
+            throw new \Exception('Error en el formato de datos: no contiene "courses"');
+        endif;
+
+        $tmpEndCourseDate = null;
+
+        foreach ($this->__studentData['courses'] as $course) :
+            Log::debug(sprintf("Curso %s - comienza procesamiento", $course['name']));
+            // si no es curso de obsequio, sigue procesando el siguiente curso
+            // o no tiene estados pendientes
+            if ($course["isFreeCourse"] == false || $course["hasPendingAttempts"] == false) {
+                continue;
+            }
+            Log::debug(sprintf("Curso %s - es un curso de obsequuio con estado pendiente ", $course['name']));
+
+            // si el curso no tiene fecha de fin, sigue procesando el siguiente curso
+            if (empty($course['end']) == true) {
+                continue;
+            }
+            // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
+            $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']));
+            Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
+            // var_dump($tmpEndCourseDaysAhead);
+            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
+            if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
+                continue;
+            }
+            Log::debug(sprintf("Curso %s - pasó el filtro de dias de diferencia", $course['name']));
+            // "certifaction_test" puede contener: "Sin intentos Gratis", "1 Intento pendiente", "2 Intentos pendientes", "3 Intentos pendientes"
+
+            // agrega el curso a procesar
+            $coursesToNotify[] = $course;
+            $endCourseDaysAhead = $tmpEndCourseDaysAhead;
+            $tmpEndCourseDate = $course['end'];
+        endforeach;
+
+        // chequeo si no hay cursos por notificar
+        if (count($coursesToNotify) == 0) :
+            Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
+            return null;
+        endif;
+
+        $endCourseDate = Carbon::parse($tmpEndCourseDate);
+
+        // otros flags necesarios de los cursos
+        foreach ($coursesToNotify as $course) :
+            if ($course["isExcelCourse"] == true) :
+                $hasExcelCourseToNotify = true;
+            endif;
+            if ($course["isSpecializedCourse"] == true) :
+                $hasSpecializedCoursesToNotify = true;
+            endif;
+        endforeach;
+
+        // agrupa los cursos por tipo
+        $coursesToNotifyIds = array_column($coursesToNotify, 'course_id');
+        foreach ($this->__studentData['courses'] as $course) :
+            if (in_array($course['course_id'], $coursesToNotifyIds) == true) :
+                continue;
+            endif;
+            if ($course["isFreeCourse"] == true) :
+                $otherFreeCourses[] = $course;
+            elseif ($course["isSapCourse"] == true) :
+                $otherSapCourses[] = $course;
+            endif;
+        endforeach;
+
+        // prepara los flags especiales
+        foreach ($otherFreeCourses as $course) :
+            switch ($course['course_status_original']):
+                case 'REPROBADO':
+                    $showDissaprovedOtherCourses = true;
+                    break;
+                case 'ABANDONADO':
+                    $showDroppedOtherCourses = true;
+                    break;
+                case 'CURSANDO':
+                    $showInProgressOtherCourses = true;
+                    break;
+                case 'POR HABILITAR':
+                    $showToEnableOtherCourses = true;
+                    break;
+                case 'NO CULMINÓ':
+                    $showUnfinishedOtherCourses = true;
+                    break;
+            endswitch;
+        endforeach;
+
+
+        // Armado del Template      
+        $templateFilename =  sprintf(
+            "especial-messages.free-courses-pending.%d-dias-%s",
+            $endCourseDaysAhead,
+            self::__getTemplateFileNamePartForFlags(true, false) // es la precondicion que tenga "intentos pendientes" 
+        );
+        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
+
+        $s = [
+            'studentData' => $this->__studentData,
+            'coursesToNotify' => $coursesToNotify,
+            'endCourseDate' => $endCourseDate,
+            'hasExcelCourseToNotify' => $hasExcelCourseToNotify,
+            'hasSpecializedCoursesToNotify' => $hasSpecializedCoursesToNotify,
+            'otherSapCourses' => $otherSapCourses,
+            'otherFreeCourses' => $otherFreeCourses,
+            'showDissaprovedOtherCourses' => $showDissaprovedOtherCourses,
+            'showDroppedOtherCourses' => $showDroppedOtherCourses,
+            'showInProgressOtherCourses' => $showInProgressOtherCourses,
+            'showToEnableOtherCourses' => $showToEnableOtherCourses,
+            'showUnfinishedOtherCourses' => $showUnfinishedOtherCourses,
+        ];
+
+        $message = self::__buildMessage($templateFilename, $s);
+
+        Log::debug('StudentMessageService::getMessageForSAPAndFreeCourseCertification: $message: ' . $message);
+        return $message;
+        // } catch (\Exception $e) {
+        //     Log::error('StudentMessageService::getMessageForInProgressFreeCourse: ' . $e->getMessage());
+        //     throw $e;
+        //     // return null;
+        // }
+    }
+
+    /**
+     * Obtiene el mensaje para el estudiante 
+     * @param $templateFilename Nombre del archivo de template
+     * @param $vars Variables para el template
+     */
+    private static function __buildMessage($templateFilename, $vars)
+    {
+        $message = view($templateFilename, $vars)->render();
         // elimina espacios en blanco al inicio de la linea, que se usan para jerarquias de programación
         $message = preg_replace('/^[ ]+/m', '', $message);
-        // remove \n consecutives. Only two \n
+
         $message = preg_replace("/\n\n+/", "\n\n", $message);
 
-
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $text: ' . $message);
-
-        // Lógica del servicio
         return $message;
     }
 
@@ -789,5 +962,63 @@ class StudentMessageService
         return [
             "2024-01-01"
         ];
+    }
+
+    /**
+     * Agrega flags al array de $studentData para cachear ciertos procesos
+     * - isSapCourse, isFreeCourse, isExcelCourse, isSpecializedCourse
+     * - hasPendingAttempts, noFreeAttempts
+     */
+    private function __inflateStudentData()
+    {
+
+        // Claves que deben existir en el array de $studentData para que no falle la vista Blade
+        $requiredKeys = ["AULA SAP", "EXAMEN", "CERTIFICADO", "NOMBRE", "PONDERADO SAP", "LEVELS"]; // LEVELS es para Excel
+
+        // Verificar y establecer las claves si no existen
+        foreach ($requiredKeys as $key) :
+            if (!array_key_exists($key, $this->__studentData)) :
+                $this->__studentData[$key] = "";
+            endif;
+        endforeach;
+
+        foreach ($this->__studentData['courses'] as &$course) :
+            $course['isSapCourse'] = (strpos($course['name'], 'SAP') !== false);
+            $course['isFreeCourse'] = ($course['type'] == 'free');
+            if ($course['isFreeCourse'] == true) :
+            endif;
+            // los cursos de Excel son gratis
+            $course['isExcelCourse'] = (($course['isFreeCourse'] == true) && (strpos($course['name'], 'Excel') !== false));
+            // los otros cursos gratuitos que no son de Excel son cursos especializados
+            $course['isSpecializedCourse'] = (($course['isFreeCourse'] == true) && ($course['isExcelCourse'] == false));
+            // flag para cursos con intentos pendientes, EXCEPTO Excel
+            $course['hasPendingAttempts'] = (($course['isExcelCourse'] == false) && (stripos($course['certifaction_test_original'], 'Intentos pendientes')) !== false);
+            // flag para cursos sin intentos gratis
+            $course['noFreeAttempts'] = (($course['isExcelCourse'] == false) && stripos($course['certifaction_test_original'], 'Sin intentos Gratis') !== false);
+            // si el curso no tiene fecha de fin, sigue procesando el siguiente curso
+            if (isset($course['end']) == false) {
+                $course['end'] = null;
+            }
+            // Aplana cursos de Excel con sus flags
+            if ($course['isExcelCourse'] == true) :
+                $course['LEVELS'] = []; // Excel tiene los niveles
+                $tmpLevels = ['nivel_basico', 'nivel_intermedio', 'nivel_avanzado'];
+                foreach ($tmpLevels as $level) :
+                    // si no existe el nivel, sigue procesando
+                    if (isset($course[$level]) == false) :
+                        continue;
+                    endif;
+
+                    $course['LEVELS'][] = $level; // agrega el nivel al procesamiento
+                    $course[$level]['name'] = $level; // asigna el nombre del nivel
+
+                    if (isset($course[$level]['certifaction_test_original']) == true) :
+                        // "|" el or es por si ya estaba el true antes
+                        $course['hasPendingAttempts'] =  $course['hasPendingAttempts'] | (stripos($course[$level]['certifaction_test_original'], 'Intentos pendientes') !== false);
+                        $course['noFreeAttempts'] =  $course['noFreeAttempts'] | (stripos($course[$level]['certifaction_test_original'], 'Sin intentos Gratis') !== false);
+                    endif;
+                endforeach;
+            endif;
+        endforeach;
     }
 }
