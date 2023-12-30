@@ -961,7 +961,7 @@ class StudentMessageService
             $templateFilename =  sprintf(
                 "especial-messages.free-courses-completed.%d-dias-%s",
                 $endCourseDaysAhead,
-                self::__getTemplateFileNamePartForFlags($tmpNoFreeCertificationAttemptsFlag, false, $tmpApprovedSapCourseFlag) // es la precondicion que tenga "intentos pendientes" 
+                self::__getTemplateFileNamePartForFlags(false, $tmpNoFreeCertificationAttemptsFlag, $tmpApprovedSapCourseFlag) // es la precondicion que tenga "intentos pendientes" 
             );
             Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
 
@@ -1194,7 +1194,7 @@ class StudentMessageService
 
                     $course['LEVELS'][] = $level; // agrega el nivel al procesamiento
                     $course[$level]['name'] = $level; // asigna el nombre del nivel
-                    if($course[$level]['status'] == 'APROBADO') :
+                    if($course[$level]['course_status'] == 'APROBADO') :
                         $course['APPROVED_LEVELS_COUNT']++;
                     endif;
 
