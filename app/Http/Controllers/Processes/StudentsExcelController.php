@@ -211,16 +211,8 @@ class StudentsExcelController extends Controller
 
                         try {
                             // Valida o por "d/m/Y" con la separación por "/", o por "Y-m-d" con la separación por "-"
-                            if (empty($start) == false && strpos($start, '/') !== false) :
-                                $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
-                                $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
-                            elseif (empty($start) == false && strpos($start, '-') !== false) :
-                                $start = $start ?  Carbon::createFromFormat('Y-m-d', $start)->format('Y-m-d') : null;
-                                $end = $end ?  Carbon::createFromFormat('Y-m-d', $end)->format('Y-m-d') : null;
-                            else:
-                                $start = null;
-                                $end   = null;
-                            endif;
+                            $start = self::__parseDate($start);
+                            $end = self::__parseDate($end);
                         } catch (\Throwable $th) {
                             $start = null;
                             $end   = null;
@@ -258,8 +250,8 @@ class StudentsExcelController extends Controller
                     $start = $student[$dates[$course_db->id]['start']];
                     $end = $student[$dates[$course_db->id]['end']];
                     try {
-                        $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
-                        $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
+                        $start = self::__parseDate($start);
+                        $end = self::__parseDate($end);
                     } catch (\Throwable $th) {
                         $start = null;
                         $end   = null;
@@ -664,5 +656,20 @@ class StudentsExcelController extends Controller
         $client->setAccessType('offline');
 
         $this->service = new Google_Service_Sheets($client);
+    }
+
+    /**
+     * Formatea una fecha en formato d/m/Y o Y-m-d a Y-m-d
+     * @param string $date Fecha en formato "d/m/Y" o "Y-m-d"
+     */
+    private static function  __parseDate($date)
+    {
+        if (empty($date) == false && strpos($date, '/') !== false) :
+            return Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d');
+        elseif (empty($date) == false && strpos($date, '-') !== false) :
+            return Carbon::parse($date)->format('Y-m-d');
+        else :
+            return null;
+        endif;
     }
 }
