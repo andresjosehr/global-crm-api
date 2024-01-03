@@ -176,7 +176,7 @@ class StudentsExcelController extends Controller
 
 
                 $order_id = null;
-                if($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()){
+                if ($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()) {
                     $order_id = $order->ref_id;
                 }
 
@@ -210,8 +210,17 @@ class StudentsExcelController extends Controller
                         // }
 
                         try {
-                            $start = $start ?  Carbon::parse($start)->format('Y-m-d') : null;
-                            $end = $end ?  Carbon::parse($end)->format('Y-m-d') : null;
+                            // Valida o por "d/m/Y" con la separación por "/", o por "Y-m-d" con la separación por "-"
+                            if (empty($start) == false && strpos($start, '/') !== false) :
+                                $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
+                                $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
+                            elseif (empty($start) == false && strpos($start, '-') !== false) :
+                                $start = $start ?  Carbon::createFromFormat('Y-m-d', $start)->format('Y-m-d') : null;
+                                $end = $end ?  Carbon::createFromFormat('Y-m-d', $end)->format('Y-m-d') : null;
+                            else:
+                                $start = null;
+                                $end   = null;
+                            endif;
                         } catch (\Throwable $th) {
                             $start = null;
                             $end   = null;
@@ -272,7 +281,7 @@ class StudentsExcelController extends Controller
                         'type'                   => 'free'
                     ];
 
-                    if($course_db->id != 6){
+                    if ($course_db->id != 6) {
                         $courses[count($courses) - 1]['certifaction_test_original'] = $student[$colsCertificationStatus[$course_db->id]];
                     }
                 }
