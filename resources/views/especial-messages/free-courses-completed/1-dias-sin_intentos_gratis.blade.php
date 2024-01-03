@@ -49,7 +49,7 @@ Asimismo, no tendremos respaldo, ni aceptaremos capturas de pantalla de las nota
 @if ($hasSpecializedCoursesToNotify == true && $hasExcelCourseToNotify == true)
 Y a la hora que te envío este mensaje, el estado de tu curso es *reprobado,* porque culminaste con cada nivel de la siguiente manera:
     @foreach ($coursesToNotify as $course)
-    @if ($course['isExcelCourse'] == true)
+    @if ($course['isExcelCourse'] == true)    
         @foreach($course['LEVELS'] as $level)
             @if ($course[$level]['noFreeAttempts'] == true)
                 El nivel {{$course[$level]['name']}}: reprobado.
@@ -76,10 +76,28 @@ Y a la hora que te envío este mensaje, el estado de tus cursos es *reprobado,* 
     @endforeach
 @endif
 
+{{-- Fila 654: Cuando sea Excel uno de los cursos que termina y tenga un nivel aprobado --}}
+@php
+$tmpExcelApprovedFlag = false;
+foreach ($coursesToNotify as $course):
+    if ($course['isExcelCourse'] == true):
+            foreach($course['LEVELS'] as $level):
+                if ($course[$level]['course_status'] == 'APROBADO'):
+                    $tmpExcelApprovedFlag = true;   
+                endif;
+            endforeach;
+    endif;
+endforeach;
+@endphp
+@if ($hasExcelCourseToNotify == true && tmpExcelApprovedFlag == true)
 Es decir, que *aunque hayas aprobado ese nivel, no recibirás certificación alguna porque la condición para certificar Excel Empresarial, es que hayas aprobado todos los niveles que lo comprenden.*
+@endif
 
 {{-- VARIANTE Filas 36 a 40: si tiene curso obsequio con estado CURSANDO, que termine en OTRA FECHA, con las condiciones específicas de cada fila: --}}
-@if($showInProgressOtherCourses == true)
+@php
+$tmpDisapprovedCourses = count(array_filter($otherFreeCourses, function ($course) {return $course['course_status_original'] === 'REPROBADO';}));
+@endphp
+@if($showInProgressOtherCourses == true && $tmpDisapprovedCourses >= 2)
 Por lo que, al tener ({{count(array_filter($otherFreeCourses, function ($course) {return $course['course_status_original'] === 'REPROBADO';}))}}) cursos reprobados, como te comenté anteriormente pierdes el acceso a este curso, a pesar de haberlo iniciado:
 
     {{-- Fila 56: Si en ESTADO AULA de SAP dice CURSANDO o COMPLETA pero en certificado aún no sale EMITIDO y es curso OBSEQUIO CURSANDO --}}
