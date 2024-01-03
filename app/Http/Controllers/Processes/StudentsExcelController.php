@@ -89,7 +89,6 @@ class StudentsExcelController extends Controller
 
         $courses_not_found = [];
         foreach ($data as $i => $student) {
-            // var_dump($student[0]);
             $student['CORREO'] = strtolower($student['CORREO']);
             $data[$i]['wp_user_id'] = isset($users_db[$student['CORREO']]) ? $users_db[$student['CORREO']] : null;
 
@@ -293,10 +292,10 @@ class StudentsExcelController extends Controller
 
 
         // Realizar la consulta
-        $lessons = DB::connection('wordpress')->table('globalposts as lessons')
+        $lessons = DB::connection('wordpress')->table('posts as lessons')
             ->select('lessons.*', 'sections.section_course_id', 'sections.section_name')
-            ->join('globallearnpress_section_items as section_items', 'section_items.item_id', '=', 'lessons.ID')
-            ->join('globallearnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
+            ->join('learnpress_section_items as section_items', 'section_items.item_id', '=', 'lessons.ID')
+            ->join('learnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
             ->where('lessons.post_type', 'lp_lesson')
             ->where('lessons.post_title', 'not like', '%webinar%')
             ->orderBy('sections.section_course_id')
@@ -324,11 +323,11 @@ class StudentsExcelController extends Controller
 
 
         // Realizar la consulta
-        $quizzes = DB::connection('wordpress')->table('globalposts as quizzes')
+        $quizzes = DB::connection('wordpress')->table('posts as quizzes')
             ->select('quizzes.ID', 'sections.section_course_id')
-            ->join('globallearnpress_section_items as section_items', 'section_items.item_id', '=', 'quizzes.ID')
-            ->join('globallearnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
-            ->join('globalpostmeta as pm', function ($join) {
+            ->join('learnpress_section_items as section_items', 'section_items.item_id', '=', 'quizzes.ID')
+            ->join('learnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
+            ->join('postmeta as pm', function ($join) {
                 $join->on('pm.post_id', '=', 'quizzes.ID')
                     ->where('pm.meta_key', '=', 'examen_de_certificacion')
                     ->where('pm.meta_value', '=', '1');
