@@ -176,7 +176,7 @@ class StudentsExcelController extends Controller
 
 
                 $order_id = null;
-                if ($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()) {
+                if($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()){
                     $order_id = $order->ref_id;
                 }
 
@@ -273,7 +273,7 @@ class StudentsExcelController extends Controller
                         'type'                   => 'free'
                     ];
 
-                    if ($course_db->id != 6) {
+                    if($course_db->id != 6){
                         $courses[count($courses) - 1]['certifaction_test_original'] = $student[$colsCertificationStatus[$course_db->id]];
                     }
                 }
@@ -671,5 +671,5 @@ class StudentsExcelController extends Controller
         else :
             return null;
         endif;
-    }
+}
 }

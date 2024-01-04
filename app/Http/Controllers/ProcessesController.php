@@ -141,6 +141,7 @@ class ProcessesController extends Controller
 
         $studentJson = $request->data;
         Log::debug("%s::%s - Data desde Google Sheets", [$studentJson]);
+        $aProcessDates = [];
         // echo "<hr>";
         // var_dump($student);
         // return "I'm here";
@@ -176,6 +177,15 @@ class ProcessesController extends Controller
         $studentMessageService = new StudentMessageService($data); // gestiona la lógica de los mensajes para los estudiantes
         $processDate = Carbon::now();
 
+        // revisa si mañana es domingo o feriado o fin de semana largo
+        $aProcessDates[] = $processDate->copy();
+        for ($i = 1; $i <= 3; $i++) :
+            $processDate = $processDate->addDay();
+            if ($studentMessageService::isBusinessDay($processDate) == false) :
+                $aProcessDates[] = $processDate->copy();
+            endif;
+        endfor;
+
         // métodos en orden de prioridad
         $methods = [
             'getMessageForSAPAndFreeCourseCertification', // mas prioritario por lo multiple de cursos que tiene
@@ -188,18 +198,29 @@ class ProcessesController extends Controller
 
 
         // Intenta obtener el mensaje llamando a los métodos en orden
-        foreach ($methods as $method) :
-            $message = $studentMessageService->$method($processDate);
+        foreach ($aProcessDates as $processDate) :
+            // echo "procesando fecha " . $processDate->format('Y-m-d') . "<br>";
+            foreach ($methods as $method) :
+                $message = $studentMessageService->$method($processDate);
+                if (!empty($message)) {
+                    // Mensaje obtenido! 
+                    break;
+                }
+            endforeach;
             if (!empty($message)) {
                 // Mensaje obtenido! 
                 break;
             }
         endforeach;
+
         if (empty($message)) :
             $message = "No se encontró mensaje para el estudiante";
         endif;
 
         Log::debug("%s::%s - Mensaje retornado", [$message]);
+
+        // @eliminar esta linea
+        // return ["data" => $data, "mensaje" => $message ];
 
         // return sprintf("<pre>%s</pre>", $message);
         return sprintf("%s", $message);

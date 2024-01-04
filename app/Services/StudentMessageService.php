@@ -90,7 +90,7 @@ class StudentMessageService
                 continue;
             }
             // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-            $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end'])) + 1;
+            $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
             // var_dump($tmpEndCourseDaysAhead);
             Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
             if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
@@ -255,15 +255,15 @@ class StudentMessageService
 
         // Fechas de cursos para habilitar
         $toEnableFreeCoursesDates = [
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 6), // agrega 6 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 6), // agrega 6 dias habiles a la fecha de proceso
         ];
 
         // Fechas de cursos para habilitar
         $toEnableSapCoursesDates = [
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 7), // agrega 7 dias habiles a la fecha de proceso
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 15), // agrega 15 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 7), // agrega 7 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 15), // agrega 15 dias habiles a la fecha de proceso
         ];
 
         // Armado del Template      
@@ -371,7 +371,7 @@ class StudentMessageService
                 continue;
             }
             // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-            $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end'])) + 1;
+            $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
             Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
             // var_dump($tmpEndCourseDaysAhead);
             Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -605,15 +605,15 @@ class StudentMessageService
 
         // Fechas de cursos para habilitar
         $toEnableFreeCoursesDates = [
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 6), // agrega 6 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 6), // agrega 6 dias habiles a la fecha de proceso
         ];
 
         // Fechas de cursos para habilitar
         $toEnableSapCoursesDates = [
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 7), // agrega 7 dias habiles a la fecha de proceso
-            self::__addBusinessDaysToDate($endCourseDate->copy(), 15), // agrega 15 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 3), // agrega 3 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 7), // agrega 7 dias habiles a la fecha de proceso
+            self::addBusinessDaysToDate($endCourseDate->copy(), 15), // agrega 15 dias habiles a la fecha de proceso
         ];
 
         // Armado del Template      
@@ -723,7 +723,7 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end'])) + 1; 
+                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -887,15 +887,15 @@ class StudentMessageService
                 Log::debug(sprintf("Curso %s - comienza procesamiento", $course['name']));
                 // si no es curso de obsequio, sigue procesando el siguiente curso
                 // o no tiene estados pendientes
-                
+
                 if (($course["isFreeCourse"] === false) || ($course["course_status_original"] != "COMPLETA")) {
                     continue;
                 }
                 Log::debug(sprintf("Curso %s - es un curso de obsequuio con estado completo ", $course['name']));
 
                 // Solo cursos con ESTADO EXAMEN "APROBADO" o "SIN INTENTOS GRATIS"
-                if ( ! ($course["certifaction_test_original"] == "APROBADO" || $course["noFreeAttempts"] == true)) :
-                  //   if ($course["certifaction_test_original"] != "APROBADO" || $course["noFreeAttempts"] == false) :
+                if (!($course["certifaction_test_original"] == "APROBADO" || $course["noFreeAttempts"] == true)) :
+                    //   if ($course["certifaction_test_original"] != "APROBADO" || $course["noFreeAttempts"] == false) :
                     continue;
                 endif;
 
@@ -904,8 +904,8 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end'])) + 1;
-                Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
+                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
+                Log::debug(sprintf("Curso %s - dias de diferencia %d (%s)", $course['name'], $tmpEndCourseDaysAhead, $course['end']));
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
                 // Condicion (b) (condicion (a) incluida por ser 1 dia) 
                 if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
@@ -1075,7 +1075,7 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end'])) + 1;
+                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -1116,7 +1116,7 @@ class StudentMessageService
                     if ($course['course_status'] == 'CURSANDO' || $course['course_status'] == 'COMPLETADO') :
                         $pendingOtherSapCourses[] = $course;
                     endif;
-                    
+
                 endif;
             endforeach;
 
@@ -1234,7 +1234,7 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end'])) + 1;
+                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -1413,36 +1413,48 @@ class StudentMessageService
      * @param Carbon $baseDate Fecha base
      * @param int $businessDaysToAdd Número de días hábiles a agregar
      */
-    private static function __addBusinessDaysToDate(Carbon $baseDate, $businessDaysToAdd)
+    public static function addBusinessDaysToDate(Carbon $baseDate, $businessDaysToAdd)
     {
         // Agrega los días especificados a la fecha
         $dateResult = $baseDate->addDays($businessDaysToAdd);
 
-        // Verifica si la fecha resultante es un domingo
-        if ($dateResult->dayOfWeek == Carbon::SUNDAY) {
-            // Agrega un día adicional si es domingo
-            return self::__addBusinessDaysToDate($dateResult, 1);
-        }
-
-        // Verifica si la fecha resultante es feriado
-        if (in_array($dateResult->toDateString(), self::__getHolidays())) {
-            // Agrega un día adicional si está en el array
-            return self::__addBusinessDaysToDate($dateResult, 1);
+        // recursión hasta encontrar fecha valida
+        if (self::isBusinessDay($dateResult) == false) {
+            return self::addBusinessDaysToDate($dateResult, 1);
         }
 
         return $dateResult;
     }
 
     /**
+     * Verifica si una fecha es un día hábil
+     * @param Carbon $baseDate Fecha a verificar
+     */
+    public static function isBusinessDay(Carbon $baseDate)
+    {
+        // Verifica si la fecha es un domingo => false
+        if ($baseDate->dayOfWeek == Carbon::SUNDAY) {
+            return false;
+        }
+
+        // Verifica si la fecha resultante es feriado
+        if (in_array($baseDate->toDateString(), self::getHolidays())) {
+            return false;
+        }
+
+        // pasó los filtros
+        return true;
+    }
+
+    /**
      * Lee los feriados
      */
-    private static function __getHolidays()
+    public static function getHolidays()
     {
-        // @todo parametrizar esto en un archivo de configuración
-        return [
-            "2024-01-01"
-        ];
+        $holidays = config('globalcrm.holidays');
+        return $holidays;
     }
+
 
     /**
      * Agrega flags al array de $studentData para cachear ciertos procesos
@@ -1471,8 +1483,8 @@ class StudentMessageService
         endif;
 
         foreach ($this->__studentData['courses'] as &$course) :
-            $course['isSapCourse'] = (strpos($course['name'], 'SAP') !== false) ? true: false;
-            $course['isFreeCourse'] = ($course['type'] == 'free') ? true: false;
+            $course['isSapCourse'] = (strpos($course['name'], 'SAP') !== false) ? true : false;
+            $course['isFreeCourse'] = ($course['type'] == 'free') ? true : false;
             if (isset($course["certifaction_test_original"]) == false) :
                 $course["certifaction_test_original"] = "";
             endif;
