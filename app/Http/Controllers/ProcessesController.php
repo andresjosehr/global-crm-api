@@ -219,10 +219,7 @@ class ProcessesController extends Controller
 
         Log::debug("%s::%s - Mensaje retornado", [$message]);
 
-        // @eliminar esta linea
-        // return ["data" => $data, "mensaje" => $message ];
-
-        // return sprintf("<pre>%s</pre>", $message);
-        return sprintf("%s", $message);
+        // @todo evaluar eliminar data de la respuesta
+        return ["data" => $data, "message" => $message];
     }
 }
