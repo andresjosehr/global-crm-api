@@ -1,17 +1,52 @@
+@php
+// cache interna
+$otherFreeCoursesInProgressNames = [];
+$otherFreeCoursesDissaprovedNames = [];
+$otherFreeCoursesDroppedNames = [];
+$otherFreeCoursesUnfinishedNames = [];
+$otherFreeCoursesApprovedNames = [];
+$otherFreeCoursesToEnableNames = [];
+foreach($otherFreeCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherFreeCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherFreeCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherFreeCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherFreeCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherFreeCoursesApprovedNames[] = $course['name'];
+            break;
+        case 'POR HABILITAR':
+            $otherFreeCoursesToEnableNames[] = $course['name'];
+            break;
+    }
+endforeach;
+$coursesToNotifyNames = array_column($coursesToNotify, 'name');
+
+@endphp
 {{--
 
 "PLANTILLAS CURSO SAP CON INTENTOS PENDIENTES"
-FALTANDO 1 MES PARA LA FECHA FIN DEL CURSO
+FALTANDO 1 DIA PARA LA FECHA FIN DEL CURSO
 
 CURSO: SAP
 ESTADO DE EXAMEN: CON INTENTOS PENDIENTES
-FECHA DE FIN DE CURSO: 1 mes hacia delante
+FECHA DE FIN DE CURSO: 1 dia hacia delante
 
 --}}
 ¡Hola!
-{{$student_name}}
+{{$studentData['NOMBRE']}}
 
-@if (count($coursesToNotify) > 1)
+
+@if (count($coursesToNotify) == 1)
 Está por vencer tu curso:
 @else
 Están por vencer tus cursos:
@@ -20,15 +55,21 @@ Están por vencer tus cursos:
 {{$course['name']}}
 @endforeach
 
+
 {{-- Variante para INTENTOS PENDIENTES --}}
-@if ($multipleSapCoursesWithPendingAttemptsFlag == false)
+@if (count($coursesToNotify) == 1)
 🤓 Hasta los momentos el avance académico de tu curso, es el siguiente:
 Tienes ({{$coursesToNotify[0]['lessons_completed']}}) lecciones completas, y en total son ({{$coursesToNotify[0]['lessons_count']}}).
+
+🚨 Recuerda que para poder certificarte debes aprobar el examen de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
+
 @else
 🤓 Hasta los momentos, el avance académico de cada curso, es el siguiente:
     @foreach ($coursesToNotify as $course)
 {{$course['name']}}, tiene ({{$course[0]['lessons_completed']}}) lecciones completas, y en total son ({{$course[0]['lessons_count']}}).
     @endforeach
+    🚨 Recuerda que para poder certificarte debes aprobar los exámenes de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
+
 @endif
 
 {{-- Variante para INTENTOS PENDIENTES --}}
@@ -37,10 +78,6 @@ Tienes ({{$coursesToNotify[0]['lessons_completed']}}) lecciones completas, y en 
 @else
 🚨 Recuerda que para poder certificarte debes aprobar los exámenes de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
 @endif
-
-{{-- ATENCION CORREGIR ACA --}}
-🚩 Si no crees que puedas terminar el contenido y aprobar el examen de certificación para el día: // 🚩 Si no crees que puedas aprobar el examen de certificación para el día:
-{{-- // ATENCION --}}
 {{$endCourseDate->format('d/m/Y')}}
 
 {{-- Variante para INTENTOS PENDIENTES --}}
@@ -54,58 +91,89 @@ Tienes ({{$coursesToNotify[0]['lessons_completed']}}) lecciones completas, y en 
 *Te recomiendo realizar el pago en este momento,* ya que la *última semana del curso, no está disponible la extensión de 1 mes.* Y tendrás que ajustarte a las nuevas condiciones de extensión.
 Por favor me indicas si te interesa tomar esta opción *y no perder el tiempo y el dinero que has invertido.*
 
+
 {{-- Cursos SAP anteriores --}}
-@if ($showOlderSapCoursesFlag == true)
-    @foreach ($olderSapCourses as $course)
-Recuerda que antes {{$course['statusToDisplay']}}:    
+@foreach ($otherSapCourses as $course)
+    @if ($course["course_status_original"] == "CERTIFICADO")
+Recuerda que antes aprobaste:
 {{$course['name']}}
-    @endforeach
-@endif
+    @elseif ($course["course_status_original"] == "REPROBADO")
+Recuerda que antes reprobaste:
+{{$course['name']}}
+    @elseif ($course["course_status_original"] == "ABANDONADO")
+Recuerda que antes abandonaste:
+{{$course['name']}}
+    @elseif ($course["course_status_original"] == "NO CULMINÓ")
+Recuerda que antes no culminaste:
+{{$course['name']}}
+    @endif
+@endforeach
+
 
 {{-- Cursos de obsequio: SECCION ESPECIAL si el curso SAP anterior fue reprobado, abandonado o no lo culminó --}}
-@if ($showFreeCoursesFlag == true)
+{{-- Filas 51 a 75: si se utilizan las filas 46, 47 y/o 48. También si se utiliza la fila 45 CON alguna de las filas desde 46 a 48.  --}}
+@php
+$tmpFlag = false;
+foreach ($otherSapCourses as $course):
+    if ($course["course_status_original"] == "REPROBADO" || $course["course_status_original"] == "ABANDONADO" || $course["course_status_original"] == "NO CULMINÓ"):
+        $tmpFlag = true;
+    endif;
+endforeach;
+
+$tmpShowSapSectionFlag = ($tmpFlag || count($otherFreeCoursesDissaprovedNames) > 0 || count($otherFreeCoursesDroppedNames) > 0 || count($otherFreeCoursesUnfinishedNames) > 0) ? true : false;
+
+@endphp
+@if ($tmpFlag == true)
 👀 OJO, como condición, no puedes tener dos o más cursos reprobados/abandonados, por lo que sobre *tus cursos de obsequio te comento:*
-    @foreach ($freeCourses as $course)
-        @if ($course['status'] == 'CURSANDO')
+    @if(count($otherFreeCoursesInProgressNames) > 0)
 Aún estás *cursando:*
-        @elseif ($course['status'] == 'REPROBADO')
-Completaste pero *REPROBASTE:*
-        @elseif ($course['status'] == 'NO CULMINÓ')
-*No culminaste:*
-        @elseif ($course['status'] == 'ABANDONADO')
-*Abandonaste:*
-        @elseif ($course['status'] == 'POR HABILITAR')
-Aún tienes *por habilitar:*
-        @elseif ($course['status'] == 'APROBADO')
-*Aprobaste:*
-        @endif
-{{$course['name']}}        
-    @endforeach
-@endif
-
-{{-- Advertencia por cursos SAP anteriores --}}
-@if ($showWarningSapCourseCertificationFlag == true)
-    @if (count($coursesToNotify) > 1)
-Por lo que, si no te certificas en este curso SAP:
-    @else
-Por lo que, si no te certificas en estos cursos SAP:
+{{implode("\n", $otherFreeCoursesInProgressNames)}}
     @endif
-    @foreach ($coursesToNotify as $course)
-{{$course['name']}}
-    @endforeach
+    @if(count($otherFreeCoursesDissaprovedNames) > 0)
+Completaste pero *REPROBASTE:*
+{{implode("\n", $otherFreeCoursesDissaprovedNames)}}
+    @endif
+    @if(count($otherFreeCoursesUnfinishedNames) > 0)
+*No culminaste:*
+{{implode("\n", $otherFreeCoursesUnfinishedNames)}}
+    @endif
+    @if(count($otherFreeCoursesDroppedNames) > 0)
+*Abandonaste:*
+{{implode("\n", $otherFreeCoursesDroppedNames)}}
+    @endif
+    @if(count($otherFreeCoursesToEnableNames) > 0)
+Aún tienes *por habilitar:*
+{{implode("\n", $otherFreeCoursesToEnableNames)}}
+    @endif
+    @if(count($otherFreeCoursesApprovedNames) > 0)
+*Aprobaste:*
+{{implode("\n", $otherFreeCoursesApprovedNames)}}
+    @endif
 
-    @foreach ($freeCourses as $course)
-        @if ($course['status'] == 'CURSANDO')
-A pesar de haberlo iniciado, pierdes el acceso a:
-{{$course['name']}}        
-        @elseif ($course['status'] == 'APROBADO')
-Pierdes el acceso al certificado de:
-{{$course['name']}}        
-        @elseif ($course['status'] == 'POR HABILITAR')
-Y ya no podrás habilitar:
-{{$course['name']}}        
+    @if ($tmpShowSapSectionFlag == true)
+        @if (count($coursesToNotify) == 1)
+        Por lo que, si no te certificas en este curso SAP:
+        @else 
+    Por lo que, si no te certificas en estos cursos SAP:
         @endif
-    @endforeach
+
+        {{implode("\n", $coursesToNotifyNames)}}
+
+        @if(count($otherFreeCoursesInProgressNames) > 0)
+        A pesar de haberlo iniciado, pierdes el acceso a:
+    {{implode("\n", $otherFreeCoursesInProgressNames)}}
+        @endif
+        @if(count($otherFreeCoursesApprovedNames) > 0)
+        Pierdes el acceso al certificado de:
+    {{implode("\n", $otherFreeCoursesApprovedNames)}}
+        @endif
+        @if(count($otherFreeCoursesToEnableNames) > 0)
+        Y ya no podrás habilitar:
+    {{implode("\n", $otherFreeCoursesToEnableNames)}}
+        @endif    
+    @endif
+
+
 @endif
 
 {{-- Variante para INTENTOS PENDIENTES --}}

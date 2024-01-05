@@ -41,12 +41,13 @@ class StudentMessageService
         $irregularCourseStatuses = ['REPROBADO', 'ABANDONADO', 'NO CULMINÓ'];
 
         $coursesToNotify = []; // almacena solo los cursos SAP a notificar
+        $otherFreeCoursesToNotify = []; // almacena solo los cursos SAP a notificar
         $multipleSapCoursesFlag = false; // si hay mas de un curso SAP a notificar
         $multipleSapCoursesWithPendingAttemptsFlag = false; // si hay mas de un curso SAP a notificar con intentos pendientes
         $endCourseDaysAhead = 999; // dias de adelanto: pueden 30, 15, 7, 4 y 1 día. 999 significa que no hay cursos SAP a notificar
         $certificationPendingAttemptsFlag = false; // si el estudiante aún posee intentos gratis para certificar
         $noFreeCertificationAttemptsFlag = false; // si el estudiante ya no posee intentos gratis para certificar
-        $showOlderSapCoursesFlag = false; // si se muestra la seccion de cursos anteriores de SAP
+        $showOtherSapCoursesFlag = false; // si se muestra la seccion de cursos anteriores de SAP
         $showFreeCoursesFlag = false; // si se muestra la seccion de cursos de obsequio
         $showWarningSapCourseCertificationFlag = false; // si se muestra la seccion de advertencia de certificacion de cursos SAP
 
@@ -80,9 +81,9 @@ class StudentMessageService
             if (isset($course['certifaction_test_original']) == false) {
                 continue;
             }
-            $tmpCertificationPendingAttemptsFlag = stripos($course['certifaction_test_original'], 'Intentos pendientes');
-            $tmpNoFreeCertificationAttemptsFlag = stripos($course['certifaction_test_original'], 'Sin intentos Gratis');
-            if ($tmpCertificationPendingAttemptsFlag === false && $tmpNoFreeCertificationAttemptsFlag === false) {
+            $tmpCertificationPendingAttemptsFlag = $course['hasPendingAttempts'];
+            $tmpNoFreeCertificationAttemptsFlag = $course['noFreeAttempts'];
+            if ($course['hasPendingAttempts'] === false && $tmpNoFreeCertificationAttemptsFlag === false) {
                 continue;
             }
             // si el curso no tiene fecha de fin, sigue procesando el siguiente curso
@@ -136,14 +137,15 @@ class StudentMessageService
 
 
         // Flags para Cursos SAP del pasado que aprobó, reprobó, abandonó o no culminó
-        $olderSapCourses = self::__getOlderSapCoursesStatuses($studentData['courses']);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $olderSapCourses', $olderSapCourses);
-        $showOlderSapCoursesFlag = (count($olderSapCourses) > 0) ? true : false;
+        $groupedCourses = $this->__groupCourses($coursesToNotify);
+        $otherSapCourses = $groupedCourses["otherSapCourses"];
+        $otherFreeCourses = $groupedCourses["otherFreeCourses"];
+        $showOtherSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
 
         // Flags para los cursos de obsequio
         $freeCoursesStatuses = self::__getFreeCoursesStatuses($studentData['courses']);
         Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $freeCoursesStatuses', $freeCoursesStatuses);
-        foreach ($olderSapCourses as $course) :
+        foreach ($otherSapCourses as $course) :
             if (in_array($course['status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showFreeCoursesFlag = true;
 
@@ -169,7 +171,7 @@ class StudentMessageService
         $droppedSapCourseNames = [];
         $unfinishedSapCourseNames = [];
         $pendingSapCoursesNames = []; // se asume q los cursos pendientes son cursos SAP "REPROBADO", "ABANDONADO" o "NO CULMINÓ"
-        foreach ($olderSapCourses as $course) :
+        foreach ($otherSapCourses as $course) :
             if ($course['status'] == 'REPROBADO') :
                 $disapprovedSapCourseNames[] = $course['name'];
                 $pendingSapCoursesNames[] =  $course['name'];
@@ -275,14 +277,16 @@ class StudentMessageService
         Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
 
         $s = [
-            'student_name' => $studentData['NOMBRE'],
+            'student_name' =>  $this->__studentData['NOMBRE'],
+            'studentData' => $this->__studentData,
             'coursesToNotify' => $coursesToNotify,
             'sapCoursesNames' => $sapCoursesNames,
             'multipleSapCoursesWithPendingAttemptsFlag' => $multipleSapCoursesWithPendingAttemptsFlag,
             'certificationPendingAttemptsFlag' => $certificationPendingAttemptsFlag,
             'noFreeCertificationAttemptsFlag' => $noFreeCertificationAttemptsFlag,
-            'showOlderSapCoursesFlag' => $showOlderSapCoursesFlag,
-            'olderSapCourses' => $olderSapCourses,
+            'showOlderSapCoursesFlag' => $showOtherSapCoursesFlag,
+            'otherSapCourses' => $otherSapCourses,
+            'otherFreeCourses' => $otherFreeCourses,
             'showFreeCoursesFlag' => $showFreeCoursesFlag,
             'freeCourses' => $freeCoursesStatuses,
             'showWarningSapCourseCertificationFlag' => $showWarningSapCourseCertificationFlag,
@@ -1476,6 +1480,8 @@ class StudentMessageService
             endif;
         endforeach;
 
+        $this->__studentData['NOMBRE'] = trim($this->__studentData['NOMBRE COMPLETO CLIENTE']);
+
         // Claves que deben existir en el array de $course para que no falle la vista Blade
         if (isset($this->__studentData['courses']) == false) :
             $this->__studentData['courses'] = [];
@@ -1537,5 +1543,42 @@ class StudentMessageService
                 endforeach;
             endif;
         endforeach;
+    }
+
+    /**
+     * Agrupa los cursos por tipo
+     * @param array $coursesToNotify Cursos a notificar
+     * @return array Retorna un array con los cursos agrupados por tipo
+     * - ["sapCourses"] => [cursos SAP a notificar]
+     * - ["freeCourses"] => [cursos de obsequio a notificar]
+     * - ["otherSapCourses"] => [cursos SAP que no se notifican]
+     * - ["otherFreeCourses"] => [cursos de obsequio que no se notifican]
+     */
+    private function __groupCourses($coursesToNotify)
+    {
+        $groupedCourses = [
+            "sapCourses" => [],
+            "freeCourses" => [],
+            "otherSapCourses" => [],
+            "otherFreeCourses" => [],
+        ];
+        // agrupa los cursos por tipo
+        $coursesToNotifyIds = array_column($coursesToNotify, 'course_id');
+        foreach ($this->__studentData['courses'] as $course) :
+            if (in_array($course['course_id'], $coursesToNotifyIds) == true) :
+                if ($course["isSapCourse"] == true) :
+                    $groupedCourses["sapCourses"][] = $course;
+                elseif ($course["isFreeCourse"] == true) :
+                    $groupedCourses["freeCourses"][] = $course;
+                endif;
+            else :
+                if ($course["isSapCourse"] == true) :
+                    $groupedCourses["otherSapCourses"][] = $course;
+                elseif ($course["isFreeCourse"] == true) :
+                    $groupedCourses["otherFreeCourses"][] = $course;
+                endif;
+            endif;
+        endforeach;
+        return $groupedCourses;
     }
 }
