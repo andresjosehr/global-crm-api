@@ -146,7 +146,7 @@ class StudentMessageService
         $freeCoursesStatuses = self::__getFreeCoursesStatuses($studentData['courses']);
         Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $freeCoursesStatuses', $freeCoursesStatuses);
         foreach ($otherSapCourses as $course) :
-            if (in_array($course['status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
+            if (in_array($course['course_status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showFreeCoursesFlag = true;
 
                 $showWarningSapCourseCertificationFlag = true; // tweak: si hay cursos irregulares de SAP, se muestra la seccion de advertencia de certificacion de cursos SAP
@@ -157,7 +157,7 @@ class StudentMessageService
         // Flags para la seccion de advertencia de certificacion de cursos SAP
         if ($showWarningSapCourseCertificationFlag == false) :
             foreach ($freeCoursesStatuses as $course) :
-                if (in_array($course['status'], $irregularCourseStatuses)) {
+                if (in_array($course['course_status'], $irregularCourseStatuses)) {
                     $showWarningSapCourseCertificationFlag = true;
                     break;
                 }
@@ -172,20 +172,20 @@ class StudentMessageService
         $unfinishedSapCourseNames = [];
         $pendingSapCoursesNames = []; // se asume q los cursos pendientes son cursos SAP "REPROBADO", "ABANDONADO" o "NO CULMINÓ"
         foreach ($otherSapCourses as $course) :
-            if ($course['status'] == 'REPROBADO') :
+            if ($course['course_status'] == 'REPROBADO') :
                 $disapprovedSapCourseNames[] = $course['name'];
                 $pendingSapCoursesNames[] =  $course['name'];
-            elseif ($course['status'] == 'APROBADO') :
+            elseif ($course['course_status'] == 'APROBADO') :
                 $approvedSapCoursesNames[] =  $course['name'];
-            elseif ($course['status'] == 'POR HABILITAR') :
+            elseif ($course['course_status'] == 'POR HABILITAR') :
                 $toEnableSapCourseNames[] =  $course['name'];
-            elseif ($course['status'] == 'ABANDONADO') :
+            elseif ($course['course_status'] == 'ABANDONADO') :
                 $droppedSapCourseNames[] =  $course['name'];
                 $pendingSapCoursesNames[] =  $course['name'];
-            elseif ($course['status'] == 'NO CULMINÓ') :
+            elseif ($course['course_status'] == 'NO CULMINÓ') :
                 $unfinishedSapCourseNames[] =  $course['name'];
                 $pendingSapCoursesNames[] =  $course['name'];
-            // elseif ($course['status'] == 'PENDIENTE') :
+            // elseif ($course['course_status'] == 'PENDIENTE') :
             //     $pendingSapCoursesNames[] =  $course['name'];
             endif;
         endforeach;
@@ -250,7 +250,7 @@ class StudentMessageService
         // Flag de multiples cursos gratis para habilitar
         $toEnableFreeCoursesCount = 0;
         foreach ($freeCoursesStatuses as $course) :
-            if ($course['status'] == 'POR HABILITAR') :
+            if ($course['course_status'] == 'POR HABILITAR') :
                 $toEnableFreeCoursesCount++;
             endif;
         endforeach;
@@ -322,11 +322,14 @@ class StudentMessageService
      */
     public function getMessageForSAPAndFreeCourseCertification($processDate)
     {
+
         $validDaysAhead = [30, 15, 7, 4, 1]; // días de adelanto: pueden 30, 15, 7, 4 y 1 día
         $irregularCourseStatuses = ['REPROBADO', 'ABANDONADO', 'NO CULMINÓ'];
 
         $sapCourses = []; // almacena solo los cursos SAP a notificar
         $freeCourses = []; // almacena solo los cursos de obsequio a notificar
+        $otherSapCourses = []; // almacena solo los cursos SAP a notificar
+        $otherFreeCourses = []; // almacena solo los cursos Obsequios a notificar
         $multipleSapCoursesFlag = false; // si hay mas de un curso SAP a notificar
         $multipleSapCoursesWithPendingAttemptsFlag = false; // si hay mas de un curso SAP a notificar con intentos pendientes
         $endCourseDaysAhead = 999; // dias de adelanto: pueden 30, 15, 7, 4 y 1 día. 999 significa que no hay cursos SAP a notificar
@@ -353,19 +356,14 @@ class StudentMessageService
         foreach ($studentData['courses'] as $course) :
             Log::debug(sprintf("Curso %s - comienza procesamiento", $course['name']));
             // si no es curso SAP, o el curso no es gratuito, sigue procesando el siguiente curso
-            if (strpos($course['name'], 'SAP') === false && $course['type'] != 'free') {
+            if ($course["isSapCourse"] == false && $course["isFreeCourse"] == false) {
                 continue;
             }
             Log::debug(sprintf("Curso %s - es un curso SAP o gratis", $course['name']));
             // si el estado del examen es distinto a "Sin intentos Gratis" o "X Intentos pendientes", sigue procesando el siguiente curso
 
-            if (isset($course['certifaction_test_original']) == false) {
-                continue;
-            }
-            Log::debug(sprintf("Curso %s - tiene estado de certificacion", $course['name']));
-
-            $tmpCertificationPendingAttemptsFlag = stripos($course['certifaction_test_original'], 'Intentos pendientes');
-            $tmpNoFreeCertificationAttemptsFlag = stripos($course['certifaction_test_original'], 'Sin intentos Gratis');
+            $tmpCertificationPendingAttemptsFlag = $course['hasPendingAttempts'];
+            $tmpNoFreeCertificationAttemptsFlag = $course['noFreeAttempts'];
             if ($tmpCertificationPendingAttemptsFlag === false && $tmpNoFreeCertificationAttemptsFlag === false) {
                 continue;
             }
@@ -386,11 +384,12 @@ class StudentMessageService
             // "certifaction_test" puede contener: "Sin intentos Gratis", "1 Intento pendiente", "2 Intentos pendientes", "3 Intentos pendientes"
 
             // agrega el curso a procesar
-            if (strpos($course['name'], 'SAP') !== false) :
+            if ($course["isSapCourse"] == true) :
                 $sapCourses[] = $course;
-            elseif ($course['type'] == 'free') :
+            else:
                 $freeCourses[] = $course;
             endif;
+
             $endCourseDaysAhead = $tmpEndCourseDaysAhead;
             $tmpEndCourseDate = $course['end'];
             if ($tmpCertificationPendingAttemptsFlag !== false) {
@@ -432,15 +431,19 @@ class StudentMessageService
         endforeach;
 
         // Flags para Cursos SAP del pasado que aprobó, reprobó, abandonó o no culminó
-        $olderSapCourses = self::__getOlderSapCoursesStatuses($studentData['courses']);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $olderSapCourses', $olderSapCourses);
-        $showOlderSapCoursesFlag = (count($olderSapCourses) > 0) ? true : false;
+        $groupedCourses = $this->__groupCourses($coursesToNotify);
+        $otherSapCourses = $groupedCourses["otherSapCourses"];
+        $otherFreeCourses = $groupedCourses["otherFreeCourses"];
+        $showOtherSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
+
+        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $olderSapCourses', $otherSapCourses);
+        $showOlderSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
 
         // Flags para los cursos de obsequio
         $otherFreeCourses = self::__getFreeCoursesStatuses($studentData['courses']);
         Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $otherFreeCourses', $otherFreeCourses);
-        foreach ($olderSapCourses as $course) :
-            if (in_array($course['status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
+        foreach ($otherSapCourses as $course) :
+            if (in_array($course['course_status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showOtherFreeCoursesFlag = true;
 
                 // $showWarningSapCourseCertificationFlag = true; // tweak: si hay cursos irregulares de SAP, se muestra la seccion de advertencia de certificacion de cursos SAP
@@ -472,15 +475,15 @@ class StudentMessageService
         // Flags para la seccion de advertencia de certificacion de cursos SAP
         if ($showWarningSapCourseCertificationFlag == false) :
             // cursos SAP
-            foreach ($olderSapCourses as $course) :
-                if (in_array($course['status'], $irregularCourseStatuses)) {
+            foreach ($otherSapCourses as $course) :
+                if (in_array($course['course_status'], $irregularCourseStatuses)) {
                     $showWarningSapCourseCertificationFlag = true;
                     break;
                 }
             endforeach;
             // cursos de obsequio
             foreach ($otherFreeCourses as $course) :
-                if (in_array($course['status'], $irregularCourseStatuses)) {
+                if (in_array($course['course_status'], $irregularCourseStatuses)) {
                     $showWarningSapCourseCertificationFlag = true;
                     break;
                 }
@@ -494,21 +497,21 @@ class StudentMessageService
         $droppedSapCourseNames = [];
         $unfinishedSapCourseNames = [];
         $pendingSapCoursesNames = []; // se asume q los cursos pendientes son cursos SAP "REPROBADO", "ABANDONADO" o "NO CULMINÓ"
-        foreach ($olderSapCourses as $course) :
-            if ($course['status'] == 'REPROBADO') :
+        foreach ($otherSapCourses as $course) :
+            if ($course['course_status'] == 'REPROBADO') :
                 $disapprovedSapCourseNames[] = $course['name'];
                 $pendingSapCoursesNames[] =  $course['name'];
-            elseif ($course['status'] == 'APROBADO') :
+            elseif ($course['course_status'] == 'APROBADO') :
                 $approvedSapCoursesNames[] =  $course['name'];
-            elseif ($course['status'] == 'POR HABILITAR') :
+            elseif ($course['course_status'] == 'POR HABILITAR') :
                 $toEnableSapCourseNames[] =  $course['name'];
-            elseif ($course['status'] == 'ABANDONADO') :
+            elseif ($course['course_status'] == 'ABANDONADO') :
                 $droppedSapCourseNames[] =  $course['name'];
                 $pendingSapCoursesNames[] =  $course['name'];
-            elseif ($course['status'] == 'NO CULMINÓ') :
+            elseif ($course['course_status'] == 'NO CULMINÓ') :
                 $unfinishedSapCourseNames[] =  $course['name'];
                 $pendingSapCoursesNames[] =  $course['name'];
-            // elseif ($course['status'] == 'PENDIENTE') :
+            // elseif ($course['course_status'] == 'PENDIENTE') :
             //     $pendingSapCoursesNames[] =  $course['name'];
             endif;
         endforeach;
@@ -582,7 +585,7 @@ class StudentMessageService
         // Flag de multiples cursos gratis para habilitar
         $toEnableFreeCoursesCount = 0;
         foreach ($otherFreeCourses as $course) :
-            if ($course['status'] == 'POR HABILITAR') :
+            if ($course['course_status'] == 'POR HABILITAR') :
                 $toEnableFreeCoursesCount++;
             endif;
         endforeach;
@@ -639,7 +642,7 @@ class StudentMessageService
             // 'certificationPendingAttemptsFlag' => $certificationPendingAttemptsFlag,
             // 'noFreeCertificationAttemptsFlag' => $noFreeCertificationAttemptsFlag,
             'showOlderSapCoursesFlag' => $showOlderSapCoursesFlag,
-            'olderSapCourses' => $olderSapCourses,
+            'otherSapCourses' => $otherSapCourses,
             'otherFreeCourses' => $otherFreeCourses,
             'showOtherFreeCoursesFlag' => $showOtherFreeCoursesFlag,
             'otherFreeCourses' => $otherFreeCourses,
@@ -668,6 +671,7 @@ class StudentMessageService
         ];
 
         $message = self::__buildMessage($templateFilename, $s);
+
 
         Log::debug('StudentMessageService::getMessageForSAPAndFreeCourseCertification: $message: ' . $message);
         return $message;
@@ -791,7 +795,7 @@ class StudentMessageService
 
             // prepara los flags especiales
             foreach ($otherFreeCourses as $course) :
-                switch ($course['course_status_original']):
+                switch ($course['course_status']):
                     case 'REPROBADO':
                         $showDissaprovedOtherCourses = true;
                         break;
@@ -892,7 +896,7 @@ class StudentMessageService
                 // si no es curso de obsequio, sigue procesando el siguiente curso
                 // o no tiene estados pendientes
 
-                if (($course["isFreeCourse"] === false) || ($course["course_status_original"] != "COMPLETA")) {
+                if (($course["isFreeCourse"] === false) || ($course["course_status"] != "COMPLETA")) {
                     continue;
                 }
                 Log::debug(sprintf("Curso %s - es un curso de obsequuio con estado completo ", $course['name']));
@@ -970,7 +974,7 @@ class StudentMessageService
 
             // prepara los flags especiales
             foreach ($otherFreeCourses as $course) :
-                switch ($course['course_status_original']):
+                switch ($course['course_status']):
                     case 'REPROBADO':
                         $showDissaprovedOtherCourses = true;
                         break;
@@ -1126,7 +1130,7 @@ class StudentMessageService
 
             // prepara los flags especiales
             foreach ($otherFreeCourses as $course) :
-                switch ($course['course_status_original']):
+                switch ($course['course_status']):
                     case 'NO APLICA':
                         $showOtherFreeCourseOffer = true;
                         break;
@@ -1327,15 +1331,15 @@ class StudentMessageService
                 continue;
             }
             // si no es un estado valido de curso, sigue procesando el siguiente curso
-            if (in_array($course['course_status_original'], $validCourseStatus) == false) {
+            if (in_array($course['course_status'], $validCourseStatus) == false) {
                 continue;
             }
 
             $olderSapCoursesStatuses[] =
                 [
                     'name' => $course['name'],
-                    'status' => $course['course_status_original'],
-                    'statusToDisplay' => self::courseStatusToDisplay($course['course_status_original']),
+                    'course_status' => $course['course_status'],
+                    'statusToDisplay' => self::courseStatusToDisplay($course['course_status']),
                 ];
         endforeach;
         return $olderSapCoursesStatuses;
@@ -1356,15 +1360,15 @@ class StudentMessageService
                 continue;
             }
             // si no es un estado valido de curso, sigue procesando el siguiente curso
-            if (in_array($course['course_status_original'], $validCourseStatus) == false) {
+            if (in_array($course['course_status'], $validCourseStatus) == false) {
                 continue;
             }
 
             $freeCoursesStatuses[] =
                 [
                     'name' => $course['name'],
-                    'status' => $course['course_status_original'],
-                    'statusToDisplay' => self::courseStatusToDisplay($course['course_status_original']),
+                    'course_status' => $course['course_status'],
+                    'statusToDisplay' => self::courseStatusToDisplay($course['course_status']),
                 ];
         endforeach;
         return $freeCoursesStatuses;
@@ -1514,6 +1518,11 @@ class StudentMessageService
             }
             $course['APPROVED_LEVELS_COUNT'] = 0;
 
+            // caso especial, si no existe el "course_status" pero existe el "course_status_original"
+            if (isset($course['course_status']) == false && isset($course['course_status_original']) == true) :
+                $course['course_status'] = $course['course_status_original'];
+            endif;
+
             // Aplana cursos de Excel con sus flags
             if ($course['isExcelCourse'] == true) :
                 $course['LEVELS'] = []; // Excel tiene los niveles
@@ -1537,8 +1546,8 @@ class StudentMessageService
                         $course[$level]['noFreeAttempts'] = (stripos($course[$level]['certifaction_test_original'], 'Sin intentos Gratis') !== false);
 
                         // flag para el CURSO. "|" el or es por si ya estaba el true antes
-                        $course['hasPendingAttempts'] =  $course['hasPendingAttempts'] | $course[$level]['hasPendingAttempts'];
-                        $course['noFreeAttempts'] =  $course['noFreeAttempts'] | $course[$level]['noFreeAttempts'];
+                        $course['hasPendingAttempts'] =  ($course['hasPendingAttempts'] || $course[$level]['hasPendingAttempts']);
+                        $course['noFreeAttempts'] = ( $course['noFreeAttempts'] || $course[$level]['noFreeAttempts']);
                     endif;
                 endforeach;
             endif;

@@ -71,19 +71,20 @@ Tienes ({{$coursesToNotify[0]['lessons_completed']}}) lecciones completas, y en 
 @endif
 
 @php
-$tmpShowSectionFlag = false;
-foreach ($coursesToNotify as $course):
+$tmpShowSectionFlag = true; // hardcoded
+$tmpUncompletedCoursesFlag = false;
+foreach ($coursesToNotify as $course):    
     if ($course["lessons_completed"] < $course["lessons_count"]):
-        $tmpShowSectionFlag = true;
+        $tmpUncompletedCoursesFlag = true;
     endif;
 endforeach;
-
 @endphp
-{{-- ATENCION Corregir esto --}}
 @if($tmpShowSectionFlag == true)
-{ATENCION HAY UNA CONDICION ACA}
+    @if ($tmpUncompletedCoursesFlag == true)
 🚩 Si no crees que puedas terminar el contenido y aprobar el examen de certificación para el día:
+    @else
 🚩 Si no crees que puedas aprobar el examen de certificación para el día:
+    @endif
 @endif
 {{$endCourseDate->format('d/m/Y')}}
 
@@ -100,16 +101,16 @@ Y pasada esta última semana de plazo, tendrás que volver a matricularte al pre
 
 {{-- Cursos SAP anteriores --}}
 @foreach ($otherSapCourses as $course)
-    @if ($course["course_status_original"] == "CERTIFICADO")
+    @if ($course["course_status"] == "CERTIFICADO")
 Recuerda que antes aprobaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "REPROBADO")
+    @elseif ($course["course_status"] == "REPROBADO")
 Recuerda que antes reprobaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "ABANDONADO")
+    @elseif ($course["course_status"] == "ABANDONADO")
 Recuerda que antes abandonaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "NO CULMINÓ")
+    @elseif ($course["course_status"] == "NO CULMINÓ")
 Recuerda que antes no culminaste:
 {{$course['name']}}
     @endif
@@ -121,7 +122,7 @@ Recuerda que antes no culminaste:
 @php
 $tmpFlag = false;
 foreach ($otherSapCourses as $course):
-    if ($course["course_status_original"] == "REPROBADO" || $course["course_status_original"] == "ABANDONADO" || $course["course_status_original"] == "NO CULMINÓ"):
+    if ($course["course_status"] == "REPROBADO" || $course["course_status"] == "ABANDONADO" || $course["course_status"] == "NO CULMINÓ"):
         $tmpFlag = true;
     endif;
 endforeach;

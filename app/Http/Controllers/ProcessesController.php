@@ -155,10 +155,21 @@ class ProcessesController extends Controller
         // Formatea los datos de los alumnos en los cursos
         // Atención Retorna un ARRAY de estudiantes. solo usar el primer estudiante del array
         // @todo REHABILITAR esta parte. Se hardcodea el estudiante para pruebas        
-        $excelController = new StudentsExcelController();
-        $aData = $excelController->formatCourses([$data]);
-        $aData = $excelController->formatProgress($aData);
-        $data = $aData[0]; // solo el primer estudiante
+         $excelController = new StudentsExcelController();
+         $aData = $excelController->formatCourses([$data]);
+         $aData = $excelController->formatProgress($aData);
+
+         $data = $aData[0]; // solo el primer estudiante
+
+         //******************************* */
+         // Ajuste para poner todos los cursos juntos
+         $data['courses'] = array_merge($data['courses'], $data['inactive_courses']);
+
+         // Limpiamos el array de cursos inactivos
+         $data['inactive_courses'] = [];     
+         //***************************** */
+        // aplicamos los campos de "observaciones"
+         $excelController->formatProgressObservations($data);
         // return $data;
 
         Log::info(json_encode($data));
@@ -219,6 +230,7 @@ class ProcessesController extends Controller
 
         Log::debug("%s::%s - Mensaje retornado", [$message]);
 
+        // return sprintf("<pre>%s</pre>", $message);
         // @todo evaluar eliminar data de la respuesta
         return ["data" => $data, "message" => $message];
     }

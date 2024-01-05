@@ -48,6 +48,45 @@ class StudentsExcelController extends Controller
         'SAP PM EXCEL'         => 'SAP PM',
     ];
 
+    /*
+    array de nombres de curso mal escritos y colocado al correcto.
+    colocar la KEY en MAYUSCULAS!!
+    */
+    private $__courseNameReplacements = [
+        "PB"                   => "POWERBI BASICO",
+        "POWER BI"             => "POWERBI BASICO",
+        "MSPJ"                 => "MS PROJECT",
+        "MS"                   => "MS PROJECT",
+        "MSP"                  => "MS PROJECT",
+        "POWERBI"              => "POWERBI BASICO",
+        "MSPROJ"               => "MS PROJECT",
+        "EXCL"                 => "EXCEL",
+        "POWRB"                => "POWERBI BASICO",
+        "FI"                   => "SAP FI",
+        "MSPROJECT"            => "MS PROJECT",
+        "SAP MM EXCEL"         => "SAP MM",
+        "EXCELL"               => "EXCEL",
+        "MS PRJ"               => "MS PROJECT",
+        "POWER BI AVANZADO"    => "POWERBI AVANZADO",
+        "SAP MM (PROMO) EXCEL" => "SAP MM",
+        "EXCEL EMPRESARIAL"    => "EXCEL",
+        "PP"                   => "SAP PP",
+        "MS PROJEC"            => "MS PROJECT",
+        "SAP  MM"              => "SAP MM",
+        "POWER BI  AVANZADO"   => "POWERBI AVANZADO",
+        "SAP ABAP"             => "SAP PP",
+        "POWER BI AVANZANDO"   => "POWERBI AVANZADO",
+        "SAP HCM EXCEL"        => "SAP HCM",
+        "POWER"                => "POWERBI BASICO",
+        "MS PROJ"              => "MS PROJECT",
+        "EXCEL POWERBI"        => "EXCEL",
+        "SAP PM EXCEL"         => "SAP PM",
+        "MM" => "SAP MM",
+        "PM" => "SAP PM",
+        "HCM" => "SAP HCM",
+        "INTEGRAL" => "SAP INTEGRAL",
+    ];
+
 
     public function index($sheet_type = 'test')
     {
@@ -176,7 +215,7 @@ class StudentsExcelController extends Controller
 
 
                 $order_id = null;
-                if($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()){
+                if ($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()) {
                     $order_id = $order->ref_id;
                 }
 
@@ -273,7 +312,7 @@ class StudentsExcelController extends Controller
                         'type'                   => 'free'
                     ];
 
-                    if($course_db->id != 6){
+                    if ($course_db->id != 6) {
                         $courses[count($courses) - 1]['certifaction_test_original'] = $student[$colsCertificationStatus[$course_db->id]];
                     }
                 }
@@ -671,5 +710,79 @@ class StudentsExcelController extends Controller
         else :
             return null;
         endif;
-}
+    }
+
+    /**
+     * Formatea el nombre de un curso "PP" => "SAP PP"
+     * @param string $name Nombre del curso
+     */
+    private function __parseCourseNameReplacements($name)
+    {
+        $name = strtoupper($name);
+        $name = trim($name);
+        if (array_key_exists($name, $this->__courseNameReplacements) == true) :
+            return $this->__courseNameReplacements[$name];
+        else :
+            return $name;
+        endif;
+    }
+
+    /**
+     * Parsea las observaciones de un estudiante que generalmente vienen en $student['OBSERVACIONES']
+     * @param string $observations Observaciones del estudiante
+     * @return array observaciones encontradas
+     */
+    public function parseObservations($observations)
+    {
+        $observationsArray = [];
+
+        // Verificamos si la cadena no está vacía
+        if (!empty($observations)) {
+            // Dividimos las observaciones utilizando el separador "/"
+            $observationList = explode('/', $observations);
+            foreach ($observationList as $observation) :
+                if (preg_match('/^\s*(REPROBADO|ABANDONADO|CERTIFICADO|NO CULMINÓ|APROBADO)\s+(.+)\s*$/', $observation, $matches)) :
+                    // $matches[1] contendrá el estado y $matches[2] contendrá el nombre del curso
+                    $estado = $matches[1];
+                    $nombreCurso = $this->__parseCourseNameReplacements($matches[2]);
+
+                    $observationsArray[$nombreCurso] = $estado;
+                endif;
+            endforeach;
+        }
+
+        return $observationsArray;
+    }
+
+    /**
+     * Formatea el campo "OBSERVACIONES" de un estudiante
+     */
+    public function formatProgressObservations(&$student)
+    {
+        if (isset($student['OBSERVACIONES']) == false) :
+            return;
+        endif;
+
+
+        // Verificamos si existe el campo "OBSERVACIONES" en $student
+        // Utilizamos la función parseObservations para obtener el array de observaciones
+        $observationsArray = $this->parseObservations($student['OBSERVACIONES']);
+
+        foreach ($observationsArray as $courseName => $courseStatus) {
+            $courseLongName = DB::table('courses')->where('short_name', $courseName)->value('name');
+            if (empty($courseLongName) == true) :
+                continue;
+            endif;
+
+            // Recorremos los cursos del estudiante
+            foreach ($student['courses'] as &$course) {
+                // Verificamos si el nombre del curso existe en las observaciones
+                if ($course['name'] == $courseLongName) {
+                    // Actualizamos el estado del curso con el estado de las observaciones
+                    $course['course_status'] = $courseStatus;
+                    $course['course_status_original'] = $courseStatus;
+                }
+            }
+        }
+    }
 }

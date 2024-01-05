@@ -68,16 +68,16 @@ Y *a partir del envío de este mensaje, el tiempo mínimo para extender ({{implo
 
 {{-- Cursos SAP anteriores --}}
 @foreach ($otherSapCourses as $course)
-    @if ($course["course_status_original"] == "CERTIFICADO")
+    @if ($course["course_status"] == "CERTIFICADO")
 Recuerda que antes aprobaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "REPROBADO")
+    @elseif ($course["course_status"] == "REPROBADO")
 Recuerda que antes reprobaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "ABANDONADO")
+    @elseif ($course["course_status"] == "ABANDONADO")
 Recuerda que antes abandonaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "NO CULMINÓ")
+    @elseif ($course["course_status"] == "NO CULMINÓ")
 Recuerda que antes no culminaste:
 {{$course['name']}}
     @endif
@@ -89,7 +89,7 @@ Recuerda que antes no culminaste:
 @php
 $tmpFlag = false;
 foreach ($otherSapCourses as $course):
-    if ($course["course_status_original"] == "REPROBADO" || $course["course_status_original"] == "ABANDONADO" || $course["course_status_original"] == "NO CULMINÓ"):
+    if ($course["course_status"] == "REPROBADO" || $course["course_status"] == "ABANDONADO" || $course["course_status"] == "NO CULMINÓ"):
         $tmpFlag = true;
     endif;
 endforeach;
@@ -336,10 +336,11 @@ A continuación te envío las fechas de inicio para habilitarlos:
     @foreach ($toEnableFreeCoursesDates as $date)
 {{$date->format('d/m/Y')}}
     @endforeach
+    Tienes como máximo una semana para escoger al menos la última fecha de inicio, posterior a ella, como te hemos indicado en tu ficha de matrícula y confirmación de compra, los estarás perdiendo.
+
 @endif
 
 
-Tienes como máximo una semana para escoger al menos la última fecha de inicio, posterior a ella, como te hemos indicado en tu ficha de matrícula y confirmación de compra, los estarás perdiendo.
 
 {{-- Filas 418 a 430: si se usan las filas 355 a 357 (reprobaste, abandonaste o no culminaste). Fila 418: si tiene UN curso SAP como PENDIENTE en la columna de ESTADO. Colocar en los "()" el nombre del curso o cursos SAP que esten como reprobados, abandonados o no certificados, incluyendo la fila 341 --}}
 @php
@@ -396,15 +397,18 @@ Tienes como máximo una semana para escoger al menos la última fecha de inicio,
     Posterior a estos 15 días, como te hemos indicado en tu ficha de matrícula y confirmación de compra, los estarás perdiendo.
     @endif
     
-    @if($tmpSapPendingCourseNames == 1)
+    @if(count($tmpSapPendingCourseNames) > 0)
+        @if($tmpSapPendingCourseNames == 1)
     A continuación te envío las fechas de inicio para habilitarlo:
-    @elseif($tmpSapPendingCourseNames > 1)
+        @elseif($tmpSapPendingCourseNames > 1)
     A continuación te envío las fechas de inicio para habilitarlos:
-    @endif
-
-    @foreach ($toEnableSapCoursesDates as $date)
+        @endif
+        @foreach ($toEnableSapCoursesDates as $date)
 {{$date->format('d/m/Y')}}
-    @endforeach    
+        @endforeach    
+        Tienes como máximo una semana para escoger al menos la última fecha de inicio, posterior a ella, como te hemos indicado en tu ficha de matrícula y confirmación de compra, los estarás perdiendo.
+
+    @endif    
 @endif
 
 

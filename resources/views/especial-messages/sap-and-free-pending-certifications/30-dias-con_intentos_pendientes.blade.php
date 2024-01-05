@@ -1,10 +1,45 @@
+@php
+// cache interna
+$otherFreeCoursesInProgressNames = [];
+$otherFreeCoursesDissaprovedNames = [];
+$otherFreeCoursesDroppedNames = [];
+$otherFreeCoursesUnfinishedNames = [];
+$otherFreeCoursesApprovedNames = [];
+$otherFreeCoursesToEnableNames = [];
+foreach($otherFreeCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherFreeCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherFreeCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherFreeCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherFreeCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherFreeCoursesApprovedNames[] = $course['name'];
+            break;
+        case 'POR HABILITAR':
+            $otherFreeCoursesToEnableNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
+$coursesToNotifyNames = array_column($coursesToNotify, 'name');
+
+@endphp
 {{--
 
 "PLANTILLAS CURSO SAP Y OBSEQUIOS CON INTENTOS PENDIENTES"
 FALTANDO 1 MES PARA LA FECHA FIN DEL CURSO
 
 CURSO SAP Y OBSEQUIOS
-ESTADO DE EXAMEN: CON INTENTOS PENDIENTES
+ESTADO DE EXAMEN: SIN INTENTOS GRATIS
 FECHA DE FIN DE CURSO: 1 mes hacia delante
 
 --}}
@@ -17,11 +52,38 @@ Están por vencer tus cursos:
 @endforeach
 
 {{-- Variante para INTENTOS PENDIENTES --}}
+@php
+$pendingCoursesToNotifyNames = [];
+$hasSapNoFreeAttempts = false;
+$freeCourseNoFreeAttemptsCount = 0;
+foreach ($coursesToNotify as $course):
+    if($course['noFreeAttempts'] == true && $course['isSapCourse'] == true):
+        $hasSapNoFreeAttempts = true;
+    endif;
+    if($course['noFreeAttempts'] == true && $course['isFreeCourse'] == true):
+        $freeCourseNoFreeAttemptsCount++;
+    endif;
+    if ($course['hasPendingAttempts'] == true):
+        if($course['isExcelCourse'] == false):
+            $pendingCoursesToNotifyNames[] = $course['name'];
+        else:
+            foreach($course['LEVELS'] as $level):
+                $pendingCoursesToNotifyNames[] = $course[$level]['name'];
+             endforeach;
+        endif;
+    endif;
+endforeach;
+@endphp
 🤓 Te comento sobre el avance académico que tienes actualmente en cada curso:
 @foreach ($coursesToNotify as $course)
-({{$course['name']}}), tiene ({{$course['lessons_completed']}}) lecciones completas, y en total son ({{$course['lessons_count']}}).
+        @if ($course['isExcelCourse'] == false)
+        ({{$course['name']}}), tiene ({{$course['lessons_completed']}}) lecciones completas, y en total son ({{$course['lessons_count']}}); y aún cuentas con ({{$course["certifaction_test_original"]}}.
+        @else
+                @foreach($course['LEVELS'] as $level)
+                ({{$course['name']}} - {{$course[$level]['name']}}), tiene ({{$course[$level]['lessons_completed']}}) lecciones completas, y en total son ({{$course[$level]['lessons_count']}}); y aún cuentas con ({{$course[$level]["certifaction_test_original"]}}.
+                @endforeach
+        @endif
 @endforeach
-
 
 {{-- Variante para INTENTOS PENDIENTES --}}
 🙌 Si no crees poder certificarte en el tiempo que te queda disponible, *NO TODO ESTÁ PERDIDO:*
@@ -41,53 +103,86 @@ Por favor me indicas si te interesa *y no perder el tiempo y el dinero que has i
 @endif
 
 {{-- Cursos SAP anteriores --}}
-@if ($showOlderSapCoursesFlag == true)
-        @foreach ($olderSapCourses as $course)
-Recuerda que antes {{$course['statusToDisplay']}}:
+@foreach ($otherSapCourses as $course)
+    @if ($course["course_status_original"] == "CERTIFICADO")
+Recuerda que antes aprobaste:
 {{$course['name']}}
-        @endforeach
-@endif
+    @elseif ($course["course_status_original"] == "REPROBADO")
+Recuerda que antes reprobaste:
+{{$course['name']}}
+    @elseif ($course["course_status_original"] == "ABANDONADO")
+Recuerda que antes abandonaste:
+{{$course['name']}}
+    @elseif ($course["course_status_original"] == "NO CULMINÓ")
+Recuerda que antes no culminaste:
+{{$course['name']}}
+    @endif
+@endforeach
+
+
+
 
 {{-- Cursos de obsequio: SECCION ESPECIAL si el curso SAP anterior fue reprobado, abandonado o no lo culminó --}}
-@if ($showOtherFreeCoursesFlag == true)
-👀 OJO, como condición, no puedes tener dos o más cursos reprobados/abandonados, por lo que sobre *tus otros cursos de obsequio te comento:*
-        @foreach ($otherFreeCourses as $course)
-                @if ($course['status'] == 'CURSANDO')
+{{-- Filas 51 a 75: si se utilizan las filas 46, 47 y/o 48. También si se utiliza la fila 45 CON alguna de las filas desde 46 a 48.  --}}
+@php
+$tmpFlag = false;
+foreach ($otherSapCourses as $course):
+    if ($course["course_status_original"] == "REPROBADO" || $course["course_status_original"] == "ABANDONADO" || $course["course_status_original"] == "NO CULMINÓ"):
+        $tmpFlag = true;
+    endif;
+endforeach;
+
+$tmpShowSapSectionFlag = ($tmpFlag || count($otherFreeCoursesDissaprovedNames) > 0 || count($otherFreeCoursesDroppedNames) > 0 || count($otherFreeCoursesUnfinishedNames) > 0) ? true : false;
+
+@endphp
+@if ($tmpFlag == true)
+👀 OJO, como condición, no puedes tener dos o más cursos reprobados/abandonados, por lo que sobre *tus cursos de obsequio te comento:*
+    @if(count($otherFreeCoursesInProgressNames) > 0)
 Aún estás *cursando:*
-                @elseif ($course['status'] == 'REPROBADO')
+{{implode("\n", $otherFreeCoursesInProgressNames)}}
+    @endif
+    @if(count($otherFreeCoursesDissaprovedNames) > 0)
 Completaste pero *REPROBASTE:*
-                @elseif ($course['status'] == 'NO CULMINÓ')
+{{implode("\n", $otherFreeCoursesDissaprovedNames)}}
+    @endif
+    @if(count($otherFreeCoursesUnfinishedNames) > 0)
 *No culminaste:*
-                @elseif ($course['status'] == 'ABANDONADO')
+{{implode("\n", $otherFreeCoursesUnfinishedNames)}}
+    @endif
+    @if(count($otherFreeCoursesDroppedNames) > 0)
 *Abandonaste:*
-                @elseif ($course['status'] == 'POR HABILITAR')
+{{implode("\n", $otherFreeCoursesDroppedNames)}}
+    @endif
+    @if(count($otherFreeCoursesToEnableNames) > 0)
 Aún tienes *por habilitar:*
-                @elseif ($course['status'] == 'APROBADO')
+{{implode("\n", $otherFreeCoursesToEnableNames)}}
+    @endif
+    @if(count($otherFreeCoursesApprovedNames) > 0)
 *Aprobaste:*
-                @endif
-{{$course['name']}}
-        @endforeach
-@endif
+{{implode("\n", $otherFreeCoursesApprovedNames)}}
+    @endif
 
-{{-- Advertencia por cursos SAP anteriores --}}
-@if ($showWarningSapCourseCertificationFlag == true)
-Por lo que, si no te certificas en SAP:
-        @foreach ($sapCourses as $course)
-{{$course['name']}}
-        @endforeach
+    @if ($tmpShowSapSectionFlag == true)
+        @if (count($coursesToNotify) == 1)
+        Por lo que, si no te certificas en este curso SAP:
+        @else 
+    Por lo que, si no te certificas en estos cursos SAP:
+        @endif
+        {{implode("\n", $coursesToNotifyNames)}}
 
-        @foreach ($otherFreeCourses as $course)
-                @if ($course['status'] == 'CURSANDO')
-A pesar de haberlo iniciado, pierdes el acceso a:
-{{$course['name']}}
-                @elseif ($course['status'] == 'APROBADO')
-Pierdes el acceso al certificado de:
-{{$course['name']}}
-                @elseif ($course['status'] == 'POR HABILITAR')
-Y ya no podrás habilitar:
-{{$course['name']}}
-                @endif
-        @endforeach
+        @if(count($otherFreeCoursesInProgressNames) > 0)
+        A pesar de haberlo iniciado, pierdes el acceso a:
+    {{implode("\n", $otherFreeCoursesInProgressNames)}}
+        @endif
+        @if(count($otherFreeCoursesApprovedNames) > 0)
+        Pierdes el acceso al certificado de:
+    {{implode("\n", $otherFreeCoursesApprovedNames)}}
+        @endif
+        @if(count($otherFreeCoursesToEnableNames) > 0)
+        Y ya no podrás habilitar:
+    {{implode("\n", $otherFreeCoursesToEnableNames)}}
+        @endif    
+    @endif
 @endif
 
 ⚠️ Recuerda que el día de tu fecha de fin, se eliminarán tus accesos de manera automática a las 23:59. 

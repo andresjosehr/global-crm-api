@@ -82,16 +82,16 @@ Si extiendes al día siguiente o en máximo una semana, recibirás un aula compl
 
 {{-- Cursos SAP anteriores --}}
 @foreach ($otherSapCourses as $course)
-    @if ($course["course_status_original"] == "CERTIFICADO")
+    @if ($course["course_status"] == "CERTIFICADO")
 Recuerda que antes aprobaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "REPROBADO")
+    @elseif ($course["course_status"] == "REPROBADO")
 Recuerda que antes reprobaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "ABANDONADO")
+    @elseif ($course["course_status"] == "ABANDONADO")
 Recuerda que antes abandonaste:
 {{$course['name']}}
-    @elseif ($course["course_status_original"] == "NO CULMINÓ")
+    @elseif ($course["course_status"] == "NO CULMINÓ")
 Recuerda que antes no culminaste:
 {{$course['name']}}
     @endif
@@ -103,7 +103,7 @@ Recuerda que antes no culminaste:
 @php
 $tmpFlag = false;
 foreach ($otherSapCourses as $course):
-    if ($course["course_status_original"] == "REPROBADO" || $course["course_status_original"] == "ABANDONADO" || $course["course_status_original"] == "NO CULMINÓ"):
+    if ($course["course_status"] == "REPROBADO" || $course["course_status"] == "ABANDONADO" || $course["course_status"] == "NO CULMINÓ"):
         $tmpFlag = true;
     endif;
 endforeach;
