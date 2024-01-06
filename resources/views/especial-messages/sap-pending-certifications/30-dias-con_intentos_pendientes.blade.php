@@ -29,6 +29,42 @@ foreach($otherFreeCourses as $course):
             break;
     }
 endforeach;
+
+// cache interna
+$otherSapCoursesInProgressNames = [];
+$otherSapCoursesDissaprovedNames = [];
+$otherSapCoursesDroppedNames = [];
+$otherSapCoursesUnfinishedNames = [];
+$otherSapCoursesApprovedNames = [];
+$otherSapCoursesToEnableNames = [];
+$otherSapCoursesCertifiedNames = [];
+foreach($otherSapCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherSapCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherSapCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherSapCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherSapCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherSapCoursesApprovedNames[] = $course['name'];
+            break;
+            case 'POR HABILITAR':
+            $otherSapCoursesToEnableNames[] = $course['name'];
+            break;
+            case 'CERTIFICADO':
+            $otherSapCoursesCertifiedNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
 @endphp
@@ -59,14 +95,14 @@ Están por vencer tus cursos:
 {{-- Variante para INTENTOS PENDIENTES --}}
 @if (count($coursesToNotify) == 1)
 🤓 Hasta los momentos el avance académico de tu curso, es el siguiente:
-Tienes ({{$coursesToNotify[0]['lessons_completed']}}) lecciones completas, y en total son ({{$coursesToNotify[0]['lessons_count']}}).
+Tienes {{$coursesToNotify[0]['lessons_completed']}} lecciones completas, y en total son {{$coursesToNotify[0]['lessons_count']}}.
 
 🚨 Recuerda que para poder certificarte debes aprobar el examen de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
 
 @else
 🤓 Hasta los momentos, el avance académico de cada curso, es el siguiente:
     @foreach ($coursesToNotify as $course)
-{{$course['name']}}, tiene ({{$course[0]['lessons_completed']}}) lecciones completas, y en total son ({{$course[0]['lessons_count']}}).
+{{$course['name']}}, tiene {{$course[0]['lessons_completed']}} lecciones completas, y en total son {{$course[0]['lessons_count']}}.
     @endforeach
     🚨 Recuerda que para poder certificarte debes aprobar los exámenes de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
 
@@ -93,21 +129,24 @@ Por favor me indicas si te interesa tomar esta opción *y no perder el tiempo y 
 
 
 {{-- Cursos SAP anteriores --}}
-@foreach ($otherSapCourses as $course)
-    @if ($course["course_status"] == "CERTIFICADO")
+@if(count($otherSapCourses) > 0)
+    @if(count($otherSapCoursesCertifiedNames) > 0)
 Recuerda que antes aprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "REPROBADO")
-Recuerda que antes reprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "ABANDONADO")
-Recuerda que antes abandonaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "NO CULMINÓ")
-Recuerda que antes no culminaste:
-{{$course['name']}}
+{{implode("\n", $otherSapCoursesCertifiedNames)}}
     @endif
-@endforeach
+    @if(count($otherSapCoursesDissaprovedNames) > 0)
+    Recuerda que antes reprobaste:
+{{implode("\n", $otherSapCoursesDissaprovedNames)}}
+    @endif
+    @if(count($otherSapCoursesDroppedNames) > 0)
+    Recuerda que antes abandonaste:
+{{implode("\n", $otherSapCoursesDroppedNames)}}
+    @endif    
+    @if(count($otherSapCoursesUnfinishedNames) > 0)
+    Recuerda que antes no culminaste:
+{{implode("\n", $otherSapCoursesUnfinishedNames)}}  
+    @endif
+@endif
 
 
 {{-- Cursos de obsequio: SECCION ESPECIAL si el curso SAP anterior fue reprobado, abandonado o no lo culminó --}}

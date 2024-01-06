@@ -1534,7 +1534,7 @@ class StudentMessageService
                     endif;
 
                     $course['LEVELS'][] = $level; // agrega el nivel al procesamiento
-                    $course[$level]['name'] = $level; // asigna el nombre del nivel
+                    $course[$level]['name'] = ucwords(str_replace('_', ' ', $level)); // asigna el nombre del nivel
                     if ($course[$level]['course_status'] == 'APROBADO') :
                         $course['APPROVED_LEVELS_COUNT']++;
                     endif;

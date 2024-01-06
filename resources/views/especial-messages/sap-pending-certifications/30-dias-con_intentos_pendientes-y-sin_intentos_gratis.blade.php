@@ -30,6 +30,41 @@ foreach($otherFreeCourses as $course):
     }
 endforeach;
 
+// cache interna
+$otherSapCoursesInProgressNames = [];
+$otherSapCoursesDissaprovedNames = [];
+$otherSapCoursesDroppedNames = [];
+$otherSapCoursesUnfinishedNames = [];
+$otherSapCoursesApprovedNames = [];
+$otherSapCoursesToEnableNames = [];
+$otherSapCoursesCertifiedNames = [];
+foreach($otherSapCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherSapCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherSapCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherSapCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherSapCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherSapCoursesApprovedNames[] = $course['name'];
+            break;
+            case 'POR HABILITAR':
+            $otherSapCoursesToEnableNames[] = $course['name'];
+            break;
+            case 'CERTIFICADO':
+            $otherSapCoursesCertifiedNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
 @endphp
@@ -67,7 +102,7 @@ Están por vencer tus cursos:
 🙌 *Pero NO TODO ESTÁ PERDIDO,* puedes *pagar por un intento adicional de examen* y así certificarte, recuerda que no brindamos certificado por participación, ni por haber completado el curso.
     @elseif ($course['hasPendingAttempts'] == true)
 🤓 Hasta los momentos el avance académico, es el siguiente:
-{{$course['name']}}, tiene ({{$course['lessons_completed']}}) lecciones completas, y en total son ({{$course['lessons_count']}}).
+{{$course['name']}}, tiene {{$course['lessons_completed']}} lecciones completas, y en total son {{$course['lessons_count']}}.
         @if (count($coursesToNotify) > 1)
 🚨 Recuerda que para poder certificarte debes aprobar el examen de certificación correspondiente porque no emitimos certificado por haber completado el curso, ni por participación. Y aún cuentas con intentos de examen sin realizar.
         @endif
@@ -83,21 +118,24 @@ Estos pagos los debes realizar ahora, ya que la *última semana del curso, las c
 {{$endCourseDate->format('d/m/Y')}}
 
 {{-- Cursos SAP anteriores --}}
-@foreach ($otherSapCourses as $course)
-    @if ($course["course_status"] == "CERTIFICADO")
+@if(count($otherSapCourses) > 0)
+    @if(count($otherSapCoursesCertifiedNames) > 0)
 Recuerda que antes aprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "REPROBADO")
-Recuerda que antes reprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "ABANDONADO")
-Recuerda que antes abandonaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "NO CULMINÓ")
-Recuerda que antes no culminaste:
-{{$course['name']}}
+{{implode("\n", $otherSapCoursesCertifiedNames)}}
     @endif
-@endforeach
+    @if(count($otherSapCoursesDissaprovedNames) > 0)
+    Recuerda que antes reprobaste:
+{{implode("\n", $otherSapCoursesDissaprovedNames)}}
+    @endif
+    @if(count($otherSapCoursesDroppedNames) > 0)
+    Recuerda que antes abandonaste:
+{{implode("\n", $otherSapCoursesDroppedNames)}}
+    @endif    
+    @if(count($otherSapCoursesUnfinishedNames) > 0)
+    Recuerda que antes no culminaste:
+{{implode("\n", $otherSapCoursesUnfinishedNames)}}  
+    @endif
+@endif
 
 
 {{-- Cursos de obsequio: SECCION ESPECIAL si el curso SAP anterior fue reprobado, abandonado o no lo culminó --}}

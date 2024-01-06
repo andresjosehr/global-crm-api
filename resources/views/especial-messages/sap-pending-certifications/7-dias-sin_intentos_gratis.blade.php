@@ -29,6 +29,43 @@ foreach($otherFreeCourses as $course):
             break;
     }
 endforeach;
+
+// cache interna
+$otherSapCoursesInProgressNames = [];
+$otherSapCoursesDissaprovedNames = [];
+$otherSapCoursesDroppedNames = [];
+$otherSapCoursesUnfinishedNames = [];
+$otherSapCoursesApprovedNames = [];
+$otherSapCoursesToEnableNames = [];
+$otherSapCoursesCertifiedNames = [];
+
+foreach($otherSapCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherSapCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherSapCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherSapCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherSapCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherSapCoursesApprovedNames[] = $course['name'];
+            break;
+            case 'POR HABILITAR':
+            $otherSapCoursesToEnableNames[] = $course['name'];
+            break;
+            case 'CERTIFICADO':
+            $otherSapCoursesCertifiedNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
 
@@ -45,7 +82,6 @@ FECHA DE FIN DE CURSO: 1 dia hacia delante
 --}}
 {{$studentData['NOMBRE']}}
 ⚠️ ¡Atención inmediata y crítica para ti! ⏳
-
 @if (count($coursesToNotify) == 1)
 Está por vencer tu curso:
 @else
@@ -64,21 +100,24 @@ Están por vencer tus cursos:
 {{$endCourseDate->format('d/m/Y')}}
 
 {{-- Cursos SAP anteriores --}}
-@foreach ($otherSapCourses as $course)
-    @if ($course["course_status"] == "CERTIFICADO")
+@if(count($otherSapCourses) > 0)
+    @if(count($otherSapCoursesCertifiedNames) > 0)
 Recuerda que antes aprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "REPROBADO")
-Recuerda que antes reprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "ABANDONADO")
-Recuerda que antes abandonaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "NO CULMINÓ")
-Recuerda que antes no culminaste:
-{{$course['name']}}
+{{implode("\n", $otherSapCoursesCertifiedNames)}}
     @endif
-@endforeach
+    @if(count($otherSapCoursesDissaprovedNames) > 0)
+    Recuerda que antes reprobaste:
+{{implode("\n", $otherSapCoursesDissaprovedNames)}}
+    @endif
+    @if(count($otherSapCoursesDroppedNames) > 0)
+    Recuerda que antes abandonaste:
+{{implode("\n", $otherSapCoursesDroppedNames)}}
+    @endif    
+    @if(count($otherSapCoursesUnfinishedNames) > 0)
+    Recuerda que antes no culminaste:
+{{implode("\n", $otherSapCoursesUnfinishedNames)}}  
+    @endif
+@endif
 
 
 {{-- Cursos de obsequio: SECCION ESPECIAL si el curso SAP anterior fue reprobado, abandonado o no lo culminó --}}
@@ -143,8 +182,6 @@ Aún tienes *por habilitar:*
     {{implode("\n", $otherFreeCoursesToEnableNames)}}
         @endif    
     @endif
-    $coursesToNotifyNames = array_column($coursesToNotify, 'name');
-
 
 @endif
 

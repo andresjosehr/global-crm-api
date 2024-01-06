@@ -30,6 +30,41 @@ foreach($otherFreeCourses as $course):
     }
 endforeach;
 
+// cache interna
+$otherSapCoursesInProgressNames = [];
+$otherSapCoursesDissaprovedNames = [];
+$otherSapCoursesDroppedNames = [];
+$otherSapCoursesUnfinishedNames = [];
+$otherSapCoursesApprovedNames = [];
+$otherSapCoursesToEnableNames = [];
+$otherSapCoursesCertifiedNames = [];
+foreach($otherSapCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherSapCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherSapCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherSapCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherSapCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherSapCoursesApprovedNames[] = $course['name'];
+            break;
+            case 'POR HABILITAR':
+            $otherSapCoursesToEnableNames[] = $course['name'];
+            break;
+            case 'CERTIFICADO':
+            $otherSapCoursesCertifiedNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
 $tmpCourseToNotifyNames = array_column($coursesToNotify, 'name');
 @endphp
 {{--
@@ -62,26 +97,29 @@ Están por vencer tus cursos:
 @endif
 
 {{-- Variante para INTENTOS PENDIENTES Y SIN INTENTOS GRATIS --}}
-Por lo que *estarías perdiendo la posibilidad de realizar el pago por el ponderado* de los exámenes de certificación de ({{implode(', $tmpCourseToNotifyNames')}}), si no realizas el pago, *dentro de mi horario laboral del día de hoy.*
-Y *a partir del envío de este mensaje, el tiempo mínimo para extender ({{implode(', $tmpCourseToNotifyNames')}}), es de 3 meses.* Y tienes como máximo el plazo de una semana a partir de hoy, para realizar el pago, solo que, el aula que recibirás estará completamente vacía, porque no guardamos tu avance posterior a las 23:59.
+Por lo que *estarías perdiendo la posibilidad de realizar el pago por el ponderado* de los exámenes de certificación de {{implode(', $tmpCourseToNotifyNames')}}, si no realizas el pago, *dentro de mi horario laboral del día de hoy.*
+Y *a partir del envío de este mensaje, el tiempo mínimo para extender {{implode(', $tmpCourseToNotifyNames')}}, es de 3 meses.* Y tienes como máximo el plazo de una semana a partir de hoy, para realizar el pago, solo que, el aula que recibirás estará completamente vacía, porque no guardamos tu avance posterior a las 23:59.
 *Ojo, si esperas al último minuto de mi jornada laboral de hoy, no podré validar, ni solicitar tu certificado, ni realizar los trámites necesarios y tampoco realizamos devoluciones.*
 
 {{-- Cursos SAP anteriores --}}
-@foreach ($otherSapCourses as $course)
-    @if ($course["course_status"] == "CERTIFICADO")
+@if(count($otherSapCourses) > 0)
+    @if(count($otherSapCoursesCertifiedNames) > 0)
 Recuerda que antes aprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "REPROBADO")
-Recuerda que antes reprobaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "ABANDONADO")
-Recuerda que antes abandonaste:
-{{$course['name']}}
-    @elseif ($course["course_status"] == "NO CULMINÓ")
-Recuerda que antes no culminaste:
-{{$course['name']}}
+{{implode("\n", $otherSapCoursesCertifiedNames)}}
     @endif
-@endforeach
+    @if(count($otherSapCoursesDissaprovedNames) > 0)
+    Recuerda que antes reprobaste:
+{{implode("\n", $otherSapCoursesDissaprovedNames)}}
+    @endif
+    @if(count($otherSapCoursesDroppedNames) > 0)
+    Recuerda que antes abandonaste:
+{{implode("\n", $otherSapCoursesDroppedNames)}}
+    @endif    
+    @if(count($otherSapCoursesUnfinishedNames) > 0)
+    Recuerda que antes no culminaste:
+{{implode("\n", $otherSapCoursesUnfinishedNames)}}  
+    @endif
+@endif
 
 
 {{-- Cursos de obsequio: SECCION ESPECIAL si el curso SAP anterior fue reprobado, abandonado o no lo culminó --}}
@@ -160,7 +198,7 @@ $tmpSapCourseToEnableFlag = false; // asume q no hay cursos SAP por habilitar
 
 foreach ($otherSapCourses as $course):
     if ( $course['course_status'] == 'REPROBADO'):
-        $tmpSapDisapprovedCourseNames[] = $course["course_name"];
+        $tmpSapDisapprovedCourseNames[] = $course["name"];
     elseif ( $course['course_status'] == 'POR HABILITAR'):
         $tmpSapCourseToEnableFlag = true;
     endif;
@@ -178,7 +216,7 @@ if(count($tmpSapDisapprovedCourseNames) > 0 && $tmpSapCourseToEnableFlag == fals
 endif;
 @endphp
 @if ($tmpShowSectionFlag)
-Por lo que, al haber reprobado ({{implode(', ', $tmpSapDisapprovedCourseNames)}}) y no haberte certificado en ({{implode(', ', $tmpSapDisapprovedCourseNames)}}):
+Por lo que, al haber reprobado {{implode(', ', $tmpSapDisapprovedCourseNames)}} y no haberte certificado en {{implode(', ', $tmpSapDisapprovedCourseNames)}}:
     @if(count($otherFreeCoursesInProgressNames) > 0)
     A pesar de haberlo habilitado, pierdes el acceso a:
 {{implode("\n", $otherFreeCoursesInProgressNames)}}
@@ -202,7 +240,7 @@ $tmpSapCourseToEnableFlag = false; // asume q no hay cursos SAP por habilitar
 $tmpCourseToNotifyNames = array_column($coursesToNotify, 'name');
 foreach ($otherSapCourses as $course):
     if ( $course['course_status'] == 'ABANDONADO'):
-        $tmpSapDroppedCourseNames[] = $course["course_name"];
+        $tmpSapDroppedCourseNames[] = $course["name"];
     elseif ( $course['course_status'] == 'POR HABILITAR'):
         $tmpSapCourseToEnableFlag = true;
     endif;
@@ -220,7 +258,7 @@ if(count($tmpSapDroppedCourseNames) > 0 && $tmpSapCourseToEnableFlag == false &&
 endif;
 @endphp
 @if ($tmpShowSectionFlag)
-Por lo que, al haber abandonado ({{implode(', ', $tmpSapDroppedCourseNames)}}) y no haberte certificado en ({{implode(', ', $tmpSapDisapprovedCourseNames)}}:
+Por lo que, al haber abandonado {{implode(', ', $tmpSapDroppedCourseNames)}} y no haberte certificado en {{implode(', ', $tmpSapDisapprovedCourseNames)}}:
     @if(count($otherFreeCoursesInProgressNames) > 0)
     A pesar de haberlo habilitado, pierdes el acceso a:
 {{implode("\n", $otherFreeCoursesInProgressNames)}}
@@ -246,7 +284,7 @@ Por lo que, al haber abandonado ({{implode(', ', $tmpSapDroppedCourseNames)}}) y
     $tmpCourseToNotifyNames = array_column($coursesToNotify, 'name');
     foreach ($otherSapCourses as $course):
         if ( $course['course_status'] == 'NO CULMINÓ'):
-            $tmpSapUnfinishedCourseNames[] = $course["course_name"];
+            $tmpSapUnfinishedCourseNames[] = $course["name"];
         elseif ( $course['course_status'] == 'POR HABILITAR'):
             $tmpSapCourseToEnableFlag = true;
         endif;
@@ -264,7 +302,7 @@ Por lo que, al haber abandonado ({{implode(', ', $tmpSapDroppedCourseNames)}}) y
     endif;
 @endphp
 @if ($tmpShowSectionFlag)
-Por lo que, al no haber culminado ({{implode(', ', $tmpSapUnfinishedCourseNames)}}) y no haberte certificado en ({{implode(', ', $tmpSapDisapprovedCourseNames)}}:
+Por lo que, al no haber culminado {{implode(', ', $tmpSapUnfinishedCourseNames)}} y no haberte certificado en {{implode(', ', $tmpSapDisapprovedCourseNames)}}:
     @if(count($otherFreeCoursesInProgressNames) > 0)
     A pesar de haberlo habilitado, pierdes el acceso a:
 {{implode("\n", $otherFreeCoursesInProgressNames)}}
@@ -287,7 +325,7 @@ $tmpSapCourseToEnableFlag = false; // asume q no hay cursos SAP por habilitar
 $tmpCourseToNotifyNames = array_column($coursesToNotify, 'name');
 foreach ($otherSapCourses as $course):
     if ( $course['course_status'] == 'APROBADO'):
-        $tmpSapApprovedCourseNames[] = $course["course_name"];
+        $tmpSapApprovedCourseNames[] = $course["name"];
     elseif ( $course['course_status'] == 'POR HABILITAR'):
         $tmpSapCourseToEnableFlag = true;
     endif;
@@ -309,7 +347,7 @@ if(count($tmpSapApprovedCourseNames) > 0 && $tmpSapCourseToEnableFlag == false &
 endif;
 @endphp
 @if ($tmpShowSectionFlag)
-Por lo que, al haberte certificado anteriormente en ({{implode(', ', $tmpSapApprovedCourseNames)}}), aunque no te certificaste en ({{implode(', ', $tmpSapDisapprovedCourseNames)}}):
+Por lo que, al haberte certificado anteriormente en {{implode(', ', $tmpSapApprovedCourseNames)}}, aunque no te certificaste en {{implode(', ', $tmpSapDisapprovedCourseNames)}}:
 
     @if(count($otherFreeCoursesInProgressNames) > 0)
     Puedes seguir *cursando:*
@@ -357,31 +395,31 @@ A continuación te envío las fechas de inicio para habilitarlos:
         endif;
         if ($course['course_status'] == 'REPROBADO' || $course['course_status'] == 'ABANDONADO' ||  $course['course_status'] != 'CERTIFICADO' ):
             $tmpShowSectionFlag = true;
-            $tmpSapOtherNamesNames[] = $course["course_name"];
+            $tmpSapOtherNamesNames[] = $course["name"];
         endif;        
         if ($course['course_status'] == 'POR HABILITAR'):
-            $tmpSapPendingCourseNames[] = $course["course_name"];
+            $tmpSapPendingCourseNames[] = $course["name"];
         endif;
         if ($course['course_status'] == 'APROBADO'):
             $tmpApprovedSectionFlag = true;
         endif;        
         if ($course['course_status'] == 'REPROBADO' || $course['course_status'] == 'ABANDONADO' ||  $course['course_status'] == 'NO CULMINÓ' ):
-            $tmpApprovedSectionNames[] = $course["course_name"];
+            $tmpApprovedSectionNames[] = $course["name"];
         endif;
     endforeach;
 @endphp
 @if ($tmpShowSectionFlag)
     @if(count($tmpSapPendingCourseNames) == 1)
-    Por lo que, al no haberte certificado en ({{implode(', ', $tmpSapOtherNamesNames)}}), tienes como máximo 15 días para iniciar con el siguiente curso SAP ofrecido:
+    Por lo que, al no haberte certificado en {{implode(', ', $tmpSapOtherNamesNames)}}, tienes como máximo 15 días para iniciar con el siguiente curso SAP ofrecido:
     @else
-    Por lo que, al no haberte certificado en ({{implode(', ', $tmpSapOtherNamesNames)}}), tienes como máximo 15 días para iniciar con los siguientes cursos SAP ofrecidos:
+    Por lo que, al no haberte certificado en {{implode(', ', $tmpSapOtherNamesNames)}}, tienes como máximo 15 días para iniciar con los siguientes cursos SAP ofrecidos:
     @endif
 
     @if ($tmpApprovedSectionFlag == true)
         @if(count($tmpSapPendingCourseNames) == 1)
-        Por lo que, al haberte certificado en ({{implode(', ', $tmpApprovedSectionNames)}}), aunque no te hayas certificado en ({{implode(', ', $tmpCourseToNotifyNames)}}), puedes iniciar como máximo en 15 días con el siguiente curso SAP ofrecido:
+        Por lo que, al haberte certificado en {{implode(', ', $tmpApprovedSectionNames)}}, aunque no te hayas certificado en {{implode(', ', $tmpCourseToNotifyNames)}}, puedes iniciar como máximo en 15 días con el siguiente curso SAP ofrecido:
         @else
-        Por lo que, al haberte certificado en ({{implode(', ', $tmpApprovedSectionNames)}}), aunque no te hayas certificado en ({{implode(', ', $tmpCourseToNotifyNames)}}), puedes iniciar como máximo en 15 días con los siguientes cursos SAP ofrecidos:
+        Por lo que, al haberte certificado en {{implode(', ', $tmpApprovedSectionNames)}}, aunque no te hayas certificado en {{implode(', ', $tmpCourseToNotifyNames)}}, puedes iniciar como máximo en 15 días con los siguientes cursos SAP ofrecidos:
         @endif
     @endif
 
