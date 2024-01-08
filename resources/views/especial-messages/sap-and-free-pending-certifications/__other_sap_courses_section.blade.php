@@ -137,7 +137,7 @@ Aún tienes *por habilitar:*
     @if ($tmpShowSapSectionFlag == true)
         @if (count($sapCoursesNames) == 1)
         Por lo que, si no te certificas en este curso SAP:
-        @else 
+@else 
     Por lo que, si no te certificas en estos cursos SAP:
         @endif
         {{implode("\n", $sapCoursesNames)}}

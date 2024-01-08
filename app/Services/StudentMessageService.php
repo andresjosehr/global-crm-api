@@ -91,7 +91,7 @@ class StudentMessageService
                 continue;
             }
             // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-            $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
+            $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
             // var_dump($tmpEndCourseDaysAhead);
             Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
             if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
@@ -138,6 +138,7 @@ class StudentMessageService
 
         // Flags para Cursos SAP del pasado que aprobó, reprobó, abandonó o no culminó
         $groupedCourses = $this->__groupCourses($coursesToNotify);
+        $sapCourses = $groupedCourses["sapCourses"];
         $otherSapCourses = $groupedCourses["otherSapCourses"];
         $otherFreeCourses = $groupedCourses["otherFreeCourses"];
         $showOtherSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
@@ -281,6 +282,7 @@ class StudentMessageService
             'studentData' => $this->__studentData,
             'coursesToNotify' => $coursesToNotify,
             'sapCoursesNames' => $sapCoursesNames,
+            'sapCourses' => $sapCourses,
             'multipleSapCoursesWithPendingAttemptsFlag' => $multipleSapCoursesWithPendingAttemptsFlag,
             'certificationPendingAttemptsFlag' => $certificationPendingAttemptsFlag,
             'noFreeCertificationAttemptsFlag' => $noFreeCertificationAttemptsFlag,
@@ -373,7 +375,7 @@ class StudentMessageService
                 continue;
             }
             // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-            $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
+            $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
             Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
             // var_dump($tmpEndCourseDaysAhead);
             Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -386,7 +388,7 @@ class StudentMessageService
             // agrega el curso a procesar
             if ($course["isSapCourse"] == true) :
                 $sapCourses[] = $course;
-            else:
+            else :
                 $freeCourses[] = $course;
             endif;
 
@@ -731,7 +733,7 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
+                $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -781,17 +783,11 @@ class StudentMessageService
             endforeach;
 
             // agrupa los cursos por tipo
-            $coursesToNotifyIds = array_column($coursesToNotify, 'course_id');
-            foreach ($this->__studentData['courses'] as $course) :
-                if (in_array($course['course_id'], $coursesToNotifyIds) == true) :
-                    continue;
-                endif;
-                if ($course["isFreeCourse"] == true) :
-                    $otherFreeCourses[] = $course;
-                elseif ($course["isSapCourse"] == true) :
-                    $otherSapCourses[] = $course;
-                endif;
-            endforeach;
+            $groupedCourses = $this->__groupCourses($coursesToNotify);
+            $sapCourses = $groupedCourses["sapCourses"];
+            $freeCourses = $groupedCourses["freeCourses"];
+            $otherSapCourses = $groupedCourses["otherSapCourses"];
+            $otherFreeCourses = $groupedCourses["otherFreeCourses"];
 
             // prepara los flags especiales
             foreach ($otherFreeCourses as $course) :
@@ -829,6 +825,8 @@ class StudentMessageService
                 'endCourseDate' => $endCourseDate,
                 'hasExcelCourseToNotify' => $hasExcelCourseToNotify,
                 'hasSpecializedCoursesToNotify' => $hasSpecializedCoursesToNotify,
+                'sapCourses' => $sapCourses,
+                'freeCourses' => $freeCourses,
                 'otherSapCourses' => $otherSapCourses,
                 'otherFreeCourses' => $otherFreeCourses,
                 'showDissaprovedOtherCourses' => $showDissaprovedOtherCourses,
@@ -912,7 +910,7 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
+                $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d (%s)", $course['name'], $tmpEndCourseDaysAhead, $course['end']));
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
                 // Condicion (b) (condicion (a) incluida por ser 1 dia) 
@@ -1083,7 +1081,7 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
+                $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -1242,7 +1240,7 @@ class StudentMessageService
                     continue;
                 }
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
-                $tmpEndCourseDaysAhead = $processDate->diffInDays(Carbon::parse($course['end']), false) + 1;
+                $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
                 Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
@@ -1547,7 +1545,7 @@ class StudentMessageService
 
                         // flag para el CURSO. "|" el or es por si ya estaba el true antes
                         $course['hasPendingAttempts'] =  ($course['hasPendingAttempts'] || $course[$level]['hasPendingAttempts']);
-                        $course['noFreeAttempts'] = ( $course['noFreeAttempts'] || $course[$level]['noFreeAttempts']);
+                        $course['noFreeAttempts'] = ($course['noFreeAttempts'] || $course[$level]['noFreeAttempts']);
                     endif;
                 endforeach;
             endif;
@@ -1589,5 +1587,27 @@ class StudentMessageService
             endif;
         endforeach;
         return $groupedCourses;
+    }
+
+    /**
+     * calcula la diferencia en dias entre la fecha de proceso y la fecha de fin del curso
+     * @param Carbon $carbonProcessDate Fecha de proceso
+     * @param Carbon $carbonCourseEndDate Fecha de fin del curso
+     * @return int Retorna la diferencia en dias entre la fecha de proceso y la fecha de fin del curso
+     */
+    private function __calculateDayDifference($carbonProcessDate, $carbonCourseEndDate)
+    {
+        $daysAdjustments = [28, 29, 30, 31];
+        // Calcular la diferencia en días
+        $dayDiff = $carbonProcessDate->diffInDays($carbonCourseEndDate, false) + 1;
+
+        // Sobreescribe para dias especiales, cuando hay 28, 29, 30 o 31 dias de diferencia pero es el mismo dia calendario
+        if (($carbonProcessDate->format('j') === $carbonCourseEndDate->format('j')) // mismo dia
+            && (in_array($dayDiff, $daysAdjustments)) // un mes de diferencia
+        ) :
+            $dayDiff = 30;
+        endif;
+
+        return $dayDiff;
     }
 }

@@ -1,3 +1,76 @@
+@php
+// cache interna
+$otherFreeCoursesInProgressNames = [];
+$otherFreeCoursesDissaprovedNames = [];
+$otherFreeCoursesDroppedNames = [];
+$otherFreeCoursesUnfinishedNames = [];
+$otherFreeCoursesApprovedNames = [];
+$otherFreeCoursesToEnableNames = [];
+foreach($otherFreeCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherFreeCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherFreeCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherFreeCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherFreeCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherFreeCoursesApprovedNames[] = $course['name'];
+            break;
+        case 'POR HABILITAR':
+            $otherFreeCoursesToEnableNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
+
+// cache interna
+$otherSapCoursesInProgressNames = [];
+$otherSapCoursesDissaprovedNames = [];
+$otherSapCoursesDroppedNames = [];
+$otherSapCoursesUnfinishedNames = [];
+$otherSapCoursesApprovedNames = [];
+$otherSapCoursesToEnableNames = [];
+$otherSapCoursesCertifiedNames = [];
+foreach($otherSapCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherSapCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherSapCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherSapCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherSapCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherSapCoursesApprovedNames[] = $course['name'];
+            break;
+            case 'POR HABILITAR':
+            $otherSapCoursesToEnableNames[] = $course['name'];
+            break;
+            case 'CERTIFICADO':
+            $otherSapCoursesCertifiedNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
+$coursesToNotifyNames = array_column($coursesToNotify, 'name');
+$sapCoursesNames = array_column($sapCourses, 'name');
+
+
+@endphp
 {{--
 
 "PLANTILLAS CURSO OBSEQUIOS CURSANDO CON INTENTOS PENDIENTES"
@@ -103,12 +176,8 @@ Y de esta manera obtener tus certificados.
 
 {{-- VARIANTE Filas 36 a 40: si tiene curso obsequio con estado CURSANDO, que termine en OTRA FECHA, con las condiciones específicas de cada fila: --}}
 @if($showInProgressOtherCourses == true)
-👀 *OJO aún estás cursando:*
-    @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'CURSANDO')
-        {{$course['name']}}
-        @endif
-    @endforeach
+👀 *OJO también estás cursando:*
+{{implode(', ', $otherFreeCoursesInProgressNames)}}
     {{-- Fila 56: Si en ESTADO AULA de SAP dice CURSANDO o COMPLETA pero en certificado aún no sale EMITIDO y es curso OBSEQUIO CURSANDO --}}
     @if(($studentData["AULA SAP"] == "CURSANDO" || $studentData["AULA SAP"] == "COMPLETA") && ($studentData["CERTIFICADO"] != "EMITIDO"))
 Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y aún no te certificas en SAP. Por lo que podrías perder el acceso, a pesar de haber iniciado, si no pagas el ponderado de:

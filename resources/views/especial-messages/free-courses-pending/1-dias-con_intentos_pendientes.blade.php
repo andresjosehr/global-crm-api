@@ -1,3 +1,76 @@
+@php
+// cache interna
+$otherFreeCoursesInProgressNames = [];
+$otherFreeCoursesDissaprovedNames = [];
+$otherFreeCoursesDroppedNames = [];
+$otherFreeCoursesUnfinishedNames = [];
+$otherFreeCoursesApprovedNames = [];
+$otherFreeCoursesToEnableNames = [];
+foreach($otherFreeCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherFreeCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherFreeCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherFreeCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherFreeCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherFreeCoursesApprovedNames[] = $course['name'];
+            break;
+        case 'POR HABILITAR':
+            $otherFreeCoursesToEnableNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
+
+// cache interna
+$otherSapCoursesInProgressNames = [];
+$otherSapCoursesDissaprovedNames = [];
+$otherSapCoursesDroppedNames = [];
+$otherSapCoursesUnfinishedNames = [];
+$otherSapCoursesApprovedNames = [];
+$otherSapCoursesToEnableNames = [];
+$otherSapCoursesCertifiedNames = [];
+foreach($otherSapCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherSapCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherSapCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherSapCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherSapCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherSapCoursesApprovedNames[] = $course['name'];
+            break;
+            case 'POR HABILITAR':
+            $otherSapCoursesToEnableNames[] = $course['name'];
+            break;
+            case 'CERTIFICADO':
+            $otherSapCoursesCertifiedNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
+$coursesToNotifyNames = array_column($coursesToNotify, 'name');
+$sapCoursesNames = array_column($sapCourses, 'name');
+
+
+@endphp
 {{--
 
 "PLANTILLAS CURSO OBSEQUIOS CURSANDO CON INTENTOS PENDIENTES"
@@ -61,13 +134,13 @@ Si por el contrario, deseas retomar algún curso *pasada la semana indicada, ten
 
 👀 *OJO también estabas cursando:*
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'CURSANDO')
+        @if ($course['course_status'] == 'CURSANDO')
 {{$course['name']}}
         @endif
     @endforeach
 
     @if(count($coursesToNotify) == 1)
-        @if (count(array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status_original'] === 'CURSANDO'); })))
+        @if (count(array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status'] === 'CURSANDO'); })))
         Al haber reprobado/abandonado solo el curso mencionado anteriormente, puedes conservar este acceso. Teniendo en cuenta que al tener dos o más cursos reprobados/abandonados, pierdes el resto de los cursos. Si tienes dudas sobre esto, contáctame.
 
         @else
@@ -94,12 +167,12 @@ Recuerda que como condición no puedes tener dos o más cursos *reprobados o aba
 
 {{-- VARIANTE Filas 43 a 55: si tiene curso obsequio con estado examen SIN INTENTOS PENDIENTES o REPROBADO, que termine en OTRA FECHA, con las condiciones específicas de cada fila: --}}
 @php 
-$tmpDissaprovedOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status_original'] === 'REPROBADO'); });
+$tmpDissaprovedOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status'] === 'REPROBADO'); });
 @endphp
 @if($showDissaprovedOtherCourses == true )
 👀 *OJO recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados y al haber reprobado anteriormente:*
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'REPROBADO')
+        @if ($course['course_status'] == 'REPROBADO')
 {{$course['name']}}
         @endif
     @endforeach
@@ -122,13 +195,13 @@ $tmpDissaprovedOtherCourses = array_filter($otherFreeCourses, function ($course)
     @endif
 
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'POR HABILITAR')
+        @if ($course['course_status'] == 'POR HABILITAR')
 A pesar de quedar pendiente, no podrás habilitar:
 {{$course['name']}}        
-        @elseif ($course['course_status_original'] == 'CURSANDO')
+        @elseif ($course['course_status'] == 'CURSANDO')
 A pesar de haber iniciado, perderías el acceso a:
 {{$course['name']}}        
-        @elseif ($course['course_status_original'] == 'APROBADO')
+        @elseif ($course['course_status'] == 'APROBADO')
 A pesar de haber aprobado, perderías el acceso al certificado internacional:
 {{$course['name']}}        
         @endif
@@ -141,13 +214,13 @@ En este caso, al no tener más cursos de obsequio pendientes, quedaremos en cont
 
 {{-- VARIANTE Filas 70 a 82: Filas 70 a 94: si tiene curso obsequio con estado NO CULMINÓ, que termine en OTRA FECHA, si tuviera fecha fin, con las condiciones específicas de cada fila: --}}
 @php 
-$tmpUnfinishedOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status_original'] === 'NO CULMINÓ'); });
+$tmpUnfinishedOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status'] === 'NO CULMINÓ'); });
 @endphp
 @if($showUnfinishedOtherCourses == true )
 👀 *OJO recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados y al no haber culminado:*
 
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'NO CULMINÓ')
+        @if ($course['course_status'] == 'NO CULMINÓ')
 {{$course['name']}}
         @endif
     @endforeach
@@ -170,13 +243,13 @@ $tmpUnfinishedOtherCourses = array_filter($otherFreeCourses, function ($course) 
     @endif    
 
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'POR HABILITAR')
+        @if ($course['course_status'] == 'POR HABILITAR')
         Por lo que, a pesar de quedar pendiente, no podrás habilitar:
 {{$course['name']}}        
-        @elseif ($course['course_status_original'] == 'CURSANDO')
+        @elseif ($course['course_status'] == 'CURSANDO')
 A pesar de haber iniciado, perderías el acceso a:
 {{$course['name']}}        
-        @elseif ($course['course_status_original'] == 'APROBADO')
+        @elseif ($course['course_status'] == 'APROBADO')
 A pesar de haber aprobado, perderías el acceso al certificado internacional:
 {{$course['name']}}        
         @endif
@@ -194,12 +267,12 @@ A pesar de haber aprobado, perderías el acceso al certificado internacional:
 
 {{-- VARIANTE Filas Filas 97 a 121: si tiene curso obsequio con estado ABANDONÓ, que termine en OTRA FECHA, si tuviera fecha fin, con las condiciones específicas de cada fila: --}}
 @php 
-$tmpDroppedOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status_original'] === 'ABANDONÓ'); });
+$tmpDroppedOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status'] === 'ABANDONÓ'); });
 @endphp
 @if($showDroppedOtherCourses == true )
 👀 *OJO recuerda que como condición, no puedes tener dos o más cursos reprobados/abandonados y al haber abandonado:*
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'ABANDONADO')
+        @if ($course['course_status'] == 'ABANDONADO')
 {{$course['name']}}
         @endif
     @endforeach
@@ -224,13 +297,13 @@ $tmpDroppedOtherCourses = array_filter($otherFreeCourses, function ($course) {  
     @endif        
 
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'POR HABILITAR')
+        @if ($course['course_status'] == 'POR HABILITAR')
         Por lo que, a pesar de quedar pendiente, no podrás habilitar:
 {{$course['name']}}        
-        @elseif ($course['course_status_original'] == 'CURSANDO')
+        @elseif ($course['course_status'] == 'CURSANDO')
 A pesar de haber iniciado, perderías el acceso a:
 {{$course['name']}}        
-        @elseif ($course['course_status_original'] == 'APROBADO')
+        @elseif ($course['course_status'] == 'APROBADO')
 A pesar de haber aprobado, perderías el acceso al certificado internacional:
 {{$course['name']}}        
         @endif
@@ -246,13 +319,13 @@ A pesar de haber aprobado, perderías el acceso al certificado internacional:
 
 {{-- VARIANTE Filas 124 a 144: si tiene curso obsequio con estado POR HABILITAR, con las condiciones específicas de cada fila: --}}
 @php 
-$tmpToEnableOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status_original'] === 'POR HABILITAR'); });
+$tmpToEnableOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status'] === 'POR HABILITAR'); });
 @endphp
 
 @if($showToEnableOtherCourses == true )
 👀 *OJO tienes por habilitar:*
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'POR HABILITAR')
+        @if ($course['course_status'] == 'POR HABILITAR')
 {{$course['name']}}
         @endif
     @endforeach
@@ -273,10 +346,10 @@ $tmpToEnableOtherCourses = array_filter($otherFreeCourses, function ($course) { 
     @endif        
     
     @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status_original'] == 'CURSANDO')
+        @if ($course['course_status'] == 'CURSANDO')
 Por lo que, a pesar de haber iniciado, perderías el acceso a:
 {{$course['name']}}
-        @elseif ($course['course_status_original'] == 'APROBADO')
+        @elseif ($course['course_status'] == 'APROBADO')
 Por lo que, a pesar de haber aprobado, perderías el acceso al certificado internacional:
 {{$course['name']}}
         @endif

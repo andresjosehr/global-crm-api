@@ -79,7 +79,7 @@ ESTADO DE EXAMEN: CON INTENTOS PENDIENTES
 FECHA DE FIN DE CURSO: 1 dia hacia delante
 
 --}}
-@if (count($coursesToNotify) > 1)
+@if (count($coursesToNotify) == 1)
 ¡Urgente, *tu certificación SAP está en peligro!* ⚠️
 Tenemos importantes noticias sobre las *condiciones actuales de tu curso:*
 @else

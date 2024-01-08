@@ -156,6 +156,7 @@ class StudentsExcelController extends Controller
             $courses_names = array_map('trim', $courses_names);
             $courses_names = array_map('strtoupper', $courses_names);
 
+
             $courses = [];
             $inactive_courses = [];
 
@@ -763,11 +764,9 @@ class StudentsExcelController extends Controller
             return;
         endif;
 
-
         // Verificamos si existe el campo "OBSERVACIONES" en $student
         // Utilizamos la función parseObservations para obtener el array de observaciones
         $observationsArray = $this->parseObservations($student['OBSERVACIONES']);
-
         foreach ($observationsArray as $courseName => $courseStatus) {
             $courseLongName = DB::table('courses')->where('short_name', $courseName)->value('name');
             if (empty($courseLongName) == true) :
@@ -783,6 +782,82 @@ class StudentsExcelController extends Controller
                     $course['course_status_original'] = $courseStatus;
                 }
             }
+            // Recorremos los cursos INACTIVOS del estudiante
+            for ($i = 0; $i < count($student['inactive_courses']); $i++) :
+                $course2 = $student['inactive_courses'][$i];
+                // Verificamos si el nombre del curso existe en las observaciones
+                if ($course2['name'] == $courseLongName) {
+                    // Actualizamos el estado del curso con el estado de las observaciones
+                    $course2['course_status'] = $courseStatus;
+                    // $course['course_status_original'] = $courseStatus;
+                    $student['courses'][] = $course2; // lo agrega al array de cursos
+                    unset($student['inactive_courses'][$i]); // lo elimina del array de cursos inactivos
+                }
+            endfor;
         }
+    }
+
+    /**
+     * Parsea el campo "ESTADO" de un estudiante que generalmente vienen en $student['ESTADO']
+     * @param string $studentState Observaciones del estudiante
+     * @return array observaciones encontradas
+     */
+    public function parseStudentState($studentState)
+    {
+        $observationsArray = [];
+
+        // Verificamos si la cadena no está vacía
+        if (!empty($studentState)) {
+            // Dividimos las observaciones utilizando el separador "/"
+            $observationList = explode('/', $studentState);
+            foreach ($observationList as $observation) :
+                // @TODO: Revisar si es necesario agregar más estados como "AL DIA CUOTAS".
+                // @TODO revisar si el estado PENDIENTE se debe agregar a la lista de estados
+                if (preg_match('/^\s*(HABILITADO|HABILITAR|CONTADO|DESCONGELADO|CONGELADO|PENDIENTE)\s+(.+)\s*$/', $observation, $matches)) :
+                    // $matches[1] contendrá el estado y $matches[2] contendrá el nombre del curso
+                    $estado = $matches[1];
+                    $nombreCurso = $this->__parseCourseNameReplacements($matches[2]);
+
+                    $observationsArray[$nombreCurso] = $estado;
+                endif;
+            endforeach;
+        }
+
+        return $observationsArray;
+    }
+
+    /**
+     * Ajustes varios a los cursos 
+     * Pablo
+     */
+    public function fixCourses(&$student)
+    {
+
+        // El siguiente FIX procesará el ESTADO de cursos para detectar los PENDIENTE que se encuentran en el campo de cursos inactivos
+        //********************************************************* */
+        // CAMBIOS PABLO
+        $studentStates = $this->parseStudentState($student['ESTADO']);
+
+        foreach ($studentStates as $courseName => $courseStatus) {
+            $courseLongName = DB::table('courses')->where('short_name', $courseName)->value('name');
+            if (empty($courseLongName) == true) :
+                continue;
+            endif;
+
+            for ($i = 0; $i < count($student['inactive_courses']); $i++) :
+                $course = $student['inactive_courses'][$i];
+                if ($course['name'] == $courseLongName) :
+                    if ($courseStatus == 'PENDIENTE') :
+                        $course['course_status'] = 'POR HABILITAR';
+                        $course['course_status_original'] = $courseStatus; // deja "PENDIENTE"
+                        $student['courses'][] = $course; // lo agrega al array de cursos
+                        unset($student['inactive_courses'][$i]); // lo elimina del array de cursos inactivos
+                    endif;
+                endif;
+            endfor;
+        }
+
+        // el siguiente FIX es para el campo OBSERVACIONES
+        $this->formatProgressObservations($student);
     }
 }

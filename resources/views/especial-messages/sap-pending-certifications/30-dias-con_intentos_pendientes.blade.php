@@ -105,15 +105,8 @@ Tienes {{$coursesToNotify[0]['lessons_completed']}} lecciones completas, y en to
 {{$course['name']}}, tiene {{$course[0]['lessons_completed']}} lecciones completas, y en total son {{$course[0]['lessons_count']}}.
     @endforeach
     🚨 Recuerda que para poder certificarte debes aprobar los exámenes de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
-
 @endif
 
-{{-- Variante para INTENTOS PENDIENTES --}}
-@if (count($coursesToNotify) > 1)
-🚨 Recuerda que para poder certificarte debes aprobar el examen de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
-@else
-🚨 Recuerda que para poder certificarte debes aprobar los exámenes de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
-@endif
 {{$endCourseDate->format('d/m/Y')}}
 
 {{-- Variante para INTENTOS PENDIENTES --}}
@@ -195,7 +188,6 @@ Aún tienes *por habilitar:*
         @else 
     Por lo que, si no te certificas en estos cursos SAP:
         @endif
-
         {{implode("\n", $coursesToNotifyNames)}}
 
         @if(count($otherFreeCoursesInProgressNames) > 0)
