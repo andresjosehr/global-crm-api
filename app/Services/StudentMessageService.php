@@ -1611,7 +1611,7 @@ class StudentMessageService
      */
     private function __calculateDayDifference($carbonProcessDate, $carbonCourseEndDate)
     {
-        $daysAdjustments = [28, 29, 30, 31];
+        $daysAdjustments = [28, 29, 30, 31, 32] ;
         // Calcular la diferencia en días
         $dayDiff = $carbonProcessDate->diffInDays($carbonCourseEndDate, false) + 1;
 
