@@ -181,6 +181,12 @@ class ProcessesController extends Controller
 
         $studentMessageService = new StudentMessageService($data); // gestiona la lógica de los mensajes para los estudiantes
         $processDate = Carbon::now();
+        $processDate->startOfDay();
+        // $processDate = $processDate->parse("2024-01-12");
+
+        // // revisa si hoy es domingo o feriado o fin de semana largo
+        // $studentMessageService->testDate($processDate);
+        // return;
 
         // revisa si mañana es domingo o feriado o fin de semana largo
         $aProcessDates[] = $processDate->copy();

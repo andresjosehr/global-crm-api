@@ -1624,4 +1624,29 @@ class StudentMessageService
 
         return $dayDiff;
     }
+
+    public function testDate($progressDate){
+        $testDates = [
+            "2024-01-10",
+            "2024-01-13",
+            "2024-01-16",
+            "2024-01-24",
+            "2024-02-10",
+            "2024-01-11",
+            "2024-01-09",
+            "2024-01-12",
+            "2024-01-15",
+            "2024-01-18",
+            "2024-01-26",
+        ];
+
+        foreach($testDates as $date):
+            $carbonDate = Carbon::parse($date);
+
+            $dayDiff = self::__calculateDayDifference($progressDate, $carbonDate);
+            printf("<p>%s - %s - %d</p>", $progressDate->format('Y-m-d'), $carbonDate->format('Y-m-d'), $dayDiff);
+        endforeach;
+
+
+    }
 }
