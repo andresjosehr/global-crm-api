@@ -267,12 +267,14 @@ Recuerda que como condición no puedes tener dos o más cursos *reprobados o aba
 {{implode("\n", $otherFreeCoursesApprovedNames)}}
     @endif    
   
+    @if($studentData["AULA SAP"] == "CURSANDO")
+    *Solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar hasta que te certifiques en SAP.*
+    @endif
 
-Ya que tendrías {{count(array_filter($otherFreeCourses, function ($course) {return $course['course_status'] === 'REPROBADO';}))}} cursos reprobados/abandonados, , así que *solo quedaría pendiente tu curso SAP, porque no tendrías más cursos por habilitar.*
 @endif
 
 {{-- VARIANTE Fila 136: Si en ESTADO EXAMEN de SAP dice REPROBADO o SIN INTENTOS GRATIS --}}
-@if($showToEnableOtherCourses == true && ($studentData["EXAMEN"] == "REPROBADO" || stripos($studentData['EXAMEN'], 'Sin intentos Gratis') === false))
+@if($showToEnableOtherCourses == true && ($studentData["EXAMEN"] == "REPROBADO" || stripos($studentData['EXAMEN'], 'Sin intentos Gratis') !== false))
 Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y no lograste certificarte en SAP. Por lo que si no te certificas en:
     @foreach ($coursesToNotify as $course)
 {{$course['name']}}

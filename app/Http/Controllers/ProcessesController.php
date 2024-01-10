@@ -163,7 +163,7 @@ class ProcessesController extends Controller
             $aData = $excelController->formatProgress($aData);
             $data = $aData[0]; // solo el primer estudiante
 
-            $aData = $excelController->fixCourses($data);
+            $excelController->fixCourses($data);
         endif;
 
         Log::info(json_encode($data));

@@ -93,7 +93,7 @@ class StudentMessageService
             // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
             $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
             // var_dump($tmpEndCourseDaysAhead);
-            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
+            Log::debug('StudentMessageService::' . __FUNCTION__. ': $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
             if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                 continue;
             }
@@ -131,9 +131,9 @@ class StudentMessageService
             endif;
         endif;
 
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $sapCourses', $coursesToNotify);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $certificationPendingAttemptsFlag: ' . $certificationPendingAttemptsFlag);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $noFreeCertificationAttemptsFlag: ' . $noFreeCertificationAttemptsFlag);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $sapCourses', $coursesToNotify);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $certificationPendingAttemptsFlag: ' . $certificationPendingAttemptsFlag);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $noFreeCertificationAttemptsFlag: ' . $noFreeCertificationAttemptsFlag);
 
 
         // Flags para Cursos SAP del pasado que aprobó, reprobó, abandonó o no culminó
@@ -145,7 +145,7 @@ class StudentMessageService
 
         // Flags para los cursos de obsequio
         $freeCoursesStatuses = self::__getFreeCoursesStatuses($studentData['courses']);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $freeCoursesStatuses', $freeCoursesStatuses);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $freeCoursesStatuses', $freeCoursesStatuses);
         foreach ($otherSapCourses as $course) :
             if (in_array($course['course_status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showFreeCoursesFlag = true;
@@ -275,7 +275,7 @@ class StudentMessageService
             $endCourseDaysAhead,
             self::__getTemplateFileNamePartForFlags($certificationPendingAttemptsFlag, $noFreeCertificationAttemptsFlag)
         );
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
+        Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
         $s = [
             'student_name' =>  $this->__studentData['NOMBRE'],
@@ -309,7 +309,7 @@ class StudentMessageService
         ];
 
         $message = self::__buildMessage($templateFilename, $s);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $message: ' . $message);
+        Log::debug(sprintf('%s::%s: Message %s: ', __CLASS__, __FUNCTION__, $message));
 
         return $message;
     }
@@ -378,7 +378,7 @@ class StudentMessageService
             $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
             Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
             // var_dump($tmpEndCourseDaysAhead);
-            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
+            Log::debug('StudentMessageService::' . __FUNCTION__. ': $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
             if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                 continue;
             }
@@ -418,7 +418,7 @@ class StudentMessageService
         $excelLevelWithoutFreeCertificationAttempts = null;
         $excelCourseFlag = false;
         foreach ($freeCourses as $course) :
-            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $course ' . __LINE__ . " " . serialize($course));
+            Log::debug('StudentMessageService::' . __FUNCTION__. ': $course ' . __LINE__ . " " . serialize($course));
             if (stripos($course['name'], 'Excel') !== false) :
                 $excelCourseFlag = true;
 
@@ -438,12 +438,12 @@ class StudentMessageService
         $otherFreeCourses = $groupedCourses["otherFreeCourses"];
         $showOtherSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
 
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $olderSapCourses', $otherSapCourses);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $olderSapCourses', $otherSapCourses);
         $showOlderSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
 
         // Flags para los cursos de obsequio
         $otherFreeCourses = self::__getFreeCoursesStatuses($studentData['courses']);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $otherFreeCourses', $otherFreeCourses);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $otherFreeCourses', $otherFreeCourses);
         foreach ($otherSapCourses as $course) :
             if (in_array($course['course_status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showOtherFreeCoursesFlag = true;
@@ -468,9 +468,9 @@ class StudentMessageService
             endif;
         endif;
 
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $sapCourses', $sapCourses);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $certificationPendingAttemptsFlag: ' . $certificationPendingAttemptsFlag);
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $noFreeCertificationAttemptsFlag: ' . $noFreeCertificationAttemptsFlag);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $sapCourses', $sapCourses);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $certificationPendingAttemptsFlag: ' . $certificationPendingAttemptsFlag);
+        Log::debug('StudentMessageService::' . __FUNCTION__. ': $noFreeCertificationAttemptsFlag: ' . $noFreeCertificationAttemptsFlag);
 
 
 
@@ -631,7 +631,7 @@ class StudentMessageService
             $endCourseDaysAhead,
             self::__getTemplateFileNamePartForFlags($certificationPendingAttemptsFlag, $noFreeCertificationAttemptsFlag)
         );
-        Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
+        Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
         $s = [
             'student_name' => $studentData['NOMBRE'],
@@ -675,7 +675,7 @@ class StudentMessageService
         $message = self::__buildMessage($templateFilename, $s);
 
 
-        Log::debug('StudentMessageService::getMessageForSAPAndFreeCourseCertification: $message: ' . $message);
+        Log::debug(sprintf('%s::%s: Message %s: ', __CLASS__, __FUNCTION__, $message));
         return $message;
     }
 
@@ -723,7 +723,10 @@ class StudentMessageService
                 Log::debug(sprintf("Curso %s - comienza procesamiento", $course['name']));
                 // si no es curso de obsequio, sigue procesando el siguiente curso
                 // o no tiene estados pendientes
-                if ($course["isFreeCourse"] == false || $course["hasPendingAttempts"] == false) {
+                if ($course["isFreeCourse"] == false ) {
+                    continue;
+                }
+                if ($course["hasPendingAttempts"] == false) {
                     continue;
                 }
                 Log::debug(sprintf("Curso %s - es un curso de obsequuio con estado pendiente ", $course['name']));
@@ -736,7 +739,7 @@ class StudentMessageService
                 $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
-                Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
+                Log::debug('StudentMessageService::getMessageForInProgressFreeCourse: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
                 if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                     continue;
                 }
@@ -817,7 +820,7 @@ class StudentMessageService
                 $endCourseDaysAhead,
                 self::__getTemplateFileNamePartForFlags(true, false) // es la precondicion que tenga "intentos pendientes" 
             );
-            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
+            Log::debug(sprintf('%s::%s Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
             $s = [
                 'studentData' => $this->__studentData,
@@ -839,7 +842,7 @@ class StudentMessageService
 
             $message = self::__buildMessage($templateFilename, $s);
 
-            Log::debug('StudentMessageService::getMessageForSAPAndFreeCourseCertification: $message: ' . $message);
+            Log::debug(sprintf('%s::%s: Message %s: ', __CLASS__, __FUNCTION__, $message));
             return $message;
         } catch (\Exception $e) {
             Log::error('StudentMessageService::getMessageForInProgressFreeCourse: ' . $e->getMessage());
@@ -912,7 +915,7 @@ class StudentMessageService
                 // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
                 $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d (%s)", $course['name'], $tmpEndCourseDaysAhead, $course['end']));
-                Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
+                Log::debug('StudentMessageService::' . __FUNCTION__. ': $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
                 // Condicion (b) (condicion (a) incluida por ser 1 dia) 
                 if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                     continue;
@@ -998,7 +1001,7 @@ class StudentMessageService
                 $endCourseDaysAhead,
                 self::__getTemplateFileNamePartForFlags(false, $tmpNoFreeCertificationAttemptsFlag, $tmpApprovedSapCourseFlag) // es la precondicion que tenga "intentos pendientes" 
             );
-            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
+            Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
             $s = [
                 'studentData' => $this->__studentData,
@@ -1017,7 +1020,7 @@ class StudentMessageService
 
             $message = self::__buildMessage($templateFilename, $s);
 
-            Log::debug('StudentMessageService::getMessageForCompletedFreeCourse: $message: ' . $message);
+            Log::debug(sprintf('%s::%s: Message %s: ', __CLASS__, __FUNCTION__, $message));
             return $message;
         } catch (\Exception $e) {
             Log::error('StudentMessageService::getMessageForCompletedFreeCourse: ' . $e->getMessage());
@@ -1084,7 +1087,7 @@ class StudentMessageService
                 $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
-                Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
+                Log::debug('StudentMessageService::' . __FUNCTION__. ': $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
                 if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                     continue;
                 }
@@ -1158,7 +1161,7 @@ class StudentMessageService
                 (($coursesToNotify[0]["isSapCourse"] == true) ? "sap" : "free"),
                 ((count($pendingOtherFreeCourses) > 0) ? "con" : "sin")
             );
-            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
+            Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
             $s = [
                 'studentData' => $this->__studentData,
@@ -1178,7 +1181,7 @@ class StudentMessageService
 
             $message = self::__buildMessage($templateFilename, $s);
 
-            Log::debug('StudentMessageService::getMessageForSAPAndFreeCourseCertification: $message: ' . $message);
+            Log::debug(sprintf('%s::%s: Message %s: ', __CLASS__, __FUNCTION__, $message));
             return $message;
         } catch (\Exception $e) {
             Log::error('StudentMessageService::getMessageForInProgressFreeCourse: ' . $e->getMessage());
@@ -1243,7 +1246,7 @@ class StudentMessageService
                 $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d", $course['name'], $tmpEndCourseDaysAhead));
                 // var_dump($tmpEndCourseDaysAhead);
-                Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
+                Log::debug('StudentMessageService::' . __FUNCTION__. ': $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
                 if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                     continue;
                 }
@@ -1269,7 +1272,7 @@ class StudentMessageService
             $templateFilename =  sprintf(
                 "especial-messages.extension.30_15_7_4_3-dias"
             );
-            Log::debug('StudentMessageService::getMessageForSAPCourseCertification: $templateFilename: ' . $templateFilename);
+            Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
             $s = [
                 'studentData' => $this->__studentData,
@@ -1280,7 +1283,8 @@ class StudentMessageService
 
             $message = self::__buildMessage($templateFilename, $s);
 
-            Log::debug('StudentMessageService::getMessageForSAPAndFreeCourseCertification: $message: ' . $message);
+            Log::debug(sprintf('%s::%s: Message %s: ', __CLASS__, __FUNCTION__, $message));
+
             return $message;
         } catch (\Exception $e) {
             Log::error('StudentMessageService::getMessageForInProgressFreeCourse: ' . $e->getMessage());
@@ -1524,6 +1528,7 @@ class StudentMessageService
             // Aplana cursos de Excel con sus flags
             if ($course['isExcelCourse'] == true) :
                 $course['LEVELS'] = []; // Excel tiene los niveles
+                $course["hasIncompleteLessons"] = false; // flag para cursos con lecciones incompletas
                 $tmpLevels = ['nivel_basico', 'nivel_intermedio', 'nivel_avanzado'];
                 foreach ($tmpLevels as $level) :
                     // si no existe el nivel, sigue procesando
@@ -1547,6 +1552,12 @@ class StudentMessageService
                         $course['hasPendingAttempts'] =  ($course['hasPendingAttempts'] || $course[$level]['hasPendingAttempts']);
                         $course['noFreeAttempts'] = ($course['noFreeAttempts'] || $course[$level]['noFreeAttempts']);
                     endif;
+
+                    // setea el flag en el CURSO de lecciones incompletas
+                    if ($course[$level]["lessons_completed"] < $course[$level]["lessons_count"]) :
+                        $course["hasIncompleteLessons"] = true;
+                    endif;
+
                 endforeach;
             endif;
         endforeach;

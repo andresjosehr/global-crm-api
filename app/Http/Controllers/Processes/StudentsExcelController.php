@@ -832,6 +832,34 @@ class StudentsExcelController extends Controller
      */
     public function fixCourses(&$student)
     {
+        $excelLevels = ["nivel_basico", "nivel_intermedio", "nivel_avanzado"];
+        for ($i = 0; $i < count($student['courses']); $i++) :
+            // Si el curso es SAP o de obsequio
+            if (
+                isset($student['courses'][$i]['certifaction_test_original']) == true
+                && isset($student['courses'][$i]['course_status_original']) == true
+                && isset($student['courses'][$i]['course_status']) == true
+            ) :
+                $student['courses'][$i]['course_status'] = $this->__recalculateCourseStatus($student['courses'][$i]['certifaction_test_original'], $student['courses'][$i]['course_status_original'], $student['courses'][$i]['course_status']);
+            elseif (
+                isset($student['courses'][$i]['course_status_original']) == true
+                && isset($student['courses'][$i]['course_status']) == true
+            ) :
+                $student['courses'][$i]['course_status'] = $this->__recalculateCourseStatus("", $student['courses'][$i]['course_status_original'], $student['courses'][$i]['course_status']);
+            endif;
+
+            foreach ($excelLevels as $level) :
+                if (
+                    isset($student['courses'][$i][$level]) == true
+                    && isset($student['courses'][$i][$level]['certifaction_test_original']) == true
+                    && isset($student['courses'][$i][$level]['course_status']) == true
+
+                ) :
+                    $student['courses'][$i][$level]['course_status'] = $this->__recalculateCourseStatus($student['courses'][$i][$level]['certifaction_test_original'], $student['courses'][$i][$level]['course_status'], $student['courses'][$i][$level]['course_status']);
+                endif;
+            endforeach;
+
+        endfor;
 
         // El siguiente FIX procesará el ESTADO de cursos para detectar los PENDIENTE que se encuentran en el campo de cursos inactivos
         //********************************************************* */
@@ -859,5 +887,77 @@ class StudentsExcelController extends Controller
 
         // el siguiente FIX es para el campo OBSERVACIONES
         $this->formatProgressObservations($student);
+    }
+
+
+    /**
+     * Recalcula el estado de un curso basado en la certificacion y el estado del curso original de Excel
+     * IMportante: la priorización es CERTIFICADO primero y luego el ESTADO del curso
+     * @param string $certification_test_original Estado de la certificación original de Excel
+     * @param string $course_status_original Estado ORIGINAL del curso en el Excel
+     * @param string $courseStatus Estado ACTUAL del curso
+     * @return string Estado del curso recalculado
+     */
+    private function __recalculateCourseStatus($certification_test_original, $course_status_original, $courseStatus)
+    {
+
+        $aCertificationToCourseStatusMap = [
+            "CERTIFICADO" => "CERTIFICADO",
+            "APROBADO" => "APROBADO",
+            "REPROBADO" => "REPROBADO",
+            // los estados de abajo no aplican al estado del curso
+            // "NO APLICA" => "NO APLICA",
+            // "1 INTENTO PENDIENTE" => "1 INTENTO PENDIENTE",
+            // "2 INTENTOS PENDIENTES" => "2 INTENTOS PENDIENTES",
+            // "3 INTENTOS PENDIENTES" => "3 INTENTOS PENDIENTES",
+            // "INTENTOS PENDIENTES" => "INTENTOS PENDIENTES",
+            // "SIN INTENTOS GRATIS" => "SIN INTENTOS GRATIS",
+
+        ];
+
+        $aCourseStatusOriginalToCourseStatuMap = [
+            "ABANDONADO" => "ABANDONADO",
+            "ABANDONO" => "ABANDONADO",
+            "ABANDONÓ" => "ABANDONADO",
+            "APROBADO" => "APROBADO",
+            "APROBO" => "APROBADO",
+            "CERTIFICADO" => "CERTIFICADO",
+            "COMPLETA" => "COMPLETA",
+            "COMPLETA SIN CREDLY" => "COMPLETA",
+            "CONGELADO" => "CONGELADO",
+            "CONTADO" => "CURSANDO",
+            "CURSANDO" => "CURSANDO",
+            "CURSANDO AVANZADO" => "CURSANDO",
+            "CURSANDO AVANZADO SIN CREDLY" => "CURSANDO",
+            "CURSANDO SIN CREDLY" => "CURSANDO",
+            "DESAPROBO" => "REPROBADO",
+            "DESCONGELADO" => "DESCONGELADO",
+            "HABILITADO" => "CURSANDO",
+            "HABILITAR" => "POR HABILITAR",
+            "NO APLICA" => "NO APLICA",
+            "no aprobo" => "REPROBADO",
+            "NO CULMINO" => "NO CULMINÓ",
+            "NO CULMINÓ" => "NO CULMINÓ",
+            "PENDIENTE" => "POR HABILITAR",
+            "POR HABILITAR" => "POR HABILITAR",
+            "POR HABILITAR AVANZADO" => "POR HABILITAR",
+            "REPROBADO" => "REPROBADO",
+        ];
+
+        $certification_test_original =  trim(strtoupper($certification_test_original));
+        $course_status_original =  trim(strtoupper($course_status_original));
+
+        // Si hay un mapeo en el CERTIFICADO, se usa ese estado como nuevo estado del curso
+        if (key_exists($certification_test_original, $aCertificationToCourseStatusMap)) {
+            return $aCertificationToCourseStatusMap[$certification_test_original];
+        }
+
+        // Si hay un mapeo en el ESTADO ORIGINAL, se usa ese estado como nuevo estado del curso
+        if (key_exists($course_status_original, $aCourseStatusOriginalToCourseStatuMap)) {
+            return $aCourseStatusOriginalToCourseStatuMap[$course_status_original];
+        }
+
+        // Si no, se usa el estado actual del curso
+        return $courseStatus;
     }
 }
