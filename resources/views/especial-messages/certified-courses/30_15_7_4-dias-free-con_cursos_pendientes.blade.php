@@ -26,7 +26,7 @@ Es decir que tendrás acceso al contenido del curso *hasta el día:*
 
 @if(count($pendingOtherFreeCourses) > 1)
 *Sé que te certificaste* 🎓📜 así que quería consultarte si ya deseas iniciar con: 
-{{array_implode(', ', array_column($pendingOtherFreeCourses, "NAME"))  }}
+{{implode(', ', array_column($pendingOtherFreeCourses, "NAME"))  }}
 @endif
 
 @if($otherFreeCourseInProgressOrCompletedCount >0)
