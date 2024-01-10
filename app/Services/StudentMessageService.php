@@ -20,6 +20,7 @@ use PhpParser\Node\Stmt\TryCatch;
 class StudentMessageService
 {
     private $__studentData;
+    private static $__showTemplateNameInMessageFlag = false; // si se muestra el nombre del template en el mensaje
 
 
 
@@ -1310,10 +1311,12 @@ class StudentMessageService
 
 
         // @todo eliminar esta linea - es solo para debug visual
+        if(self::$__showTemplateNameInMessageFlag == true):
         $message .= "
         
 -- plantilla: $templateFilename --
         ";
+        endif;
 
         return $message;
     }
