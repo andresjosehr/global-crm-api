@@ -48,6 +48,45 @@ class StudentsExcelController extends Controller
         'SAP PM EXCEL'         => 'SAP PM',
     ];
 
+    /*
+    array de nombres de curso mal escritos y colocado al correcto.
+    colocar la KEY en MAYUSCULAS!!
+    */
+    private $__courseNameReplacements = [
+        "PB"                   => "POWERBI BASICO",
+        "POWER BI"             => "POWERBI BASICO",
+        "MSPJ"                 => "MS PROJECT",
+        "MS"                   => "MS PROJECT",
+        "MSP"                  => "MS PROJECT",
+        "POWERBI"              => "POWERBI BASICO",
+        "MSPROJ"               => "MS PROJECT",
+        "EXCL"                 => "EXCEL",
+        "POWRB"                => "POWERBI BASICO",
+        "FI"                   => "SAP FI",
+        "MSPROJECT"            => "MS PROJECT",
+        "SAP MM EXCEL"         => "SAP MM",
+        "EXCELL"               => "EXCEL",
+        "MS PRJ"               => "MS PROJECT",
+        "POWER BI AVANZADO"    => "POWERBI AVANZADO",
+        "SAP MM (PROMO) EXCEL" => "SAP MM",
+        "EXCEL EMPRESARIAL"    => "EXCEL",
+        "PP"                   => "SAP PP",
+        "MS PROJEC"            => "MS PROJECT",
+        "SAP  MM"              => "SAP MM",
+        "POWER BI  AVANZADO"   => "POWERBI AVANZADO",
+        "SAP ABAP"             => "SAP PP",
+        "POWER BI AVANZANDO"   => "POWERBI AVANZADO",
+        "SAP HCM EXCEL"        => "SAP HCM",
+        "POWER"                => "POWERBI BASICO",
+        "MS PROJ"              => "MS PROJECT",
+        "EXCEL POWERBI"        => "EXCEL",
+        "SAP PM EXCEL"         => "SAP PM",
+        "MM" => "SAP MM",
+        "PM" => "SAP PM",
+        "HCM" => "SAP HCM",
+        "INTEGRAL" => "SAP INTEGRAL",
+    ];
+
 
     public function index($sheet_type = 'test')
     {
@@ -117,6 +156,7 @@ class StudentsExcelController extends Controller
             $courses_names = array_map('trim', $courses_names);
             $courses_names = array_map('strtoupper', $courses_names);
 
+
             $courses = [];
             $inactive_courses = [];
 
@@ -176,7 +216,7 @@ class StudentsExcelController extends Controller
 
 
                 $order_id = null;
-                if($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()){
+                if ($order = WpLearnpressUserItem::select('ref_id')->where('user_id', $data[$i]['wp_user_id'])->where('item_id', $course_db->wp_post_id)->first()) {
                     $order_id = $order->ref_id;
                 }
 
@@ -200,9 +240,19 @@ class StudentsExcelController extends Controller
                     if (in_array($course_name, $enable) || $sapNumber == 1) {
                         $start = $student['INICIO'];
                         $end = $student['FIN'];
+                        // Se comenta este codigo porque la fecha fiene en formato Y-m-dTH:i:s
+                        // try {
+                        //     $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
+                        //     $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
+                        // } catch (\Throwable $th) {
+                        //     $start = null;
+                        //     $end   = null;
+                        // }
+
                         try {
-                            $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
-                            $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
+                            // Valida o por "d/m/Y" con la separación por "/", o por "Y-m-d" con la separación por "-"
+                            $start = self::__parseDate($start);
+                            $end = self::__parseDate($end);
                         } catch (\Throwable $th) {
                             $start = null;
                             $end   = null;
@@ -240,8 +290,8 @@ class StudentsExcelController extends Controller
                     $start = $student[$dates[$course_db->id]['start']];
                     $end = $student[$dates[$course_db->id]['end']];
                     try {
-                        $start = $start ?  Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null;
-                        $end = $end ?  Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null;
+                        $start = self::__parseDate($start);
+                        $end = self::__parseDate($end);
                     } catch (\Throwable $th) {
                         $start = null;
                         $end   = null;
@@ -263,7 +313,7 @@ class StudentsExcelController extends Controller
                         'type'                   => 'free'
                     ];
 
-                    if($course_db->id != 6){
+                    if ($course_db->id != 6) {
                         $courses[count($courses) - 1]['certifaction_test_original'] = $student[$colsCertificationStatus[$course_db->id]];
                     }
                 }
@@ -646,5 +696,268 @@ class StudentsExcelController extends Controller
         $client->setAccessType('offline');
 
         $this->service = new Google_Service_Sheets($client);
+    }
+
+    /**
+     * Formatea una fecha en formato d/m/Y o Y-m-d a Y-m-d
+     * @param string $date Fecha en formato "d/m/Y" o "Y-m-d"
+     */
+    private static function  __parseDate($date)
+    {
+        if (empty($date) == false && strpos($date, '/') !== false) :
+            return Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d');
+        elseif (empty($date) == false && strpos($date, '-') !== false) :
+            return Carbon::parse($date)->format('Y-m-d');
+        else :
+            return null;
+        endif;
+    }
+
+    /**
+     * Formatea el nombre de un curso "PP" => "SAP PP"
+     * @param string $name Nombre del curso
+     */
+    private function __parseCourseNameReplacements($name)
+    {
+        $name = strtoupper($name);
+        $name = trim($name);
+        if (array_key_exists($name, $this->__courseNameReplacements) == true) :
+            return $this->__courseNameReplacements[$name];
+        else :
+            return $name;
+        endif;
+    }
+
+    /**
+     * Parsea las observaciones de un estudiante que generalmente vienen en $student['OBSERVACIONES']
+     * @param string $observations Observaciones del estudiante
+     * @return array observaciones encontradas
+     */
+    public function parseObservations($observations)
+    {
+        $observationsArray = [];
+
+        // Verificamos si la cadena no está vacía
+        if (!empty($observations)) {
+            // Dividimos las observaciones utilizando el separador "/"
+            $observationList = explode('/', $observations);
+            foreach ($observationList as $observation) :
+                if (preg_match('/^\s*(REPROBADO|ABANDONADO|CERTIFICADO|NO CULMINÓ|APROBADO)\s+(.+)\s*$/', $observation, $matches)) :
+                    // $matches[1] contendrá el estado y $matches[2] contendrá el nombre del curso
+                    $estado = $matches[1];
+                    $nombreCurso = $this->__parseCourseNameReplacements($matches[2]);
+
+                    $observationsArray[$nombreCurso] = $estado;
+                endif;
+            endforeach;
+        }
+
+        return $observationsArray;
+    }
+
+    /**
+     * Formatea el campo "OBSERVACIONES" de un estudiante
+     */
+    public function formatProgressObservations(&$student)
+    {
+        if (isset($student['OBSERVACIONES']) == false) :
+            return;
+        endif;
+
+        // Verificamos si existe el campo "OBSERVACIONES" en $student
+        // Utilizamos la función parseObservations para obtener el array de observaciones
+        $observationsArray = $this->parseObservations($student['OBSERVACIONES']);
+        foreach ($observationsArray as $courseName => $courseStatus) {
+            $courseLongName = DB::table('courses')->where('short_name', $courseName)->value('name');
+            if (empty($courseLongName) == true) :
+                continue;
+            endif;
+
+            // Recorremos los cursos del estudiante
+            foreach ($student['courses'] as &$course) {
+                // Verificamos si el nombre del curso existe en las observaciones
+                if ($course['name'] == $courseLongName) {
+                    // Actualizamos el estado del curso con el estado de las observaciones
+                    $course['course_status'] = $courseStatus;
+                    $course['course_status_original'] = $courseStatus;
+                }
+            }
+            // Recorremos los cursos INACTIVOS del estudiante
+            for ($i = 0; $i < count($student['inactive_courses']); $i++) :
+                $course2 = $student['inactive_courses'][$i];
+                // Verificamos si el nombre del curso existe en las observaciones
+                if ($course2['name'] == $courseLongName) {
+                    // Actualizamos el estado del curso con el estado de las observaciones
+                    $course2['course_status'] = $courseStatus;
+                    // $course['course_status_original'] = $courseStatus;
+                    $student['courses'][] = $course2; // lo agrega al array de cursos
+                    unset($student['inactive_courses'][$i]); // lo elimina del array de cursos inactivos
+                }
+            endfor;
+        }
+    }
+
+    /**
+     * Parsea el campo "ESTADO" de un estudiante que generalmente vienen en $student['ESTADO']
+     * @param string $studentState Observaciones del estudiante
+     * @return array observaciones encontradas
+     */
+    public function parseStudentState($studentState)
+    {
+        $observationsArray = [];
+
+        // Verificamos si la cadena no está vacía
+        if (!empty($studentState)) {
+            // Dividimos las observaciones utilizando el separador "/"
+            $observationList = explode('/', $studentState);
+            foreach ($observationList as $observation) :
+                // @TODO: Revisar si es necesario agregar más estados como "AL DIA CUOTAS".
+                // @TODO revisar si el estado PENDIENTE se debe agregar a la lista de estados
+                if (preg_match('/^\s*(HABILITADO|HABILITAR|CONTADO|DESCONGELADO|CONGELADO|PENDIENTE)\s+(.+)\s*$/', $observation, $matches)) :
+                    // $matches[1] contendrá el estado y $matches[2] contendrá el nombre del curso
+                    $estado = $matches[1];
+                    $nombreCurso = $this->__parseCourseNameReplacements($matches[2]);
+
+                    $observationsArray[$nombreCurso] = $estado;
+                endif;
+            endforeach;
+        }
+
+        return $observationsArray;
+    }
+
+    /**
+     * Ajustes varios a los cursos 
+     * Pablo
+     */
+    public function fixCourses(&$student)
+    {
+        $excelLevels = ["nivel_basico", "nivel_intermedio", "nivel_avanzado"];
+        for ($i = 0; $i < count($student['courses']); $i++) :
+            // Si el curso es SAP o de obsequio
+            if (
+                isset($student['courses'][$i]['certifaction_test_original']) == true
+                && isset($student['courses'][$i]['course_status_original']) == true
+                && isset($student['courses'][$i]['course_status']) == true
+            ) :
+                $student['courses'][$i]['course_status'] = $this->__recalculateCourseStatus($student['courses'][$i]['certifaction_test_original'], $student['courses'][$i]['course_status_original'], $student['courses'][$i]['course_status']);
+            elseif (
+                isset($student['courses'][$i]['course_status_original']) == true
+                && isset($student['courses'][$i]['course_status']) == true
+            ) :
+                $student['courses'][$i]['course_status'] = $this->__recalculateCourseStatus("", $student['courses'][$i]['course_status_original'], $student['courses'][$i]['course_status']);
+            endif;
+
+            foreach ($excelLevels as $level) :
+                if (
+                    isset($student['courses'][$i][$level]) == true
+                    && isset($student['courses'][$i][$level]['certifaction_test_original']) == true
+                    && isset($student['courses'][$i][$level]['course_status']) == true
+
+                ) :
+                    $student['courses'][$i][$level]['course_status'] = $this->__recalculateCourseStatus($student['courses'][$i][$level]['certifaction_test_original'], $student['courses'][$i][$level]['course_status'], $student['courses'][$i][$level]['course_status']);
+                endif;
+            endforeach;
+
+        endfor;
+
+        // El siguiente FIX procesará el ESTADO de cursos para detectar los PENDIENTE que se encuentran en el campo de cursos inactivos
+        //********************************************************* */
+        // CAMBIOS PABLO
+        $studentStates = $this->parseStudentState($student['ESTADO']);
+
+        foreach ($studentStates as $courseName => $courseStatus) {
+            $courseLongName = DB::table('courses')->where('short_name', $courseName)->value('name');
+            if (empty($courseLongName) == true) :
+                continue;
+            endif;
+
+            for ($i = 0; $i < count($student['inactive_courses']); $i++) :
+                $course = $student['inactive_courses'][$i];
+                if ($course['name'] == $courseLongName) :
+                    if ($courseStatus == 'PENDIENTE') :
+                        $course['course_status'] = 'POR HABILITAR';
+                        $course['course_status_original'] = $courseStatus; // deja "PENDIENTE"
+                        $student['courses'][] = $course; // lo agrega al array de cursos
+                        unset($student['inactive_courses'][$i]); // lo elimina del array de cursos inactivos
+                    endif;
+                endif;
+            endfor;
+        }
+
+        // el siguiente FIX es para el campo OBSERVACIONES
+        $this->formatProgressObservations($student);
+    }
+
+
+    /**
+     * Recalcula el estado de un curso basado en la certificacion y el estado del curso original de Excel
+     * IMportante: la priorización es CERTIFICADO primero y luego el ESTADO del curso
+     * @param string $certification_test_original Estado de la certificación original de Excel
+     * @param string $course_status_original Estado ORIGINAL del curso en el Excel
+     * @param string $courseStatus Estado ACTUAL del curso
+     * @return string Estado del curso recalculado
+     */
+    private function __recalculateCourseStatus($certification_test_original, $course_status_original, $courseStatus)
+    {
+
+        $aCertificationToCourseStatusMap = [
+            "CERTIFICADO" => "CERTIFICADO",
+            "APROBADO" => "APROBADO",
+            "REPROBADO" => "REPROBADO",
+            // los estados de abajo no aplican al estado del curso
+            // "NO APLICA" => "NO APLICA",
+            // "1 INTENTO PENDIENTE" => "1 INTENTO PENDIENTE",
+            // "2 INTENTOS PENDIENTES" => "2 INTENTOS PENDIENTES",
+            // "3 INTENTOS PENDIENTES" => "3 INTENTOS PENDIENTES",
+            // "INTENTOS PENDIENTES" => "INTENTOS PENDIENTES",
+            // "SIN INTENTOS GRATIS" => "SIN INTENTOS GRATIS",
+
+        ];
+
+        $aCourseStatusOriginalToCourseStatuMap = [
+            "ABANDONADO" => "ABANDONADO",
+            "ABANDONO" => "ABANDONADO",
+            "ABANDONÓ" => "ABANDONADO",
+            "APROBADO" => "APROBADO",
+            "APROBO" => "APROBADO",
+            "CERTIFICADO" => "CERTIFICADO",
+            "COMPLETA" => "COMPLETA",
+            "COMPLETA SIN CREDLY" => "COMPLETA",
+            "CONGELADO" => "CONGELADO",
+            "CONTADO" => "CURSANDO",
+            "CURSANDO" => "CURSANDO",
+            "CURSANDO AVANZADO" => "CURSANDO",
+            "CURSANDO AVANZADO SIN CREDLY" => "CURSANDO",
+            "CURSANDO SIN CREDLY" => "CURSANDO",
+            "DESAPROBO" => "REPROBADO",
+            "DESCONGELADO" => "DESCONGELADO",
+            "HABILITADO" => "CURSANDO",
+            "HABILITAR" => "POR HABILITAR",
+            "NO APLICA" => "NO APLICA",
+            "no aprobo" => "REPROBADO",
+            "NO CULMINO" => "NO CULMINÓ",
+            "NO CULMINÓ" => "NO CULMINÓ",
+            "PENDIENTE" => "POR HABILITAR",
+            "POR HABILITAR" => "POR HABILITAR",
+            "POR HABILITAR AVANZADO" => "POR HABILITAR",
+            "REPROBADO" => "REPROBADO",
+        ];
+
+        $certification_test_original =  trim(strtoupper($certification_test_original));
+        $course_status_original =  trim(strtoupper($course_status_original));
+
+        // Si hay un mapeo en el CERTIFICADO, se usa ese estado como nuevo estado del curso
+        if (key_exists($certification_test_original, $aCertificationToCourseStatusMap)) {
+            return $aCertificationToCourseStatusMap[$certification_test_original];
+        }
+
+        // Si hay un mapeo en el ESTADO ORIGINAL, se usa ese estado como nuevo estado del curso
+        if (key_exists($course_status_original, $aCourseStatusOriginalToCourseStatuMap)) {
+            return $aCourseStatusOriginalToCourseStatuMap[$course_status_original];
+        }
+
+        // Si no, se usa el estado actual del curso
+        return $courseStatus;
     }
 }

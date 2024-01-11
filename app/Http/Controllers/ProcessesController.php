@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Console\Commands\Texts\UnfreezingText;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use App\Models\Car;
 use App\Models\Lead;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+use App\Services\StudentMessageService;
 
 class ProcessesController extends Controller
 {
@@ -124,36 +128,115 @@ class ProcessesController extends Controller
         return ApiResponseController::response('ok', 200);
     }
 
+    /**
+     * Acción de Controlador que Genera el mensaje para el estudiante.
+     * Lo llama la API: "/api/processes/generate-message" (ver rutas)
+     * El body request es del tipo FORM URL ENCODED donde hay una variable "data" con una cadena JSON
+     * 	"data"='{"row_number": 288,"NOMBRE": "Agustín salas Muñoz",...}'
+     * 
+     * IMPORTANTE: solo recibe el dato de un estudiante ("{}") y no de varios ("[{},{}]")
+     */
     public function generateMessage(Request $request)
     {
-        $student = $request->data;
+        $polrasProcessExcelFlag = true; // procesa el excel o no
+        $polrasShowMessageFormatFlag = false; // si muestra el mensaje o el json
+
+        $studentJson = $request->data;
+        Log::debug("%s::%s - Data desde Google Sheets", [$studentJson]);
+        $aProcessDates = [];
+        // echo "<hr>";
+        // var_dump($student);
+        // return "I'm here";
 
         // Convert string to array
-        $student = json_decode($student, true);
+        $student = json_decode($studentJson, true);
 
-        $excelController = new StudentsExcelController();
-        $data = $excelController->formatCourses([$student]);
-        $data = $excelController->formatProgress($data);
+        // puede que el json de estudiantes sea un array "[]" o un array asociativo "{}"
+        $data = (isset($student[0])) ? $student[0] : $student;
+
+        if ($polrasProcessExcelFlag == true) :
+            // Formatea los datos de los alumnos en los cursos
+            // Atención Retorna un ARRAY de estudiantes. solo usar el primer estudiante del array
+            // @todo REHABILITAR esta parte. Se hardcodea el estudiante para pruebas        
+            $excelController = new StudentsExcelController();
+            $aData = $excelController->formatCourses([$data]);
+            $aData = $excelController->formatProgress($aData);
+            $data = $aData[0]; // solo el primer estudiante
+
+            $excelController->fixCourses($data);
+        endif;
+
+        Log::info(json_encode($data));
+
+        // return $data;
+
+        // @todo Descomentar estas lineas para obtener el texto de desbloqueo
+        // //  Obtiene el texto de desbloqueo
+        // $unfreezingTexts = new UnfreezingText();
+        // $studentsWithText = $unfreezingTexts->handle($data);
+
+        // if (count($studentsWithText) > 0) {
+        //     return $studentsWithText[0]['text'];
+        // }
+
+        $studentMessageService = new StudentMessageService($data); // gestiona la lógica de los mensajes para los estudiantes
+        $processDate = Carbon::now();
+        $processDate->startOfDay();
+        // $processDate = $processDate->parse("2024-01-12");
+
+        // // revisa si hoy es domingo o feriado o fin de semana largo
+        // $studentMessageService->testDate($processDate);
+        // return;
+
+        // revisa si mañana es domingo o feriado o fin de semana largo
+        $aProcessDates[] = $processDate->copy();
+        for ($i = 1; $i <= 3; $i++) :
+            $processDate = $processDate->addDay();
+            if ($studentMessageService::isBusinessDay($processDate) == false) :
+                $aProcessDates[] = $processDate->copy();
+            endif;
+        endfor;
+
+        // métodos en orden de prioridad
+        $methods = [
+            'getMessageForSAPAndFreeCourseCertification', // mas prioritario por lo multiple de cursos que tiene
+            'getMessageForSAPCourseCertification',
+            'getMessageForInProgressFreeCourse',
+            'getMessageForCompletedFreeCourse',
+            'getMessageForCertifiedCourse',
+            'getMessageForExtension',
+        ];
 
 
+        // Intenta obtener el mensaje llamando a los métodos en orden
+        foreach ($aProcessDates as $processDate) :
+            // echo "procesando fecha " . $processDate->format('Y-m-d') . "<br>";
+            foreach ($methods as $method) :
+                $message = $studentMessageService->$method($processDate);
+                if (!empty($message)) {
+                    // Mensaje obtenido! 
+                    break;
+                }
+            endforeach;
+            if (!empty($message)) {
+                // Mensaje obtenido! 
+                break;
+            }
+        endforeach;
 
-        // Inicio Comprobacion de texto
-        $unfreezingTexts = new UnfreezingText();
-        $studentsWithText = $unfreezingTexts->handle($data);
+        if (empty($message)) :
+            $message = "No se encontró mensaje para el estudiante";
+        endif;
 
-        if (count($studentsWithText) > 0) {
-            return $studentsWithText[0]['text'];
-        }
-        // Fin de comprobacion
+        Log::debug("%s::%s - Mensaje retornado", [$message]);
 
-
-
-
-
-
-
-
-
-        return '';
+        if($polrasShowMessageFormatFlag == true):
+            return sprintf("<pre>%s</pre>", $message);
+        else:
+        // @todo evaluar eliminar data de la respuesta
+            return ["data" => $data, "message" => $message];
+        endif;
     }
+
+ 
 }
