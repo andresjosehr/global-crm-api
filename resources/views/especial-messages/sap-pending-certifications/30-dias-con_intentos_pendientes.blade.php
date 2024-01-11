@@ -67,6 +67,14 @@ endforeach;
 
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
+// Flag de TODOS Los cursos Obsequios deben tener estado "NO APLICA"
+$allOtherFreeCourseWithNoApplyFlag = true;
+foreach ($otherFreeCourses as $course):
+    if ($course["course_status"] != "NO APLICA"):
+        $allOtherFreeCourseWithNoApplyFlag = false;
+    endif;
+endforeach;
+
 @endphp
 {{--
 
@@ -91,7 +99,14 @@ Están por vencer tus cursos:
 {{$course['name']}}
 @endforeach
 
-
+@php
+$tmpHasIncompleteLessons = false;
+foreach ($coursesToNotify as $course):
+    if ($course["lessons_completed"] < $course["lessons_count"]):
+        $tmpHasIncompleteLessons = true;
+    endif;
+endforeach;
+@endphp
 {{-- Variante para INTENTOS PENDIENTES --}}
 @if (count($coursesToNotify) == 1)
 🤓 Hasta los momentos el avance académico de tu curso, es el siguiente:
@@ -102,9 +117,14 @@ Tienes {{$coursesToNotify[0]['lessons_completed']}} lecciones completas, y en to
 @else
 🤓 Hasta los momentos, el avance académico de cada curso, es el siguiente:
     @foreach ($coursesToNotify as $course)
-{{$course['name']}}, tiene {{$course[0]['lessons_completed']}} lecciones completas, y en total son {{$course[0]['lessons_count']}}.
+{{$course['name']}}, tiene {{$course['lessons_completed']}} lecciones completas, y en total son {{$course['lessons_count']}}.
     @endforeach
     🚨 Recuerda que para poder certificarte debes aprobar los exámenes de certificación y aún cuentas con intentos pendientes, porque no emitimos certificado por haber completado el curso, ni por participación.
+@endif
+@if($tmpHasIncompleteLessons == true)
+🚩 Si no crees que puedas terminar el contenido y aprobar el examen de certificación para el día:
+@else
+🚩 Si no crees que puedas aprobar el examen de certificación para el día:
 @endif
 
 {{$endCourseDate->format('d/m/Y')}}
@@ -207,8 +227,12 @@ Aún tienes *por habilitar:*
 
 @endif
 
+@if ($allOtherFreeCourseWithNoApplyFlag == true)
+Te recuerdo nuevamente que tienes la opción de realizar el pago correspondiente y así no perder la oportunidad de certificarte.
+@else
 {{-- Variante para INTENTOS PENDIENTES --}}
 Te recuerdo nuevamente que tienes la opción de pagar la extensión de SAP y así certificarte, para no perder el acceso a tus cursos de obsequio.
+@endif
 
 ⚠️ Recuerda que el día de tu fecha de fin, se eliminarán tus accesos de manera automática a las 23:59. 
 *Aprovecho para comentarte que toda solicitud y pagos, deben ser dentro de mi horario laboral: Lun-Vier 9:00am a 7:00pm y Sáb. 9:00am a 5:00pm (HORA PERÚ).* Asimismo, que no habrán devoluciones de no cumplir con el pago que corresponda en el plazo indicado anteriormente.

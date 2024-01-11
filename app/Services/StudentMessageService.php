@@ -443,8 +443,6 @@ class StudentMessageService
         $showOlderSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
 
         // Flags para los cursos de obsequio
-        $otherFreeCourses = self::__getFreeCoursesStatuses($studentData['courses']);
-        Log::debug('StudentMessageService::' . __FUNCTION__. ': $otherFreeCourses', $otherFreeCourses);
         foreach ($otherSapCourses as $course) :
             if (in_array($course['course_status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showOtherFreeCoursesFlag = true;

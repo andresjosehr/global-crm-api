@@ -67,6 +67,14 @@ endforeach;
 
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
+// Flag de TODOS Los cursos Obsequios deben tener estado "NO APLICA"
+$allOtherFreeCourseWithNoApplyFlag = true;
+foreach ($otherFreeCourses as $course):
+    if ($course["course_status"] != "NO APLICA"):
+        $allOtherFreeCourseWithNoApplyFlag = false;
+    endif;
+endforeach;
+
 @endphp
 {{--
 
@@ -91,7 +99,14 @@ Están por vencer tus cursos:
 {{$course['name']}}
 @endforeach
 
-
+@php
+$tmpHasIncompleteLessons = false;
+foreach ($coursesToNotify as $course):
+    if ($course["lessons_completed"] < $course["lessons_count"]):
+        $tmpHasIncompleteLessons = true;
+    endif;
+endforeach;
+@endphp
 {{-- Variante para INTENTOS PENDIENTES Y SIN INTENTOS GRATIS --}}
 💼🚀 *Tu futuro está en juego:* 
 *Este es el estado actual de tus cursos SAP habilitados:*
@@ -108,6 +123,7 @@ Están por vencer tus cursos:
         @endif
         @if ($course['lessons_completed'] < $course['lessons_count'])
 🙌 Pero *NO TODO ESTÁ PERDIDO,* si no crees certificarte antes que termine tu curso, puedes *EXTENDER el tiempo del curso* y mantener los beneficios que tienes ahora.
+        @else
 Este pago lo debes realizar ahora, ya que la *última semana del curso, las condiciones no serán las mismas y tendrás que ajustarte a los cambios.* Te recuerdo que la fecha fin de tu curso es el día:
         @endif
         @if (($course['noFreeAttempts'] == true) && ($course['lessons_completed'] < $course['lessons_count']))
@@ -204,8 +220,12 @@ Aún tienes *por habilitar:*
 
 @endif
 
+@if ($allOtherFreeCourseWithNoApplyFlag == true)
+Te recuerdo nuevamente que tienes la opción de realizar el pago correspondiente y así no perder la oportunidad de certificarte.
+@else
 {{-- Variante para INTENTOS PENDIENTES Y SIN INTENTOS GRATIS --}}
 Te recuerdo nuevamente que tienes la opción de realizar el pago para extender SAP y/o el ponderado de los exámenes de certificación, para no perder el acceso a tus cursos de obsequio.
+@endif
 
 ⚠️ Recuerda que el día de tu fecha de fin, se eliminarán tus accesos de manera automática a las 23:59. 
 *Aprovecho para comentarte que toda solicitud y pagos, deben ser dentro de mi horario laboral: Lun-Vier 9:00am a 7:00pm y Sáb. 9:00am a 5:00pm (HORA PERÚ).* Asimismo, que no habrán devoluciones de no cumplir con el pago que corresponda en el plazo indicado anteriormente.

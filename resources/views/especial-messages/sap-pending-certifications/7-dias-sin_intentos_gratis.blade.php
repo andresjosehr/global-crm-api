@@ -68,6 +68,13 @@ endforeach;
 
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
+// Flag de TODOS Los cursos Obsequios deben tener estado "NO APLICA"
+$allOtherFreeCourseWithNoApplyFlag = true;
+foreach ($otherFreeCourses as $course):
+    if ($course["course_status"] != "NO APLICA"):
+        $allOtherFreeCourseWithNoApplyFlag = false;
+    endif;
+endforeach;
 
 @endphp
 {{--
@@ -185,8 +192,12 @@ Aún tienes *por habilitar:*
 
 @endif
 
+@if ($allOtherFreeCourseWithNoApplyFlag == true)
+💭 Piensa en la opción de realizar el pago correspondiente y así certificarte.
+@else
 {{-- Variante para SIN INTENTOS GRATIS --}}
 💭 Piensa en la opción de pagar el ponderado de tus exámenes de SAP y así certificarte, para no perder el acceso a tus cursos de obsequio.
+@endif
 
 ⚠️ Recuerda que el día de tu fecha de fin, se eliminarán tus accesos de manera automática a las 23:59. 
 *Aprovecho para comentarte que toda solicitud y pagos, deben ser dentro de mi horario laboral: Lun-Vier 9:00am a 7:00pm y Sáb. 9:00am a 5:00pm (HORA PERÚ).* Asimismo, que no habrán devoluciones de no cumplir con el pago que corresponda en el plazo indicado anteriormente.
