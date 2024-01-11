@@ -1,3 +1,73 @@
+@php
+// cache interna
+$otherFreeCoursesInProgressNames = [];
+$otherFreeCoursesDissaprovedNames = [];
+$otherFreeCoursesDroppedNames = [];
+$otherFreeCoursesUnfinishedNames = [];
+$otherFreeCoursesApprovedNames = [];
+$otherFreeCoursesToEnableNames = [];
+foreach($otherFreeCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherFreeCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherFreeCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherFreeCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherFreeCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherFreeCoursesApprovedNames[] = $course['name'];
+            break;
+        case 'POR HABILITAR':
+            $otherFreeCoursesToEnableNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
+
+// cache interna
+$otherSapCoursesInProgressNames = [];
+$otherSapCoursesDissaprovedNames = [];
+$otherSapCoursesDroppedNames = [];
+$otherSapCoursesUnfinishedNames = [];
+$otherSapCoursesApprovedNames = [];
+$otherSapCoursesToEnableNames = [];
+$otherSapCoursesCertifiedNames = [];
+foreach($otherSapCourses as $course):
+
+   switch ($course['course_status']) {
+        case 'CURSANDO':
+            $otherSapCoursesInProgressNames[] = $course['name'];
+            break;
+        case 'REPROBADO':
+            $otherSapCoursesDissaprovedNames[] = $course['name'];
+            break;
+        case 'ABANDONADO':
+            $otherSapCoursesDroppedNames[] = $course['name'];
+            break;
+        case 'NO CULMINÓ':
+            $otherSapCoursesUnfinishedNames[] = $course['name'];
+            break;
+        case 'APROBADO':
+            $otherSapCoursesApprovedNames[] = $course['name'];
+            break;
+            case 'POR HABILITAR':
+            $otherSapCoursesToEnableNames[] = $course['name'];
+            break;
+            case 'CERTIFICADO':
+            $otherSapCoursesCertifiedNames[] = $course['name'];
+            break;
+    }
+endforeach;
+
+$coursesToNotifyNames = array_column($coursesToNotify, 'name');
+@endphp
 {{--
 
 "PLANTILLAS CURSO SAP CERTIFICADOS  CON CURSOS PENDIENTES
