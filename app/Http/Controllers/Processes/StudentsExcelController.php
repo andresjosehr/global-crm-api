@@ -799,6 +799,7 @@ class StudentsExcelController extends Controller
 
     /**
      * Parsea el campo "ESTADO" de un estudiante que generalmente vienen en $student['ESTADO']
+     * Se asume que el formato es "HABILITADO HCM FI / PENDIENTE MM" es decir "ESTADO CURSO1 CURSO2 / ESTADO CURSO3"
      * @param string $studentState Observaciones del estudiante
      * @return array observaciones encontradas
      */
@@ -812,13 +813,19 @@ class StudentsExcelController extends Controller
             $observationList = explode('/', $studentState);
             foreach ($observationList as $observation) :
                 // @TODO: Revisar si es necesario agregar más estados como "AL DIA CUOTAS".
-                // @TODO revisar si el estado PENDIENTE se debe agregar a la lista de estados
                 if (preg_match('/^\s*(HABILITADO|HABILITAR|CONTADO|DESCONGELADO|CONGELADO|PENDIENTE)\s+(.+)\s*$/', $observation, $matches)) :
                     // $matches[1] contendrá el estado y $matches[2] contendrá el nombre del curso
                     $estado = $matches[1];
-                    $nombreCurso = $this->__parseCourseNameReplacements($matches[2]);
-
-                    $observationsArray[$nombreCurso] = $estado;
+                    if (empty($matches[2]) == false) :
+                        // 1 o varios cursos?
+                        $coursesShortNames = explode(' ', $matches[2]);
+                        foreach ($coursesShortNames as $courseShortName) :
+                            $courseName = $this->__parseCourseNameReplacements($courseShortName);
+                            if (empty($courseName) == false) :
+                                $observationsArray[$courseName] = $estado;
+                            endif;
+                        endforeach;
+                    endif;
                 endif;
             endforeach;
         }
@@ -827,11 +834,67 @@ class StudentsExcelController extends Controller
     }
 
     /**
+     * Parsea el campo "AULA SAP" de un estudiante que generalmente vienen en $student['AULA SAP']
+     * Se asume que el formato es "HABILITADO HCM FI / PENDIENTE MM" es decir "ESTADO CURSO1 CURSO2 / ESTADO CURSO3"
+     * @param string $state Observaciones del estudiante
+     * @return array observaciones encontradas
+     */
+    public function parseAulaSAP($state)
+    {
+        $observationsArray = [];
+
+        // Verificamos si la cadena no está vacía
+        if (!empty($state)) {
+            // Dividimos las observaciones utilizando el separador "/"
+            $observationList = explode('/', $state);
+            foreach ($observationList as $observation) :
+                // @TODO: Revisar si es necesario agregar más estados como "AL DIA CUOTAS".
+                if (preg_match('/^\s*(CURSANDO|COMPLETA)\s+(.+)\s*$/', $observation, $matches)) :
+                    // $matches[1] contendrá el estado y $matches[2] contendrá el nombre del curso
+                    $estado = $matches[1];
+                    if (empty($matches[2]) == false) :
+                        // 1 o varios cursos?
+                        $coursesShortNames = explode(' ', $matches[2]);
+                        foreach ($coursesShortNames as $courseShortName) :
+                            $courseName = $this->__parseCourseNameReplacements($courseShortName);
+                            if (empty($courseName) == false) :
+                                $observationsArray[$courseName] = $estado;
+                            endif;
+                        endforeach;
+                    endif;
+                endif;
+            endforeach;
+        }
+
+        return $observationsArray;
+    }
+
+
+    /**
      * Ajustes varios a los cursos 
      * Pablo
      */
     public function fixCourses(&$student)
     {
+
+        // El siguiente FIX es para el campo AULA SAP
+        $studentAulaSAP = $this->parseAulaSAP($student['AULA SAP']);
+
+        foreach ($studentAulaSAP as $courseName => $courseStatus) :
+
+            $courseLongName = DB::table('courses')->where('short_name', $courseName)->value('name');
+            if (empty($courseLongName) == true) :
+                continue;
+            endif;
+            // itera por cada curso
+            for ($i = 0; $i < count($student['courses']); $i++) :
+                if ($student['courses'][$i]['name'] == $courseLongName) :
+                    $student['courses'][$i]["course_status"] = $courseStatus;
+                endif;
+            endfor;
+        endforeach;
+
+        // El siguiente FIX normaliza los estados de cursos en base a su certifaction_test_original y course_status_original
         $excelLevels = ["nivel_basico", "nivel_intermedio", "nivel_avanzado"];
         for ($i = 0; $i < count($student['courses']); $i++) :
             // Si el curso es SAP o de obsequio
@@ -866,7 +929,8 @@ class StudentsExcelController extends Controller
         // CAMBIOS PABLO
         $studentStates = $this->parseStudentState($student['ESTADO']);
 
-        foreach ($studentStates as $courseName => $courseStatus) {
+        foreach ($studentStates as $courseName => $courseStatus) :
+
             $courseLongName = DB::table('courses')->where('short_name', $courseName)->value('name');
             if (empty($courseLongName) == true) :
                 continue;
@@ -883,7 +947,7 @@ class StudentsExcelController extends Controller
                     endif;
                 endif;
             endfor;
-        }
+        endforeach;
 
         // el siguiente FIX es para el campo OBSERVACIONES
         $this->formatProgressObservations($student);
@@ -959,5 +1023,39 @@ class StudentsExcelController extends Controller
 
         // Si no, se usa el estado actual del curso
         return $courseStatus;
+    }
+
+    public function testParseState()
+    {
+        $tests = [
+            "HABILITADO HCM",
+            "HABILITADO HCM",
+            "HABILITADO HCM FI",
+            "PENDIENTE HCM FI",
+            "HABILITADO HCM FI / PENDIENTE MM",
+        ];
+
+        foreach ($tests as $test) {
+            $result = $this->parseStudentState($test);
+            printf("<pre>'%s' \n=> %s</pre>", $test, print_r($result, true));
+            dump($result);
+        }
+    }
+
+    public function testAulaSap()
+    {
+        $tests = [
+            "CURSANDO",
+            "CURSANDO HCM",
+            "CURSANDO HCM FI",
+            "COMPLETA HCM FI",
+            "CURSANDO HCM FI / COMPLETA MM",
+        ];
+
+        foreach ($tests as $test) {
+            $result = $this->parseAulaSAP($test);
+            printf("<pre>'%s' \n=> %s</pre>", $test, print_r($result, true));
+            dump($result);
+        }
     }
 }
