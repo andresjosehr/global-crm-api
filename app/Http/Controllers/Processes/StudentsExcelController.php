@@ -783,17 +783,21 @@ class StudentsExcelController extends Controller
                 }
             }
             // Recorremos los cursos INACTIVOS del estudiante
+            $newInactiveCourses = []; // para eliminar los cursos inactivos
             for ($i = 0; $i < count($student['inactive_courses']); $i++) :
                 $course2 = $student['inactive_courses'][$i];
                 // Verificamos si el nombre del curso existe en las observaciones
-                if ($course2['name'] == $courseLongName) {
+                if ($course2['name'] == $courseLongName) :
                     // Actualizamos el estado del curso con el estado de las observaciones
                     $course2['course_status'] = $courseStatus;
                     // $course['course_status_original'] = $courseStatus;
                     $student['courses'][] = $course2; // lo agrega al array de cursos
-                    unset($student['inactive_courses'][$i]); // lo elimina del array de cursos inactivos
-                }
+                else :
+                    // este curso aun es inactivo
+                    $newInactiveCourses[] = $course2;
+                endif;
             endfor;
+            $student['inactive_courses'] = $newInactiveCourses;
         }
     }
 
@@ -936,6 +940,7 @@ class StudentsExcelController extends Controller
                 continue;
             endif;
 
+            $newInactiveCourses = []; // para eliminar los cursos inactivos
             for ($i = 0; $i < count($student['inactive_courses']); $i++) :
                 $course = $student['inactive_courses'][$i];
                 if ($course['name'] == $courseLongName) :
@@ -943,10 +948,13 @@ class StudentsExcelController extends Controller
                         $course['course_status'] = 'POR HABILITAR';
                         $course['course_status_original'] = $courseStatus; // deja "PENDIENTE"
                         $student['courses'][] = $course; // lo agrega al array de cursos
-                        unset($student['inactive_courses'][$i]); // lo elimina del array de cursos inactivos
+                    else :
+                        // este curso inactivo aun es valido
+                        $newInactiveCourses[] = $course;
                     endif;
                 endif;
             endfor;
+            $student['inactive_courses'] = $newInactiveCourses;
         endforeach;
 
         // el siguiente FIX es para el campo OBSERVACIONES
