@@ -58,6 +58,8 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
         Route::get('get-next-lead', 'App\Http\Controllers\LeadsController@getNextLead');
         Route::get('archive-lead/{id}', 'App\Http\Controllers\LeadsController@archiveLead');
+        Route::post('archive-leads-by-batch', 'App\Http\Controllers\LeadsController@archiveLeadByBatch');
+
         Route::get('get-previous-lead', 'App\Http\Controllers\LeadsController@getPreviousLead');
         Route::get('get-current-lead', 'App\Http\Controllers\LeadsController@getCurrentLead');
         Route::get('get-sells-users', 'App\Http\Controllers\UsersController@getSellsUsers');

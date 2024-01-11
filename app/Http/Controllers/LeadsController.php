@@ -260,6 +260,7 @@ class LeadsController extends Controller
 
     public function getLeads(Request $request, $mode)
     {
+
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
@@ -282,15 +283,27 @@ class LeadsController extends Controller
                         ->orWhere('email', 'LIKE', "%$searchString%")
                         ->orWhere('document', 'LIKE', "%$searchString%");
                 });
-            })->when($request->project_id, function ($query) use ($request) {
-                $p = $request->project_id == 'Base' ? null : $request->project_id;
-                return $query->where('lead_project_id', $p);
+            })
+            ->when($request->project_id, function ($query) use ($request) {
+                if($request->project_id != 'Todos'){
+                    $p = $request->project_id == 'Base' ? null : $request->project_id;
+                    return $query->where('lead_project_id', $p);
+                }
+
+                // Get all projects
+                $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
+                // attach null to projects
+                // $projects[] = null;
+                return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
             })
             ->when(!$request->project_id, function ($query) use ($request) {
                 return $query->where('lead_project_id', "Base");
             })
             ->when($request->automatic_import==='true', function ($query) use ($request) {
                 return $query->where('channel_id', '<>', NULL);
+            })
+            ->when($request->numbers, function ($query) use ($request) {
+                return $query->whereIn('phone', explode(',', $request->numbers));
             })
             ->with(['observations' => function ($query) {
                 return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
@@ -335,6 +348,24 @@ class LeadsController extends Controller
             ->when($user->role->name != 'Administrador', function ($query) use ($user) {
                 return $query->where('user_id', $user->id);
             })
+            ->update([
+                'status' => 'Archivado'
+            ]);
+
+        return ApiResponseController::response("Exito", 200, $lead);
+    }
+
+
+    public function archiveLeadByBatch(Request $request,)
+    {
+        $user = $request->user();
+
+        // Check if administator
+        if ($user->role->name != 'Administrador') {
+            return ApiResponseController::response("No tienes permisos para realizar esta acción", 403);
+        }
+
+        $lead = Lead::whereIn('id', $request->ids)
             ->update([
                 'status' => 'Archivado'
             ]);
@@ -500,6 +531,12 @@ class LeadsController extends Controller
                 // Update lead status as "Interesado"
                 Lead::where('id', $request->lead_id)->update([
                     'status' => 'Interesado',
+                    'user_id' => $request->user()->id,
+                ]);
+            }else{
+                // Update lead status as "No interesado"
+                Lead::where('id', $request->lead_id)->update([
+                    'status' => $request->lead_status,
                     'user_id' => $request->user()->id,
                 ]);
             }
