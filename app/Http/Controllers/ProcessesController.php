@@ -27,7 +27,7 @@ class ProcessesController extends Controller
     public function updateCoursesStatus()
     {
         Artisan::call('update-courses-status');
-        return '<pre>'.Artisan::output().'</pre>';
+        return '<pre>' . Artisan::output() . '</pre>';
     }
 
     public function updateExcelMails()
@@ -144,14 +144,14 @@ class ProcessesController extends Controller
         $unfreezingTexts = new UnfreezingText();
         $studentsWithText = $unfreezingTexts->handle($student);
 
-        if(count($studentsWithText) > 0){
+        if (count($studentsWithText) > 0) {
             return $studentsWithText[0]['text'];
         }
 
         $abandonedTexts = new AbandonedText();
         $studentsWithText = $abandonedTexts->handle($student);
 
-        if(count($studentsWithText) > 0){
+        if (count($studentsWithText) > 0) {
             return $studentsWithText[0]['text'];
         }
 
@@ -186,7 +186,7 @@ class ProcessesController extends Controller
         $student = json_decode($studentJson, true);
 
         // Check unfreezing message and abandoned messages
-        if($text = self::checkUnfreezingAndAbandonedMsg($request->data)){
+        if ($text = self::checkUnfreezingAndAbandonedMsg($request->data)) {
             return ["data" => $student, "message" => $text];
         }
 
@@ -231,7 +231,9 @@ class ProcessesController extends Controller
         $aProcessDates[] = $processDate->copy();
         for ($i = 1; $i <= 3; $i++) :
             $processDate = $processDate->addDay();
-            if ($studentMessageService::isBusinessDay($processDate) == false) :
+            if ($studentMessageService::isBusinessDay($processDate) == true) :
+                break; // si mañana es día hábil, no se procesa más
+            else :
                 $aProcessDates[] = $processDate->copy();
             endif;
         endfor;
@@ -269,13 +271,11 @@ class ProcessesController extends Controller
 
         Log::debug("%s::%s - Mensaje retornado", [$message]);
 
-        if($polrasShowMessageFormatFlag == true):
+        if ($polrasShowMessageFormatFlag == true) :
             return sprintf("<pre>%s</pre>", $message);
-        else:
-        // @todo evaluar eliminar data de la respuesta
+        else :
+            // @todo evaluar eliminar data de la respuesta
             return ["data" => $data, "message" => $message];
         endif;
     }
-
-
 }
