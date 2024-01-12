@@ -353,7 +353,10 @@ class UpdateCoursesStatus extends Command
 
         $google_sheet->updateGoogleSheet($data);
 
-sheet->updateGoogleSheet($data);
+        return $this->line(json_encode(["Exito" => $studentsFitered]));
+    }
+}
+
 
         // // sbasurto686@gmail.com
         // $sbasurto = array_filter($studentsFitered, function ($student) {
