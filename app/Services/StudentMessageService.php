@@ -1036,7 +1036,7 @@ class StudentMessageService
     {
         try {
 
-            $validDaysAhead = [30, 15, 7, 4, 1]; // días de adelanto: pueden 30, 15, 7, 4 y 1 día
+            $validDaysAhead = [30, 15, 7, 1]; // días de adelanto: pueden 30, 15, 7, 4 y 1 día
 
             $coursesToNotify = []; // curso a notificar
             $otherSapCourses = []; // almacen solo los cursos SAP que no se notifican
@@ -1285,6 +1285,7 @@ class StudentMessageService
      */
     private static function __buildMessage($templateFilename, $vars)
     {
+
         $message = view($templateFilename, $vars)->render();
         // elimina espacios en blanco al inicio de la linea, que se usan para jerarquias de programación
         $message = preg_replace('/^[ ]+/m', '', $message);
