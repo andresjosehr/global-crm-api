@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\Texts\AbandonedText;
 use App\Console\Commands\Texts\UnfreezingText;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Processes\StudentsExcelController;
@@ -128,16 +129,49 @@ class ProcessesController extends Controller
         return ApiResponseController::response('ok', 200);
     }
 
+    public function checkUnfreezingAndAbandonedMsg($student)
+    {
+
+
+        $student = json_decode($student, true);
+
+        $excelController = new StudentsExcelController();
+        $student = $excelController->formatCourses([$student]);
+        $student = $excelController->formatProgress($student);
+
+        Log::debug("[ANDRESJOSEHR - STUDIANTE: ]", [$student]);
+
+        $unfreezingTexts = new UnfreezingText();
+        $studentsWithText = $unfreezingTexts->handle($student);
+
+        if(count($studentsWithText) > 0){
+            return 'Se encontro congelado';
+        }
+
+        $abandonedTexts = new AbandonedText();
+        $studentsWithText = $abandonedTexts->handle($student);
+
+        if(count($studentsWithText) > 0){
+            return $studentsWithText[0]['text'];
+        }
+
+
+        return false;
+    }
+
     /**
      * Acción de Controlador que Genera el mensaje para el estudiante.
      * Lo llama la API: "/api/processes/generate-message" (ver rutas)
      * El body request es del tipo FORM URL ENCODED donde hay una variable "data" con una cadena JSON
      * 	"data"='{"row_number": 288,"NOMBRE": "Agustín salas Muñoz",...}'
-     * 
+     *
      * IMPORTANTE: solo recibe el dato de un estudiante ("{}") y no de varios ("[{},{}]")
      */
     public function generateMessage(Request $request)
     {
+
+
+
         $polrasProcessExcelFlag = true; // procesa el excel o no
         $polrasShowMessageFormatFlag = false; // si muestra el mensaje o el json
 
@@ -151,13 +185,18 @@ class ProcessesController extends Controller
         // Convert string to array
         $student = json_decode($studentJson, true);
 
+        // Check unfreezing message and abandoned messages
+        if($text = self::checkUnfreezingAndAbandonedMsg($request->data)){
+            return ["data" => $student, "message" => $text];
+        }
+
         // puede que el json de estudiantes sea un array "[]" o un array asociativo "{}"
         $data = (isset($student[0])) ? $student[0] : $student;
 
         if ($polrasProcessExcelFlag == true) :
             // Formatea los datos de los alumnos en los cursos
             // Atención Retorna un ARRAY de estudiantes. solo usar el primer estudiante del array
-            // @todo REHABILITAR esta parte. Se hardcodea el estudiante para pruebas        
+            // @todo REHABILITAR esta parte. Se hardcodea el estudiante para pruebas
             $excelController = new StudentsExcelController();
             $aData = $excelController->formatCourses([$data]);
             $aData = $excelController->formatProgress($aData);
@@ -214,12 +253,12 @@ class ProcessesController extends Controller
             foreach ($methods as $method) :
                 $message = $studentMessageService->$method($processDate);
                 if (!empty($message)) {
-                    // Mensaje obtenido! 
+                    // Mensaje obtenido!
                     break;
                 }
             endforeach;
             if (!empty($message)) {
-                // Mensaje obtenido! 
+                // Mensaje obtenido!
                 break;
             }
         endforeach;
@@ -238,5 +277,5 @@ class ProcessesController extends Controller
         endif;
     }
 
- 
+
 }
