@@ -82,9 +82,9 @@ FECHA DE FIN DE CURSO: 1 dia hacia delante
 
 
 @if (count($coursesToNotify) == 1)
-Está por vencer tu curso:
+Te envío la última información de tu curso:
 @else
-Están por vencer tus cursos:
+Te envío la última información de tus cursos:
 @endif
 @foreach ($coursesToNotify as $course)
 {{$course['name']}}
@@ -100,7 +100,6 @@ Están por vencer tus cursos:
 Por lo que *estarías perdiendo la posibilidad de realizar el pago por el ponderado* de los exámenes de certificación de {{implode(', $tmpCourseToNotifyNames')}}, si no realizas el pago, *dentro de mi horario laboral del día de hoy.*
 Y *a partir del envío de este mensaje, el tiempo mínimo para extender {{implode(', $tmpCourseToNotifyNames')}}, es de 3 meses.* Y tienes como máximo el plazo de una semana a partir de hoy, para realizar el pago, solo que, el aula que recibirás estará completamente vacía, porque no guardamos tu avance posterior a las 23:59.
 *Ojo, si esperas al último minuto de mi jornada laboral de hoy, no podré validar, ni solicitar tu certificado, ni realizar los trámites necesarios y tampoco realizamos devoluciones.*
-
 
 {{-- SUBPLANTILLA: Informacion SAP de 1 dia --}}@include('especial-messages.sap-and-free-pending-certifications.__1day_other_sap_courses_section', ['sapCourses' => $sapCourses, 'freeCourses' => $freeCourses, 'otherSapCourses' => $otherSapCourses, 'otherFreeCourses' => $otherFreeCourses, 'toEnableSapCoursesDates'=> $toEnableSapCoursesDates, 'toEnableFreeCoursesDates'=> $toEnableFreeCoursesDates])
 
