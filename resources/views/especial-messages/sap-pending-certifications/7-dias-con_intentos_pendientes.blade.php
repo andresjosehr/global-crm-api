@@ -68,6 +68,13 @@ endforeach;
 
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
+// Flag de TODOS Los cursos Obsequios deben tener estado "NO APLICA"
+$allOtherFreeCourseWithNoApplyFlag = true;
+foreach ($otherFreeCourses as $course):
+    if ($course["course_status"] != "NO APLICA"):
+        $allOtherFreeCourseWithNoApplyFlag = false;
+    endif;
+endforeach;
 
 @endphp
 {{--
@@ -127,7 +134,7 @@ endforeach;
 
 {{-- Variante para INTENTOS PENDIENTES Y SIN INTENTOS GRATIS --}}
 {{-- Variante para INTENTOS PENDIENTES --}}
-🙌 Aún *tienes una solución en tus manos,* todavía puedes extender el curso, solo que *ya no puedes hacerlo por 1 mes.
+🙌 Aún *tienes una solución en tus manos,* todavía puedes extender el curso, solo que *ya no puedes hacerlo por 1 mes.*
 *El tiempo mínimo de extensión en este momento, es por 2 meses.* Recuerda que esta información crítica fue enviada anteriormente.
 
 No dejes que esta oportunidad escape de tus manos. ¿Deseas extender el plazo y asegurar tu certificación? Responde inmediatamente. 
@@ -222,8 +229,12 @@ Aún tienes *por habilitar:*
 
 @endif
 
+@if ($allOtherFreeCourseWithNoApplyFlag == true)
+💭 Piensa en la opción de realizar el pago correspondiente y así certificarte.
+@else
 {{-- Variante para INTENTOS PENDIENTES --}}
 💭 Piensa en la opción de pagar la extensión de SAP y así certificarte, para no perder el acceso a tus cursos de obsequio.
+@endif
 
 ⚠️ Recuerda que el día de tu fecha de fin, se eliminarán tus accesos de manera automática a las 23:59. 
 *Aprovecho para comentarte que toda solicitud y pagos, deben ser dentro de mi horario laboral: Lun-Vier 9:00am a 7:00pm y Sáb. 9:00am a 5:00pm (HORA PERÚ).* Asimismo, que no habrán devoluciones de no cumplir con el pago que corresponda en el plazo indicado anteriormente.

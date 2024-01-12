@@ -67,6 +67,13 @@ endforeach;
 
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
 
+// Flag de TODOS Los cursos Obsequios deben tener estado "NO APLICA"
+$allOtherFreeCourseWithNoApplyFlag = true;
+foreach ($otherFreeCourses as $course):
+    if ($course["course_status"] != "NO APLICA"):
+        $allOtherFreeCourseWithNoApplyFlag = false;
+    endif;
+endforeach;
 
 @endphp
 {{--
@@ -186,8 +193,12 @@ Aún tienes *por habilitar:*
 
 @endif
 
+@if ($allOtherFreeCourseWithNoApplyFlag == true)
+Te recuerdo nuevamente que tienes la opción de realizar el pago correspondiente y así no perder la oportunidad de certificarte.
+@else
 {{-- Variante para SIN INTENTOS GRATIS --}}
 Te recuerdo nuevamente que tienes la opción de realizar el pago correspondiente y así no perder la oportunidad de certificarte, y no perder el acceso a tus cursos de obsequio.
+@endif
 
 
 ⚠️ Recuerda que el día de tu fecha de fin, se eliminarán tus accesos de manera automática a las 23:59. 

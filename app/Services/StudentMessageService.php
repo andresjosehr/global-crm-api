@@ -443,8 +443,6 @@ class StudentMessageService
         $showOlderSapCoursesFlag = (count($otherSapCourses) > 0) ? true : false;
 
         // Flags para los cursos de obsequio
-        $otherFreeCourses = self::__getFreeCoursesStatuses($studentData['courses']);
-        Log::debug('StudentMessageService::' . __FUNCTION__. ': $otherFreeCourses', $otherFreeCourses);
         foreach ($otherSapCourses as $course) :
             if (in_array($course['course_status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showOtherFreeCoursesFlag = true;
@@ -1111,25 +1109,11 @@ class StudentMessageService
             $endCourseDate = Carbon::parse($tmpEndCourseDate);
 
             // agrupa los cursos por tipo
-            $coursesToNotifyIds = array_column($coursesToNotify, 'course_id');
-            foreach ($this->__studentData['courses'] as $course) :
-                if (in_array($course['course_id'], $coursesToNotifyIds) == true) :
-                    continue;
-                endif;
-                if ($course["isFreeCourse"] == true) :
-                    $otherFreeCourses[] = $course;
-                    if ($course['course_status'] == 'CURSANDO' || $course['course_status'] == 'COMPLETADO') :
-                        $pendingOtherFreeCourses[] = $course;
-                    endif;
-                elseif ($course["isSapCourse"] == true) :
-                    $otherSapCourses[] = $course;
-                    if ($course['course_status'] == 'CURSANDO' || $course['course_status'] == 'COMPLETADO') :
-                        $pendingOtherSapCourses[] = $course;
-                    endif;
-
-                endif;
-            endforeach;
-
+            $groupedCourses = $this->__groupCourses($coursesToNotify);
+            $sapCourses = $groupedCourses["sapCourses"];
+            $otherSapCourses = $groupedCourses["otherSapCourses"];
+            $otherFreeCourses = $groupedCourses["otherFreeCourses"];
+                        
             // prepara los flags especiales
             foreach ($otherFreeCourses as $course) :
                 switch ($course['course_status']):
@@ -1169,10 +1153,10 @@ class StudentMessageService
                 'coursesToNotify' => $coursesToNotify,
                 'endCourseDate' => $endCourseDate,
 
+                'otherSapCourses' => $otherSapCourses,
                 'otherFreeCourses' => $otherFreeCourses,
 
                 'pendingOtherFreeCourses' => $pendingOtherFreeCourses,
-                'pendingOtherSapCourses' => $pendingOtherSapCourses,
                 'otherFreeCourseInProgressOrCompletedCount' => $otherFreeCourseInProgressOrCompletedCount,
                 'show6CoursesOffer' => $show6CoursesOffer,
                 'showOtherFreeCourseOffer' => $showOtherFreeCourseOffer,
@@ -1514,9 +1498,10 @@ class StudentMessageService
             // los otros cursos gratuitos que no son de Excel son cursos especializados
             $course['isSpecializedCourse'] = (($course['isFreeCourse'] == true) && ($course['isExcelCourse'] == false));
             // flag para cursos con intentos pendientes, EXCEPTO Excel
-            $course['hasPendingAttempts'] = (($course['isExcelCourse'] == false) && (stripos($course['certifaction_test_original'], 'Intentos pendientes')) !== false);
+            $tmpCertifaction_test_original = strtolower($course["certifaction_test_original"]);
+            $course['hasPendingAttempts'] = (($course['isExcelCourse'] == false) && ((stripos($tmpCertifaction_test_original, 'intentos pendientes') || stripos($tmpCertifaction_test_original, 'intento pendiente'))) !== false);
             // flag para cursos sin intentos gratis
-            $course['noFreeAttempts'] = (($course['isExcelCourse'] == false) && stripos($course['certifaction_test_original'], 'Sin intentos Gratis') !== false);
+            $course['noFreeAttempts'] = (($course['isExcelCourse'] == false) && stripos($tmpCertifaction_test_original, 'sin intentos gratis') !== false);
             // si el curso no tiene fecha de fin, sigue procesando el siguiente curso
             if (isset($course['end']) == false) {
                 $course['end'] = null;
@@ -1546,10 +1531,12 @@ class StudentMessageService
                     endif;
 
                     if (isset($course[$level]['certifaction_test_original']) == true) :
+                        $tmpCertifaction_test_original = strtolower($course[$level]['certifaction_test_original']);
+
                         // flag para NIVELES de cursos con intentos pendientes
-                        $course[$level]['hasPendingAttempts'] = (stripos($course[$level]['certifaction_test_original'], 'Intentos pendientes') !== false);
+                        $course[$level]['hasPendingAttempts'] = (stripos($tmpCertifaction_test_original, 'intentos pendientes') !== false || stripos($tmpCertifaction_test_original, 'intento pendiente') !== false);
                         // flag para cursos sin intentos gratis
-                        $course[$level]['noFreeAttempts'] = (stripos($course[$level]['certifaction_test_original'], 'Sin intentos Gratis') !== false);
+                        $course[$level]['noFreeAttempts'] = (stripos($tmpCertifaction_test_original, 'sin intentos gratis') !== false);
 
                         // flag para el CURSO. "|" el or es por si ya estaba el true antes
                         $course['hasPendingAttempts'] =  ($course['hasPendingAttempts'] || $course[$level]['hasPendingAttempts']);
