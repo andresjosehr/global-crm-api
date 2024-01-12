@@ -160,7 +160,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 6,
                     'name' => "EXCEL",
                     'type' => 'free',
-                    'course_status' => 'NO APLICA',
+                    'course_status' => $student['EXCEL'],
                 ];
             }
             if (!in_array(9, $courseIds)) {
@@ -168,7 +168,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 9,
                     'name' => "MS PROJECT",
                     'type' => 'free',
-                    'course_status' => 'NO APLICA',
+                    'course_status' => $student['MS PROJECT'],
                 ];
             }
 
@@ -177,7 +177,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 7,
                     'name' => 'POWERBI',
                     'type' => 'free',
-                    'course_status' => 'NO APLICA',
+                    'course_status' => $student['PBI'],
                 ];
             }
 
@@ -186,7 +186,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 0,
                     'name' => 'GENERAL SAP',
                     'type' => 'paid',
-                    'course_status' => 'NO APLICA',
+                    'course_status' => $student['AULA SAP'],
                 ];
 
                 // Ninguno de los cursos del usuario es un curso pagado
