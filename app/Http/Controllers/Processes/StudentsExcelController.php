@@ -898,6 +898,22 @@ class StudentsExcelController extends Controller
             endfor;
         endforeach;
 
+        // El siguiente FIX es para 1 curso SAP que tiene 
+        // - Aula SAP: COMPLETA
+        //- Examen: Aprobado
+        //- Certificado: Emitido
+        for ($i = 0; $i < count($student['courses']); $i++) :
+            if (stripos($student['courses'][$i]['name'], "SAP ") !== false // si es SAP
+            && ($student['courses'][$i]["course_status_original"] == "COMPLETA")
+            && ($student['courses'][$i]["certifaction_test_original"] == "Aprobado")
+            && ($student['courses'][$i]["certificate"] == "EMITIDO")
+            ) :
+                $student['courses'][$i]["certifaction_test_original"] = "CERTIFICADO";
+                $student['courses'][$i]["course_status"] = "CERTIFICADO";
+            endif;
+        endfor;
+
+
         // El siguiente FIX normaliza los estados de cursos en base a su certifaction_test_original y course_status_original
         $excelLevels = ["nivel_basico", "nivel_intermedio", "nivel_avanzado"];
         for ($i = 0; $i < count($student['courses']); $i++) :
