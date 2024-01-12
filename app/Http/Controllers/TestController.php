@@ -19,8 +19,9 @@ class TestController extends Controller
     public function index()
     {
 
-        $data = new StudentsExcelController();
-        $students = $data->index('test');
+        $excelController = new StudentsExcelController();
+        $students = $excelController->index('test');
+        $students = $excelController->attachCertificacionTestStatus($students);
 
         return '<pre>'.json_encode($students).'</pre>';
     }

@@ -28,15 +28,18 @@ class UpdateTestsStatus extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle($students = null, $fromController = false)
     {
         // Memory limit
         ini_set('memory_limit', -1);
 
 
+        if(!$students){
+            $data = new StudentsExcelController();
+            $students = $data->index('prod');
+        }
 
-        $data = new StudentsExcelController();
-        $students = $data->index('prod');
+
         $studentsFitered = array_map(function ($student) {
             if (!$student['wp_user_id']) {
                 return $student;
@@ -220,7 +223,9 @@ class UpdateTestsStatus extends Command
         });
         $studentsFitered = array_values($studentsFitered);
 
-
+        if($fromController){
+            return $studentsFitered;
+        }
 
 
         // return $this->line(json_encode(["Exito 2" => $studentsFitered]));
