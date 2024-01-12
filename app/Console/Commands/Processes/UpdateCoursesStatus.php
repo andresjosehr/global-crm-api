@@ -160,7 +160,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 6,
                     'name' => "EXCEL",
                     'type' => 'free',
-                    'course_status' => 'NO APLICA',// $student['EXCEL'],
+                    'course_status' => $student['EXCEL'],
                 ];
             }
             if (!in_array(9, $courseIds)) {
@@ -168,7 +168,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 9,
                     'name' => "MS PROJECT",
                     'type' => 'free',
-                    'course_status' => 'NO APLICA',// $student['MS PROJECT'],
+                    'course_status' => $student['MS PROJECT'],
                 ];
             }
 
@@ -177,7 +177,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 7,
                     'name' => 'POWERBI',
                     'type' => 'free',
-                    'course_status' => 'NO APLICA',// $student['PBI'],
+                    'course_status' => $student['PBI'],
                 ];
             }
 
@@ -186,7 +186,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 0,
                     'name' => 'GENERAL SAP',
                     'type' => 'paid',
-                    'course_status' => 'NO APLICA',// $student['AULA SAP'],
+                    'course_status' => $student['AULA SAP'],
                 ];
 
                 // Ninguno de los cursos del usuario es un curso pagado
@@ -203,6 +203,9 @@ class UpdateCoursesStatus extends Command
 
         $studentsFitered = array_map(function ($student) {
             $courses = array_map(function ($course) {
+                if(!isset($course['order_id'])){
+                    return $course;
+                }
                 if ($course['course_status'] == 'POR HABILITAR' && $course['order_id'] && !$course['start'] && !$course['end']) {
                     $order_date = WpPost::where('ID', $course['order_id'])->first()->post_date;
                     // Check if date is gratter than 2 months
@@ -320,7 +323,7 @@ class UpdateCoursesStatus extends Command
         $studentsFitered = array_values($studentsFitered);
 
 
-        // return $this->line(json_encode($studentsFitered));
+
 
         $data = [];
         foreach ($studentsFitered as $student) {
@@ -343,6 +346,8 @@ class UpdateCoursesStatus extends Command
                 ];
             }
         }
+
+        // return $this->line(json_encode($data));
 
 
 

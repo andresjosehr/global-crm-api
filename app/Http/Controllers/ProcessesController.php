@@ -27,7 +27,7 @@ class ProcessesController extends Controller
     public function updateCoursesStatus()
     {
         Artisan::call('update-courses-status');
-        return Artisan::output();
+        return '<pre>'.Artisan::output().'</pre>';
     }
 
     public function updateExcelMails()
