@@ -93,7 +93,7 @@ class CoreTexts extends Command
                 'column'            => "BB",
                 'email'             => $student['CORREO'],
                 'tab_id'            => $student['course_tab_id'],
-                'value'             => '',
+                'value'             => $student['text'],
             ];
         }
 
