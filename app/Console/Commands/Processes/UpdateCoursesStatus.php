@@ -306,11 +306,11 @@ class UpdateCoursesStatus extends Command
             }, $student['courses']);
 
 
-            $student['courses'] = array_map(function ($course) use ($courseStatusString){
+            // $student['courses'] = array_map(function ($course) use ($courseStatusString){
 
-                $course['course_status'] = $course['course_status_original'] == 'ABANDONÓ' ? 'ABANDONÓ' : $course['course_status'];
-                return $course;
-            }, $student['courses']);
+            //     $course['course_status'] = $course['course_status_original'] == 'ABANDONÓ' ? 'ABANDONÓ' : $course['course_status'];
+            //     return $course;
+            // }, $student['courses']);
 
 
 
