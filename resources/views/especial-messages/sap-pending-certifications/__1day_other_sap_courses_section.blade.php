@@ -68,6 +68,15 @@ endforeach;
 
 $sapCoursesNames = array_column($sapCourses, 'name');
 
+// Flag para cuando hay cursos SAP irregulares: reprobados, abandonados o no culminados
+$irregularSapCoursesFlag = (
+    (
+        count($otherSapCoursesDissaprovedNames) > 0 ||
+        count($otherSapCoursesDroppedNames) > 0 ||
+        count($otherSapCoursesUnfinishedNames) > 0 
+    ) == true);
+
+
 @endphp
 {{--
 
@@ -101,19 +110,45 @@ Recuerda que antes aprobaste:
 
 {{-- Cursos de obsequio: SECCION ESPECIAL si el curso SAP anterior fue reprobado, abandonado o no lo culminó --}}
 @php
-// Filas 361 a 373: si se utilizan las filas 355, 356, 357 y/o 358. También si se utiliza la fila 354 CON alguna de las filas desde 355 a 357. 
-$tmpFlag = false;
-if(
-        count($otherSapCoursesDissaprovedNames) > 0 || 
-        count($otherSapCoursesDroppedNames) > 0 || 
-        count($otherSapCoursesUnfinishedNames) > 0 ||
-        count($otherSapCoursesToEnableNames) > 0
-        ):
-    $tmpFlag = true;
-endif;
-$tmpShowSapSectionFlag = ($tmpFlag || count($otherFreeCoursesDissaprovedNames) > 0 || count($otherFreeCoursesDroppedNames) > 0 || count($otherFreeCoursesUnfinishedNames) > 0) ? true : false;
+// Filas 361 a 373: si se utilizan las filas 355, 356, 357 y/o 358. También si se utiliza la fila 354 CON alguna de las filas desde 355 a 357. También si el alumno lleva solo cursos de OBSEQUIO con cualquier estado, que cumpla las condiciones siguientes.
+// Es decir:
+// Si tiene curso SAP que esté: reprobado, abandonado o no culminado o por habilitar y curso obsequio: cursando, reprobado, no culminado, abandonado, por habilitar, aprobado
+// O, si tiene un curso SAP aprobado y otro curso SAP: reprobado, abandonado o no culminado y curso obsequio: cursando, reprobado, no culminado, abandonado, por habilitar, aprobado
+// O, si tiene curso obsequio que esté: cursando, reprobado, no culminado, abandonado, por habilitar, aprobado
+
+$tmpShowSectionFlag = false;
+
+// Este IF se puede mejorar tranquilamente. Pero al hacerlo, se pierde legilibilidad y comprensión.
+$tmpFreeCoursesToShowFlag = ((
+    count($otherFreeCoursesInProgressNames) > 0 || 
+    count($otherFreeCoursesDissaprovedNames) > 0 || 
+    count($otherFreeCoursesDroppedNames) > 0 || 
+    count($otherFreeCoursesUnfinishedNames) > 0 ||
+     count($otherFreeCoursesToEnableNames) > 0 || 
+     count($otherFreeCoursesApprovedNames) > 0
+     ) == true);
+     if(
+        // Condicion 1: (curso SAP irregular O para habilitar) & cursos obsequios para mostrar
+        (
+            (
+                $irregularSapCoursesFlag ||
+                count($otherSapCoursesToEnableNames) > 0                 
+            )
+            && $tmpFreeCoursesToShowFlag == true
+        ) ||
+        // Condicion 2: curso SAP aprobado & curso SAP irregular & cursos obsequios para mostrar
+        (
+            count($otherSapCoursesCertifiedNames) > 0 
+            && $irregularSapCoursesFlag
+            && $tmpFreeCoursesToShowFlag == true
+        ) ||
+        // Condicion 3: cursos obsequios para mostrar
+        $tmpFreeCoursesToShowFlag
+):
+$tmpShowSectionFlag = true;
+    endif;
 @endphp
-@if ($tmpFlag == true)
+@if ($tmpShowSectionFlag == true)
 👀 OJO, como condición, no puedes tener dos o más cursos reprobados/abandonados, por lo que sobre *tus cursos de obsequio te comento:*
     @if(count($otherFreeCoursesInProgressNames) > 0)
 Aún estás *cursando:*
