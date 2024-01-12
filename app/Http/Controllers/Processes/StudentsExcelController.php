@@ -881,6 +881,8 @@ class StudentsExcelController extends Controller
     public function fixCourses(&$student)
     {
 
+        $excelLevels = ["nivel_basico", "nivel_intermedio", "nivel_avanzado"];
+
         // El siguiente FIX es para el campo AULA SAP
         $studentAulaSAP = $this->parseAulaSAP($student['AULA SAP']);
 
@@ -899,23 +901,53 @@ class StudentsExcelController extends Controller
         endforeach;
 
         // El siguiente FIX es para 1 curso SAP que tiene 
-        // - Aula SAP: COMPLETA
         //- Examen: Aprobado
         //- Certificado: Emitido
+        // exit;
         for ($i = 0; $i < count($student['courses']); $i++) :
-            if (stripos($student['courses'][$i]['name'], "SAP ") !== false // si es SAP
-            && ($student['courses'][$i]["course_status_original"] == "COMPLETA")
-            && ($student['courses'][$i]["certifaction_test_original"] == "Aprobado")
-            && ($student['courses'][$i]["certificate"] == "EMITIDO")
+            if (
+                stripos($student['courses'][$i]['name'], "SAP ") !== false // si es SAP
+                && ($student['courses'][$i]["certifaction_test_original"] == "Aprobado")
+                && ($student['courses'][$i]["certificate"] == "EMITIDO")
             ) :
                 $student['courses'][$i]["certifaction_test_original"] = "CERTIFICADO";
                 $student['courses'][$i]["course_status"] = "CERTIFICADO";
+            elseif (stripos($student['courses'][$i]['name'], "Excel") !== false) : // si es Excel
+                $countApproved = 0;
+                $countCertified = 0;
+                foreach ($excelLevels as $level) :
+                    if (
+                        isset($student['courses'][$i][$level]) == true
+                        && isset($student['courses'][$i][$level]['certifaction_test_original']) == true
+                        && isset($student['courses'][$i][$level]['certificate']) == true
+                        && $student['courses'][$i][$level]['certifaction_test_original'] == "Aprobado"
+                        && $student['courses'][$i][$level]['certificate'] == "EMITIDO"
+                    ) :
+                        $countApproved++;
+                        $countCertified++;
+                    endif;
+                endforeach;
+                if ($countApproved == count($excelLevels) && $countCertified == count($excelLevels)):
+                    $student['courses'][$i]["certifaction_test_original"] = "CERTIFICADO";
+                    $student['courses'][$i]["course_status"] = "CERTIFICADO";
+                    foreach ($excelLevels as $level) :
+                        $student['courses'][$i][$level]['certifaction_test_original'] = "CERTIFICADO";
+                        $student['courses'][$i][$level]['course_status'] = "CERTIFICADO";
+                    endforeach;
+                endif;
+            else : // Si es Project o PMI
+                if (
+                    ($student['courses'][$i]["certifaction_test_original"] == "Aprobado")
+                    && ($student['courses'][$i]["certificate"] == "EMITIDO")
+                ) :
+                    $student['courses'][$i]["certifaction_test_original"] = "CERTIFICADO";
+                    $student['courses'][$i]["course_status"] = "CERTIFICADO";
+                endif;
             endif;
         endfor;
 
 
         // El siguiente FIX normaliza los estados de cursos en base a su certifaction_test_original y course_status_original
-        $excelLevels = ["nivel_basico", "nivel_intermedio", "nivel_avanzado"];
         for ($i = 0; $i < count($student['courses']); $i++) :
             // Si el curso es SAP o de obsequio
             if (
