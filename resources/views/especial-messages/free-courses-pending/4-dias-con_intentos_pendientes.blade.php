@@ -103,7 +103,7 @@ Tenemos importantes noticias sobre las condiciones de extensión de:
 Sin embargo, en menos de 72h la extensión mínima será de 3 meses y perderás el avance que llevas en tu aula virtual:
 {{-- Variante si es PBI o MSP --}}
 @if ($hasSpecializedCoursesToNotify == true && $hasExcelCourseToNotify == false)
-    @foreach($coursesToNotify)
+    @foreach($coursesToNotify as $course)
     {{$course['lessons_completed']}} lecciones completas, y en total son {{$course['lessons_count']}}; y aún cuentas con {{$course["certifaction_test_original"]}}.
     @endforeach
 {{-- Variante si es PBI o MSP con Excel--}}
