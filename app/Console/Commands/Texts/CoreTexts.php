@@ -4,6 +4,8 @@ namespace App\Console\Commands\Texts;
 
 use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use App\Http\Controllers\ProcessesController;
+use Illuminate\Http\Request;
 use Illuminate\Console\Command;
 
 class CoreTexts extends Command
@@ -27,7 +29,7 @@ class CoreTexts extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(Request $request)
     {
         $data = new StudentsExcelController();
         $students = $data->index('prod');
@@ -47,12 +49,29 @@ class CoreTexts extends Command
         $students = self::filter($students, $studentsWithText);
 
 
-        // $freeCoursesCompletedText = new FreeCoursesCompletedText();
-        // $studentsWithText = array_merge($studentsWithText, $freeCoursesCompletedText->handle($students));
-        // $students = self::filter($students, $studentsWithText);
+        $processesController = new ProcessesController();
+        $i=0;
+        foreach($students as $student){
+
+            $studentString = json_encode($student);
+            // Simulate Request Object
+            $request = new Request();
+            // Attach the data to the request
+            $request->merge(['data' => $studentString]);
 
 
-        // return $this->line(json_encode($studentsWithText));
+            try{
+                $text = $processesController->generateMessage($request)['message'];
+                $students[$i]['text'] = $text == 'No se encontró mensaje para el estudiante' ? '' : $text;
+            } catch (\Exception $e) {
+                $students[$i]['text'] = 'Hubo un error';
+            }
+            $i++;
+        }
+
+
+
+
 
         $dataToUpdate = [];
 
@@ -66,6 +85,7 @@ class CoreTexts extends Command
                     'value'             => $student['text'],
                 ];
         }
+
         foreach($students as $student){
             $dataToUpdate[] = [
                 'sheet_id'          => $student['sheet_id'],
