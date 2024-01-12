@@ -145,7 +145,7 @@ class ProcessesController extends Controller
         $studentsWithText = $unfreezingTexts->handle($student);
 
         if(count($studentsWithText) > 0){
-            return 'Se encontro congelado';
+            return $studentsWithText[0]['text'];
         }
 
         $abandonedTexts = new AbandonedText();
