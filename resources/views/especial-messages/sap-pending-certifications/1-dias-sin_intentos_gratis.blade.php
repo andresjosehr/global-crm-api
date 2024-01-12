@@ -82,9 +82,9 @@ FECHA DE FIN DE CURSO: 1 dia hacia delante
 
 
 @if (count($coursesToNotify) == 1)
-Está por vencer tu curso:
+Te envío la última información de tu curso:
 @else
-Están por vencer tus cursos:
+Te envío la última información de tus cursos:
 @endif
 @foreach ($coursesToNotify as $course)
 {{$course['name']}}
