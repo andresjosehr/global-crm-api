@@ -136,7 +136,7 @@ Aprovecho para recordarte que para obtener el certificado al aprobar, tendrás q
 @endif
 
 📌 Así que, si en dado caso apruebas algún examen de certificación *antes de la fecha mencionada,* debes indicarme. Si en dado caso aprobaste y aún no me has indicado, podrías perderlo el día de la fecha de fin.
-Recuerda que ese, se eliminarán tus accesos de manera automática a las 23:59. 
+Recuerda que ese día, se eliminarán tus accesos de manera automática a las 23:59. 
 
 ⚠️Si esperas a la fecha de fin del curso, la extensión mínima es de *3 meses y el aula que recibirás estará completamente vacía, perdiendo así el avance que tienes hasta ahora.* 
 
