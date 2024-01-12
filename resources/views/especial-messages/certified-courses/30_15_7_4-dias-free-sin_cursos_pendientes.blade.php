@@ -21,7 +21,7 @@ Quería recordarte que ya se acerca el término del tiempo brindado para llevar 
 {{$course['name']}}
 @endforeach
 
-Es decir que tendrás acceso al contenido del curso SAP y al software, *hasta el día:*
+Es decir que tendrás acceso al contenido del curso, *hasta el día:*
 {{$endCourseDate->format('d/m/Y')}}
 
 *Sé que te certificaste* 🎓📜 Pero es mi deber informarte.

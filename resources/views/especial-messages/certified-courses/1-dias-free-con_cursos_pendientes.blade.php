@@ -21,9 +21,9 @@ Te saludo del área académica de *Global Tecnologías Academy* 🤓, para envia
 @endforeach
 
 @if ($endCourseDate->isToday())
-🚨 *Hoy las 23:59, tu aula virtual de SAP será eliminada, perdiendo también el acceso a tu aplicativo de SAP.*
+🚨 *Hoy las 23:59, tu aula virtual será eliminada.*
 @elseif ($endCourseDate->isTomorrow())
-🚨 *Mañana a las 23:59, tu aula virtual de SAP será eliminada, perdiendo también el acceso a tu aplicativo de SAP.*
+🚨 *Mañana a las 23:59, tu aula virtual será eliminada.*
 @endif
 
 *Sé que te certificaste* 🎓📜 por lo que te comento: 
