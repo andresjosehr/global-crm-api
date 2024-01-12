@@ -160,7 +160,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 6,
                     'name' => "EXCEL",
                     'type' => 'free',
-                    'course_status' => $student['EXCEL'],
+                    'course_status' => 'NO APLICA',// $student['EXCEL'],
                 ];
             }
             if (!in_array(9, $courseIds)) {
@@ -168,7 +168,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 9,
                     'name' => "MS PROJECT",
                     'type' => 'free',
-                    'course_status' => $student['MS PROJECT'],
+                    'course_status' => 'NO APLICA',// $student['MS PROJECT'],
                 ];
             }
 
@@ -177,7 +177,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 7,
                     'name' => 'POWERBI',
                     'type' => 'free',
-                    'course_status' => $student['PBI'],
+                    'course_status' => 'NO APLICA',// $student['PBI'],
                 ];
             }
 
@@ -186,7 +186,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 0,
                     'name' => 'GENERAL SAP',
                     'type' => 'paid',
-                    'course_status' => $student['AULA SAP'],
+                    'course_status' => 'NO APLICA',// $student['AULA SAP'],
                 ];
 
                 // Ninguno de los cursos del usuario es un curso pagado
@@ -353,8 +353,9 @@ class UpdateCoursesStatus extends Command
 
         $google_sheet->updateGoogleSheet($data);
 
-        return $this->line(json_encode(["Exito" => $studentsFitered]));
-    }
-}
+sheet->updateGoogleSheet($data);
 
-// Eso es en una computadora con tu procesador?
+        // // sbasurto686@gmail.com
+        // $sbasurto = array_filter($studentsFitered, function ($student) {
+        //     return $student['CORREO'] == 'sbasurto686@gmail.com';
+        // });
