@@ -26,7 +26,7 @@ class AbandonedText extends Command
     /**
      * Execute the console command.
      *
-     * @return any
+
      */
     public function handle($students = null)
     {
@@ -243,7 +243,8 @@ class AbandonedText extends Command
         // remove records in studentsWithText from students by sheet_id and course_row_number
         $students = array_filter($students, function ($student) use ($studentsWithText) {
             $studentWithText = array_filter($studentsWithText, function ($studentWithText) use ($student) {
-                return $studentWithText['sheet_id'] == $student['sheet_id'] && $studentWithText['course_row_number'] == $student['course_row_number'];
+
+                return $studentWithText['CORREO'] == $student['CORREO'] ;
             });
             return count($studentWithText) == 0;
         });

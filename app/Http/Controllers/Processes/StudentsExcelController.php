@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Processes;
 
+use App\Console\Commands\Processes\UpdateTestsStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Sheet;
 use App\Models\Wordpress\WpLearnpressUserItem;
@@ -604,6 +605,13 @@ class StudentsExcelController extends Controller
         return $data;
     }
 
+    public function attachCertificacionTestStatus($data)
+    {
+        $command = new UpdateTestsStatus();
+        $data = $command->handle($data, true);
+        return $data;
+    }
+
     public function getSheetsData($sheet_type = 'test')
     {
         $sheets = Sheet::where('type', $sheet_type)->get();
@@ -875,7 +883,7 @@ class StudentsExcelController extends Controller
 
 
     /**
-     * Ajustes varios a los cursos 
+     * Ajustes varios a los cursos
      * Pablo
      */
     public function fixCourses(&$student)

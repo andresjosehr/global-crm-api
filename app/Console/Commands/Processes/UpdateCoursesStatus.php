@@ -229,7 +229,7 @@ class UpdateCoursesStatus extends Command
             return $student;
         }, $studentsFitered);
 
-        // return $this->line(json_encode($studentsFitered));
+
 
         $studentsFitered = array_map(function ($student){
             $student['courses'] = array_map(function ($course){
@@ -251,6 +251,69 @@ class UpdateCoursesStatus extends Command
             }, $student['courses']);
             return $student;
         }, $studentsFitered);
+
+
+        // $studentsFitered = array_filter($studentsFitered, function ($student){
+        //     $coursesSapActive = array_filter($student['courses'], function ($course){
+        //         return $course['type'] == 'paid';
+        //     });
+        //     $coursesSapActive = array_values($coursesSapActive);
+
+        //     return count($coursesSapActive) > 1;
+        // });
+
+
+        $coursesDB = Course::select('name', 'short_name')
+        ->where('type', 'paid')
+        ->get()
+        ->mapWithKeys(function ($item) {
+            $item->short_name = str_replace('SAP ', '', $item->short_name);
+            return [$item->name => $item->short_name];
+        })
+        ->toArray();
+        $studentsFitered = array_map(function ($student) use ($coursesDB){
+            $coursesSapActive = array_filter($student['courses'], function ($course){
+                return $course['type'] == 'paid';
+            });
+            if(count($coursesSapActive) <= 1){
+                return $student;
+            }
+
+            $courseStatus = ['CURSANDO' => [], 'COMPLETA' => [], 'NO CULMINÓ' => [], 'ABANDONÓ' => [], 'NO APLICA' => []];
+            $coursesSapActive = array_map(function ($course) use (&$courseStatus, $coursesDB){
+                $courseStatus[$course['course_status_original']][] = $coursesDB[$course['name']];
+                return $course;
+            }, $coursesSapActive);
+
+            // Generate string in this format: "CURSANDO XX XX / COMPLETA XX XX". If there are no courses in a status, don't show it
+            $courseStatusString = '';
+            foreach($courseStatus as $key => $value){
+                if(count($value) > 0){
+                    $courseStatusString .= $key . ' ' . implode(' ', $value) . ' / ';
+                }
+            }
+
+            // Remove last slash
+            $courseStatusString = substr($courseStatusString, 0, -3);
+
+            $student['courses'] = array_map(function ($course) use ($courseStatusString){
+                if($course['type'] != 'paid'){
+                    return $course;
+                }
+
+                $course['course_status_original'] = $courseStatusString;
+                return $course;
+            }, $student['courses']);
+
+
+
+
+            return $student;
+        }, $studentsFitered);
+        $studentsFitered = array_values($studentsFitered);
+
+
+        // return $this->line(json_encode($studentsFitered));
 
         $data = [];
         foreach ($studentsFitered as $student) {
@@ -283,10 +346,6 @@ class UpdateCoursesStatus extends Command
 
         $google_sheet->updateGoogleSheet($data);
 
-        // // sbasurto686@gmail.com
-        // $sbasurto = array_filter($studentsFitered, function ($student) {
-        //     return $student['CORREO'] == 'sbasurto686@gmail.com';
-        // });
         return $this->line(json_encode(["Exito" => $studentsFitered]));
     }
 }
