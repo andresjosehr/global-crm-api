@@ -375,7 +375,7 @@ endif;
     @else
     A continuación te envío las fechas de inicio para habilitar los siguientes cursos: {{implode(', ', $otherSapCoursesToEnableNames)}}:
     @endif
-    @foreach ($otherSapCoursesToEnableNames as $date)
+    @foreach ($toEnableSapCoursesDates as $date)
 {{$date->format('d/m/Y')}}
     @endforeach
 

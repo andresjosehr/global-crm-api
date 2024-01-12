@@ -908,6 +908,7 @@ class StudentsExcelController extends Controller
             endfor;
         endforeach;
 
+        
         // El siguiente FIX es para 1 curso SAP que tiene 
         //- Examen: Aprobado
         //- Certificado: Emitido
@@ -1003,11 +1004,13 @@ class StudentsExcelController extends Controller
                     if ($courseStatus == 'PENDIENTE') :
                         $course['course_status'] = 'POR HABILITAR';
                         $course['course_status_original'] = $courseStatus; // deja "PENDIENTE"
-                        $student['courses'][] = $course; // lo agrega al array de cursos
-                    else :
+                        array_push($student['courses'], $course); // lo agrega al array de cursos
+                        else :
                         // este curso inactivo aun es valido
                         $newInactiveCourses[] = $course;
                     endif;
+                else:
+                    $newInactiveCourses[] = $course;
                 endif;
             endfor;
             $student['inactive_courses'] = $newInactiveCourses;
