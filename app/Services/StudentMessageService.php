@@ -1183,7 +1183,7 @@ class StudentMessageService
     {
         try {
 
-            $validDaysAhead = [30, 15, 7, 4, 3]; // días de adelanto: pueden 30, 15, 7, 4 y 3 días
+            $validDaysAhead = [30]; // días de adelanto: pueden 30, 15, 7, 4 y 3 días
 
             $coursesToNotify = []; // curso a notificar
 
