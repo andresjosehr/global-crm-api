@@ -1218,7 +1218,8 @@ class StudentMessageService
                 Log::debug(sprintf("Curso %s - es un curso que esta cursando ", $course['name']));
 
                 // si no tiene estado CERTIFICADO, sigue procesando otro curso
-                if ($this->__studentData["EXTENSION"] == "") {
+                $tmpExtension = trim($this->__studentData["EXTENSION"]);
+                if ($tmpExtension == "") {
                     continue;
                 }
                 Log::debug(sprintf("Curso %s - el alumno tiene extension", $course['name']));
