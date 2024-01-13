@@ -66,7 +66,11 @@ foreach($otherSapCourses as $course):
     }
 endforeach;
 
+if(empty($pendingOtherSapCourses)):
+    $pendingOtherSapCourses = [];
+endif;
 $coursesToNotifyNames = array_column($coursesToNotify, 'name');
+
 @endphp
 {{--
 
@@ -98,34 +102,34 @@ Te saludo del área académica de *Global Tecnologías Academy* 🤓, para envia
 
 *Sé que te certificaste* 🎓📜 por lo que te comento: 
 
-@if(count($pendingOtherFreeCourses) > 1)
+@if(count($otherFreeCoursesToEnableNames) > 0)
 Tienes como *máximo 7 días,* para escoger *una de estas fechas* de inicio:
-
-    @if(count($pendingOtherFreeCourses) == 1)
+    @if(count($otherFreeCoursesToEnableNames) == 1)
 Para habilitar tu curso:
     @else
 Para habilitar tus cursos:
     @endif
-    @foreach ($pendingOtherFreeCourses as $course)
-    {{$course['name']}}
+    @foreach ($otherFreeCoursesToEnableNames as $course)
+    {{implode("\n", $otherFreeCoursesToEnableNames)}}
     @endforeach
 @endif
 
 {{-- Filas 56 a 59: Fila 56: cuando sea un curso SAP con estado en la columna de estado PENDIENTE --}}
-@if(count($pendingOtherSapCourses) > 0 )
+@if(count($otherSapCoursesToEnableNames) > 0 )
 Tienes como *máximo 15 días,* para escoger *una de estas fechas* de inicio:
-    @foreach ($pendingOtherSapCourses as $course)
+    @foreach ($otherSapCoursesToEnableNames as $course)
     {{$course['name']}}
     @endforeach
 @endif
-
-@if(count($pendingOtherFreeCourses) > 0 || count($pendingOtherSapCourses) > 0)
-    @if(count($pendingOtherFreeCourses) == 1 && count($pendingOtherSapCourses) == 1)
+@if(count($otherFreeCoursesToEnableNames) > 0 || count($otherSapCoursesToEnableNames) > 0)
+    @if( (count($pendingOtherFreeCourses) + count($pendingOtherSapCourses)) == 1)
     De lo contrario, si no recibimos confirmación de tu parte, lo estarás perdiendo y no podrás recuperarlo luego.
     @else
     De lo contrario, si no recibimos confirmación de tu parte, los estarás perdiendo y no podrás recuperarlos luego.
     @endif
-
 @endif
 
-De lo contrario, si no recibimos confirmación de tu parte, los estarás perdiendo y no podrás recuperarlos luego.
+De ser así, no tendríamos más procedimientos pendientes y cerraremos tu proceso con nosotros.
+
+
+Quedo atenta si tienes alguna duda y *a tu confirmación de fecha de inicio.*
