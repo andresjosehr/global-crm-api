@@ -94,27 +94,41 @@ Están por vencer tus cursos:
 {{$course['name']}}
 @endforeach
 
-@php 
-// Fila 304: se deben colocar en los "()" la cantidad de intentos de examen que le quedan disponibles, la cantidad de lecciones completas y el total de las lecciones del curso. Por ejemplo: Aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones, y en total son X.
-// Fila 305: se deben colocar en los "()" el nombre de un curso o del nivel de excel, la cantidad de intentos de examen disponibles, la cantidad de lecciones completas y el total de las lecciones del curso. Por ejemplo: Referente a Power BI, aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones y en total son X. Y en la línea de abajo, iría el otro curso si fuera MSP o si es EXCEL iría: Referente al Nivel Básico de Excel, aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones y en total son X. Y se repite en líneas abajo por cada nivel.
-// mostrar el primer curso a notificar si no es Excel 
+@php
+/*
+Fila 304: se deben colocar en los "()" la cantidad de intentos de examen que le quedan disponibles, la cantidad de lecciones completas y el total de las lecciones del curso. Por ejemplo: Aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones, y en total son X.
+Fila 305: se deben colocar en los "()" el nombre de un curso o del nivel de excel, la cantidad de intentos de examen disponibles, la cantidad de lecciones completas y el total de las lecciones del curso. Por ejemplo: Referente a Power BI, aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones y en total son X. Y en la línea de abajo, iría el otro curso si fuera MSP o si es EXCEL iría: Referente al Nivel Básico de Excel, aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones y en total son X. Y se repite en líneas abajo por cada nivel.
+mostrar el primer curso a notificar si no es Excel 
+*/
 $uniqueCourseToNotify = null;
 if(count($coursesToNotify) == 1 && $coursesToNotify[0]['isExcelCourse'] == false) :
     $uniqueCourseToNotify = $coursesToNotify[0];
 endif;
+
+/*
+ codigo especial
+ Fila 305: se deben colocar en los "()" el nombre de un curso o del nivel de excel, la cantidad de intentos de examen disponibles, la cantidad de lecciones completas y el total de las lecciones del curso. Por ejemplo: 
+ Referente a Power BI, aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones y en total son X. Y en la línea de abajo, iría el otro curso si fuera MSP o si es EXCEL iría: Referente al Nivel Básico de Excel, aún cuentas con 3 intentos de examen de certificación, has completado 3 lecciones y en total son X. Y se repite en líneas abajo por cada nivel.
+*/
+
+$tmpShowText = [];
+if($uniqueCourseToNotify):
+    $tmpShowText[] = sprintf("Aún cuentas con %s, has completado %d lecciones, y en total son %d. *Y la fecha fin es el día:*", $uniqueCourseToNotify["pendingAttemptsCount"], $uniqueCourseToNotify["lessons_completed"],  $uniqueCourseToNotify["lessons_count"] );
+    else:
+        foreach ($coursesToNotify as $course):
+            if ($course['isExcelCourse'] == false):
+                $tmpShowText[] = sprintf("🚩 Referente a %s, aún cuentas con %s intentos de examen de certificación, has completado %d lecciones, y en total son %d. *Y la fecha fin es el día:*", $course['name'], $course["pendingAttemptsCount"], $course["lessons_completed"], $course["lessons_count"] );
+            else:
+                foreach($course['LEVELS'] as $level):
+                    $tmpShowText[] = sprintf("🚩 Referente al %s de %s, aún cuentas con %s intentos de examen de certificación, has completado %d lecciones, y en total son %d. *Y la fecha fin es el día:*", $course[$level]['name'], $course['name'], $course[$level]["pendingAttemptsCount"], $course[$level]["lessons_completed"], $course[$level]["lessons_count"] );
+                endforeach;
+            endif;
+       endforeach;
+endif;
+
 @endphp
-@if($uniqueCourseToNotify)
-🚩 Aún cuentas con {{$uniqueCourseToNotify["certifaction_test_original"]}}, has completado {{$uniqueCourseToNotify['lessons_completed']}} lecciones, y en total son {{$uniqueCourseToNotify['lessons_count']}}. *Y la fecha fin es el día:*
-@else
-    @foreach ($coursesToNotify as $course)
-        @if ($course['isExcelCourse'] == false)
-        🚩 Referente a {{$course['name']}}, aún cuentas con {{$course["certifaction_test_original"]}} DE EXAMEN DISPONIBLES, has completado {{$course['lessons_completed']}} lecciones, y en total son {{$course['lessons_count']}}. *Y la fecha fin es el día:*
-        @else
-                @foreach($course['LEVELS'] as $level)
-                🚩 Referente al {{$course[$level]['name']}} de {{$course['name']}}, aún cuentas con {{$course[$level]["certifaction_test_original"]}} DE EXAMEN DISPONIBLES, has completado {{$course[$level]['lessons_completed']}} lecciones, y en total son {{$course[$level]['lessons_count']}}. *Y la fecha fin es el día:*
-                @endforeach
-        @endif
-    @endforeach
+@if(count($tmpShowText))
+{{implode("\n", $tmpShowText)}}
 @endif
 {{$endCourseDate->format('d/m/Y')}}
 
