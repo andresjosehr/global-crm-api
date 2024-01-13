@@ -223,7 +223,16 @@ $tmpShowSectionFlag = (count($otherSapCoursesToEnableNames) > 0);
     *Para tener el certificado del curso que aprobaste:*
 {{implode("\n", $otherFreeCoursesApprovedNames)}}
     @endif
-    @if(count($sapCourses) == 1)
+@php 
+$tmpShowSingleFact = 
+count($otherSapCoursesApprovedNames) +
+count($otherSapCoursesDissaprovedNames) +
+count($otherSapCoursesDroppedNames) +
+count($otherSapCoursesUnfinishedNames) +
+count($otherSapCoursesToEnableNames);
+
+@endphp    
+    @if($tmpShowSingleFact == 1)
     Debes iniciar y aprobar el curso SAP mencionado anteriormente, porque no puedes tener más de 2 cursos reprobados o abandonados.
     @else
     Debes iniciar y aprobar al menos uno de los cursos SAP mencionados anteriormente, porque no puedes tener más de 2 cursos reprobados o abandonados.
