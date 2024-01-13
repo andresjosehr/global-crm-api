@@ -317,42 +317,47 @@ A pesar de haber aprobado, perderías el acceso al certificado internacional:
 @endif
 
 
-{{-- VARIANTE Filas 124 a 144: si tiene curso obsequio con estado POR HABILITAR, con las condiciones específicas de cada fila: --}}
 @php 
+//Filas 677 a 692: si tiene curso obsequio con estado POR HABILITAR, con las condiciones específicas de cada fila:
+$tmpShowSectionFlag = false;
+if(count($otherFreeCoursesToEnableNames) > 0):
+    $tmpShowSectionFlag = true;
+endif;
 $tmpToEnableOtherCourses = array_filter($otherFreeCourses, function ($course) {    return  ($course['course_status'] === 'POR HABILITAR'); });
+
+// hay curso SAP con estado EXAMEN Reprobado o SIN Intentos gratis?
+$tmpShowSapSectionFlag = false;
+foreach($otherSapCourses as $course):
+    if($course['course_status'] == 'REPROBADO' || $course['noFreeAttempts'] == true):
+        $tmpShowSapSectionFlag = true;
+        break;
+    endif;
+endforeach;
 @endphp
 
-@if($showToEnableOtherCourses == true )
+@if($tmpShowSectionFlag == true )
 👀 *OJO tienes por habilitar:*
-    @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status'] == 'POR HABILITAR')
-{{$course['name']}}
-        @endif
-    @endforeach
-
-    @if(count($coursesToNotify) == 1)
+{{implode(", ", $otherFreeCoursesToEnableNames)}}
+    @if(count($otherFreeCoursesToEnableNames) == 1)
     A continuación te envío las fechas de inicio disponibles, *teniendo en cuenta que si no escoges una de ellas como máximo hasta el día de la última fecha enviada, los estarías perdiendo:*
-
-    @elseif(count($coursesToNotify) == 1 && count($tmpToEnableOtherCourses) == 1)
+    @else
+    Y al no haberte certificado en:
+    {{implode(", ", $coursesToNotifyNames)}}
+        @if(count($coursesToNotify) == 2)
     Tienes un total de 2 cursos reprobados/abandonados.
-    @elseif((count($coursesToNotify) == 1 + count($tmpToEnableOtherCourses)) == 3)
+        @elseif(count($coursesToNotify) == 3)
     Tienes un total de 3 cursos reprobados/abandonados.
-    {{-- Fila 620: Si en ESTADO EXAMEN de SAP dice REPROBADO o SIN INTENTOS GRATIS y en la suma de las filas 615 y 617 el resultado es 2 cursos. --}}
-    @elseif(((count($coursesToNotify) + count($tmpToEnableOtherCourses))  == 2 ) && (($studentData["EXAMEN"] == "REPROBADO") || (stripos($studentData["EXAMEN"], 'Sin intentos Gratis') !== false)))
+      @elseif(count($coursesToNotify) == 2 && $tmpShowSapSectionFlag == true)
     Tienes un total de 3 cursos reprobados/abandonados, porque también reprobaste SAP.
-    {{-- Fila 621: Si en ESTADO EXAMEN de SAP dice REPROBADO o SIN INTENTOS GRATIS y en la suma de las filas 615 y 617 el resultado es 3 cursos. --}}
-    @elseif(((count($coursesToNotify) + count($tmpToEnableOtherCourses))  == 3 ) && (($studentData["EXAMEN"] == "REPROBADO") || (stripos($studentData["EXAMEN"], 'Sin intentos Gratis') !== false)))
+       @elseif(count($coursesToNotify) == 3 && $tmpShowSapSectionFlag == true)
     Tienes un total de 4 cursos reprobados/abandonados, porque también reprobaste SAP.
-    @endif        
-    
-    @foreach ($otherFreeCourses as $course)
-        @if ($course['course_status'] == 'CURSANDO')
-Por lo que, a pesar de haber iniciado, perderías el acceso a:
-{{$course['name']}}
-        @elseif ($course['course_status'] == 'APROBADO')
-Por lo que, a pesar de haber aprobado, perderías el acceso al certificado internacional:
-{{$course['name']}}
-        @endif
-    @endforeach
-
+       @endif
+    @endif
+    @if(count($otherFreeCoursesInProgressNames) > 0)
+    Por lo que, a pesar de haber iniciado, perderías el acceso a:
+    {{implode(", ", $otherFreeCoursesInProgressNames)}}
+    @elseif(count($otherFreeCoursesApprovedNames) > 0)
+    Por lo que, a pesar de haber aprobado, perderías el acceso al certificado internacional:
+    {{implode(", ", $otherFreeCoursesApprovedNames)}}
+    @endif
 @endif
