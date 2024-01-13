@@ -337,12 +337,12 @@ endforeach;
 
 @if($tmpShowSectionFlag == true )
 👀 *OJO tienes por habilitar:*
-{{implode(", ", $otherFreeCoursesToEnableNames)}}
+{{implode("\n", $otherFreeCoursesToEnableNames)}}
     @if(count($otherFreeCoursesToEnableNames) == 1)
     A continuación te envío las fechas de inicio disponibles, *teniendo en cuenta que si no escoges una de ellas como máximo hasta el día de la última fecha enviada, los estarías perdiendo:*
     @else
     Y al no haberte certificado en:
-    {{implode(", ", $coursesToNotifyNames)}}
+    {{implode("\n", $coursesToNotifyNames)}}
         @if(count($coursesToNotify) == 2)
     Tienes un total de 2 cursos reprobados/abandonados.
         @elseif(count($coursesToNotify) == 3)
@@ -355,9 +355,9 @@ endforeach;
     @endif
     @if(count($otherFreeCoursesInProgressNames) > 0)
     Por lo que, a pesar de haber iniciado, perderías el acceso a:
-    {{implode(", ", $otherFreeCoursesInProgressNames)}}
+    {{implode("\n", $otherFreeCoursesInProgressNames)}}
     @elseif(count($otherFreeCoursesApprovedNames) > 0)
     Por lo que, a pesar de haber aprobado, perderías el acceso al certificado internacional:
-    {{implode(", ", $otherFreeCoursesApprovedNames)}}
+    {{implode("\n", $otherFreeCoursesApprovedNames)}}
     @endif
 @endif

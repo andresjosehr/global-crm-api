@@ -145,7 +145,7 @@ TUna vez más te recuerdo que no brindamos certificados por haber completado el 
 {{-- VARIANTE Filas 36 a 40: si tiene curso obsequio con estado CURSANDO, que termine en OTRA FECHA, con las condiciones específicas de cada fila: --}}
 @if($showInProgressOtherCourses == true)
 👀 *OJO también estás cursando:*
-{{implode(', ', $otherFreeCoursesInProgressNames)}}
+{{implode("\n", $otherFreeCoursesInProgressNames)}}
     {{-- Fila 38: Si en ESTADO AULA de SAP dice CURSANDO o COMPLETA pero en certificado aún no sale EMITIDO --}}
     @if(($studentData["AULA SAP"] == "CURSANDO" || $studentData["AULA SAP"] == "COMPLETA") && ($studentData["CERTIFICADO"] != "EMITIDO"))
 Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y aún no te certificas en SAP.
@@ -162,7 +162,7 @@ Recuerda que como condición no puedes tener dos o más cursos *reprobados o aba
 {{-- VARIANTE Filas 43 a 55: si tiene curso obsequio con estado examen SIN INTENTOS PENDIENTES o REPROBADO, que termine en OTRA FECHA, con las condiciones específicas de cada fila: --}}
 @if($showDissaprovedOtherCourses == true )
 👀 *OJO completaste, pero reprobaste:*
-{{implode(', ', $otherFreeCoursesDissaprovedNames)}}
+{{implode("\n", $otherFreeCoursesDissaprovedNames)}}
 @endif
 @if($showDissaprovedOtherCourses == true && ($studentData["AULA SAP"] == "CURSANDO" || $studentData["AULA SAP"] == "COMPLETADO"))
 Recuerda que como condición no puedes tener dos o más cursos *reprobados o abandonados,* y aún no te certificas en SAP. Por lo que si no te certificas en:
@@ -189,7 +189,7 @@ Ya que tendrías {{count(array_filter($otherFreeCourses, function ($course) {ret
 {{-- VARIANTE Filas 70 a 82: Filas 70 a 94: si tiene curso obsequio con estado NO CULMINÓ, que termine en OTRA FECHA, si tuviera fecha fin, con las condiciones específicas de cada fila: --}}
 @if($showUnfinishedOtherCourses == true )
 👀 *OJO: recuerda que no culminaste:*
-{{implode(', ', $otherFreeCoursesUnfinishedNames)}}
+{{implode("\n", $otherFreeCoursesUnfinishedNames)}}
 @endif
 {{-- Fila 72: Si en ESTADO AULA de SAP dice CURSANDO o COMPLETA pero en certificado aún no sale EMITIDO y es curso OBSEQUIO NO CULMINÓ --}}
 @if($showUnfinishedOtherCourses == true && ($studentData["AULA SAP"] == "CURSANDO" || $studentData["AULA SAP"] == "COMPLETADO") && ($studentData["CERTIFICADO"] != "EMITIDO") )
@@ -217,7 +217,7 @@ Ya que tendrías {{count(array_filter($otherFreeCourses, function ($course) {ret
 {{-- VARIANTE Filas Filas 97 a 121: si tiene curso obsequio con estado ABANDONÓ, que termine en OTRA FECHA, si tuviera fecha fin, con las condiciones específicas de cada fila: --}}
 @if($showDroppedOtherCourses == true )
 👀 *OJO: recuerda que abandonaste:*
-{{implode(', ', $otherFreeCoursesDroppedNames)}}
+{{implode("\n", $otherFreeCoursesDroppedNames)}}
 @endif
 {{-- Fila 99: Si en ESTADO AULA de SAP dice CURSANDO o COMPLETA pero en certificado aún no sale EMITIDO y es curso OBSEQUIO ABANDONÓ --}}
 @if($showDroppedOtherCourses == true && ($studentData["AULA SAP"] == "CURSANDO" || $studentData["AULA SAP"] == "COMPLETADO") && ($studentData["CERTIFICADO"] != "EMITIDO") )
@@ -245,7 +245,7 @@ Ya que tendrías {{count(array_filter($otherFreeCourses, function ($course) {ret
 {{-- VARIANTE Filas 124 a 144: si tiene curso obsequio con estado POR HABILITAR, con las condiciones específicas de cada fila: --}}
 @if($showToEnableOtherCourses == true )
 👀 *OJO tienes por habilitar:*
-{{implode(', ', $otherFreeCoursesToEnableNames)}}
+{{implode("\n", $otherFreeCoursesToEnableNames)}}
 @endif
 {{-- Fila 99: Fila 126: Si en ESTADO AULA de SAP dice CURSANDO o COMPLETA pero en certificado aún no sale EMITIDO y es curso OBSEQUIO ABANDONÓ --}}
 @if($showToEnableOtherCourses == true && ($studentData["AULA SAP"] == "CURSANDO" || $studentData["AULA SAP"] == "COMPLETADO") && ($studentData["CERTIFICADO"] != "EMITIDO") )
