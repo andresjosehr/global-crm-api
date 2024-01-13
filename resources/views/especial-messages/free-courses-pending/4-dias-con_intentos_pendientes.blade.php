@@ -114,7 +114,7 @@ Sin embargo, en menos de 72h la extensión mínima será de 3 meses y perderás 
         {{$course['name']}}, tiene {{$course['lessons_completed']}} lecciones completas, y en total son {{$course['lessons_count']}}; y aún cuentas con {{$course["certifaction_test_original"]}}.
         @else
                 @foreach($course['LEVELS'] as $level)
-                {{$course['name']}} - {{$course[$level]['name']}}, tiene {{$course[$level]['lessons_completed']}} lecciones completas, y en total son {{$course[$level]['lessons_count']}}; y aún cuentas con {{$course[$level]["certifaction_test_original"]}}.
+                {{$course[$level]['name']}} de {{$course['name']}}, tiene {{$course[$level]['lessons_completed']}} lecciones completas, y en total son {{$course[$level]['lessons_count']}}; y aún cuentas con {{$course[$level]["certifaction_test_original"]}}.
                 @endforeach
         @endif
     @endforeach
