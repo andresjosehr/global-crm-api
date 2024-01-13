@@ -6,6 +6,8 @@ $otherFreeCoursesDroppedNames = [];
 $otherFreeCoursesUnfinishedNames = [];
 $otherFreeCoursesApprovedNames = [];
 $otherFreeCoursesToEnableNames = [];
+$otherFreeCoursesCompletedNames = [];
+
 foreach($otherFreeCourses as $course):
 
    switch ($course['course_status']) {
@@ -24,8 +26,11 @@ foreach($otherFreeCourses as $course):
         case 'APROBADO':
             $otherFreeCoursesApprovedNames[] = $course['name'];
             break;
-        case 'POR HABILITAR':
+            case 'POR HABILITAR':
             $otherFreeCoursesToEnableNames[] = $course['name'];
+            break;
+        case 'COMPLETA':
+            $otherFreeCoursesCompletedNames[] = $course['name'];
             break;
     }
 endforeach;
@@ -94,14 +99,48 @@ Quería recordarte que ya se acerca el término del tiempo brindado para llevar 
 Es decir que tendrás acceso al contenido del curso SAP y al software, *hasta el día:*
 {{$endCourseDate->format('d/m/Y')}}
 
-@if(count($pendingOtherFreeCourses) > 1)
+@php 
+$tmpShowSectionFlag = false;
+if(count($otherSapCoursesToEnableNames) > 0 || count($otherFreeCoursesToEnableNames) > 0):
+    $tmpShowSectionFlag = true;
+endif;
+$tmpCourseNames = array_merge($otherSapCoursesToEnableNames, $otherFreeCoursesToEnableNames);
+@endphp
+@if($tmpShowSectionFlag)
 *Sé que te certificaste* 🎓📜 así que quería consultarte si ya deseas iniciar con: 
-{{implode(', ', array_column($pendingOtherFreeCourses, "NAME"))  }}
+    @foreach ($tmpCourseNames as $courseName)
+        {{$courseName}}
+    @endforeach
 @endif
 
-@if($otherFreeCourseInProgressOrCompletedCount >0)
+@php 
+// Filas 16 a 30: Fila 16: si tiene un solo curso de obsequio con estado: CURSANDO, COMPLETA, es decir, que no sean POR HABILITAR.
+// Fila 17: si tiene al menos un curso de obsequio con estados: CURSANDO, COMPLETA, es decir, que no sean POR HABILITAR.
 
-    @if($otherFreeCourseInProgressOrCompletedCount == 1)
+$tmpShowSectionFlag = false;
+if(
+    (
+        count($otherFreeCoursesInProgressNames) > 0 || 
+        count($otherFreeCoursesCompletedNames) > 0
+    )
+    && 
+    (
+        count($otherFreeCoursesToEnableNames) == 0
+    )
+    ):
+    $tmpShowSectionFlag = true;
+endif;
+$tmpCourseNames = array_merge($otherFreeCoursesInProgressNames, $otherFreeCoursesCompletedNames);
+
+$tmpCoursesDissaprovedNames = array_merge($otherSapCoursesDissaprovedNames, $otherFreeCoursesDissaprovedNames);
+$tmpCoursesDroppedNames = array_merge($otherSapCoursesDroppedNames, $otherFreeCoursesDroppedNames);
+$tmpCoursesUnfinishedNames = array_merge($otherSapCoursesUnfinishedNames, $otherFreeCoursesUnfinishedNames);
+$tmpCoursesApprovedNames = array_merge($otherSapCoursesCertifiedNames, $otherFreeCoursesApprovedNames);
+$tmpCoursesToEnableNames = array_merge($otherSapCoursesToEnableNames, $otherFreeCoursesToEnableNames);
+
+@endphp
+@if($tmpShowSectionFlag)
+    @if(count($tmpCourseNames) == 1)
     *Sé que te certificaste* 🎓📜 así que  te recuerdo el estado de tu curso:
    @else
    *Sé que te certificaste* 🎓📜 así que  te recuerdo el estado de los demás cursos:
@@ -111,29 +150,28 @@ Es decir que tendrás acceso al contenido del curso SAP y al software, *hasta el
 Aún estás *cursando:*
 {{implode("\n", $otherFreeCoursesInProgressNames)}}
     @endif
-    @if(count($otherFreeCoursesDissaprovedNames) > 0)
+    @if(count($tmpCoursesDissaprovedNames) > 0)
 Completaste pero *REPROBASTE:*
-{{implode("\n", $otherFreeCoursesDissaprovedNames)}}
+{{implode("\n", $tmpCoursesDissaprovedNames)}}
     @endif
-    @if(count($otherFreeCoursesUnfinishedNames) > 0)
+    @if(count($tmpCoursesUnfinishedNames) > 0)
 *No culminaste:*
-{{implode("\n", $otherFreeCoursesUnfinishedNames)}}
+{{implode("\n", $tmpCoursesUnfinishedNames)}}
     @endif
-    @if(count($otherFreeCoursesDroppedNames) > 0)
+    @if(count($tmpCoursesDroppedNames) > 0)
 *Abandonaste:*
-{{implode("\n", $otherFreeCoursesDroppedNames)}}
+{{implode("\n", $tmpCoursesDroppedNames)}}
     @endif
-    @if(count($otherFreeCoursesToEnableNames) > 0)
+    @if(count($tmpCoursesToEnableNames) > 0)
 Aún tienes *por habilitar:*
-{{implode("\n", $otherFreeCoursesToEnableNames)}}
+{{implode("\n", $tmpCoursesToEnableNames)}}
 Por favor me indicas si *deseas iniciar de una vez,* para enviarte las *fechas disponibles.*
     @endif
-    @if(count($otherFreeCoursesApprovedNames) > 0)
+    @if(count($tmpCoursesApprovedNames) > 0)
 *Aprobaste:*
-{{implode("\n", $otherFreeCoursesApprovedNames)}}
+{{implode("\n", $tmpCoursesApprovedNames)}}
    @endif
 @endif
-
 
 @if($show6CoursesOffer == true)
 También quería saber si te interesaría llevar otro curso de SAP con nosotros,🤩 *con un precio increíble por ser ex alumno.* 🤯

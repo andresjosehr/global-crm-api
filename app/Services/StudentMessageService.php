@@ -1113,6 +1113,13 @@ class StudentMessageService
             $sapCourses = $groupedCourses["sapCourses"];
             $otherSapCourses = $groupedCourses["otherSapCourses"];
             $otherFreeCourses = $groupedCourses["otherFreeCourses"];
+            
+            // determina $pendingOtherFreeCourses
+            foreach ($otherFreeCourses as $course) :
+                if ($course['course_status'] == 'POR HABILITAR' || $course['course_status'] == 'CURSANDO'|| $course['course_status'] == 'COMPLETA') :
+                    $pendingOtherFreeCourses[] = $course;
+                endif;
+            endforeach;
                         
             // prepara los flags especiales
             foreach ($otherFreeCourses as $course) :
