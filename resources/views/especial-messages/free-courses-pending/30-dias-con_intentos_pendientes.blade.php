@@ -94,7 +94,7 @@ Están por vencer tus cursos:
 {{$course['name']}}
 @endforeach
 
-@if (count($coursesToNotify) == 1)
+@if (count($coursesToNotify) == 1 && $hasExcelCourseToNotify == false)
 🤓 Hasta los momentos tu avance académico en el aula virtual es el siguiente:
 Tienes {{$coursesToNotify[0]['lessons_completed']}} lecciones completas, y en total son {{$coursesToNotify[0]['lessons_count']}}.
 @else
@@ -110,7 +110,7 @@ Tienes {{$coursesToNotify[0]['lessons_completed']}} lecciones completas, y en to
         {{$course['name']}}, tiene {{$course['lessons_completed']}} lecciones completas, y en total son {{$course['lessons_count']}}.
         @else
             @foreach($course['LEVELS'] as $level)
-                {{$course['name']}} - {{$course[$level]['name']}}, tiene {{$course[$level]['lessons_completed']}} lecciones completas, y en total son {{$course[$level]['lessons_count']}}.
+            {{$course[$level]['name']}} de {{$course['name']}}, tiene {{$course[$level]['lessons_completed']}} lecciones completas, y en total son {{$course[$level]['lessons_count']}}.
             @endforeach
         @endif
     @endforeach
