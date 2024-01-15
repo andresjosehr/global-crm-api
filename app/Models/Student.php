@@ -19,6 +19,7 @@ class Student extends Model
         'document_type_id',
         'document',
         'email',
+        'lead_id'
     ];
 
     function orders()

@@ -160,7 +160,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 6,
                     'name' => "EXCEL",
                     'type' => 'free',
-                    'course_status' => $student['EXCEL'],
+                    'course_status' => 'NO APLICA',
                 ];
             }
             if (!in_array(9, $courseIds)) {
@@ -168,7 +168,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 9,
                     'name' => "MS PROJECT",
                     'type' => 'free',
-                    'course_status' => $student['MS PROJECT'],
+                    'course_status' => 'NO APLICA',
                 ];
             }
 
@@ -177,7 +177,7 @@ class UpdateCoursesStatus extends Command
                     'course_id' => 7,
                     'name' => 'POWERBI',
                     'type' => 'free',
-                    'course_status' => $student['PBI'],
+                    'course_status' => 'NO APLICA',
                 ];
             }
 

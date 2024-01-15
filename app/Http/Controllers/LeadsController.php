@@ -36,6 +36,7 @@ class LeadsController extends Controller
         ->with(['saleActivities.user' => function ($query) use ($user) {
             return $query->orderBy('id', 'DESC');
         }])
+        ->with('lead.student')
         ->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
