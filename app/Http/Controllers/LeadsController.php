@@ -8,6 +8,7 @@ use App\Models\Lead;
 use App\Models\LeadAssignment;
 use App\Models\LeadObservation;
 use App\Models\SaleActivity;
+use App\Models\Student;
 use App\Models\User;
 use Carbon\Carbon;
 use DateInterval;
@@ -29,15 +30,15 @@ class LeadsController extends Controller
         }
 
         $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)
-        ->with('lead.user')
-        ->with(['lead.saleActivities' => function ($query) use ($user) {
-            return $query->with('user')->orderBy('id', 'DESC');
-        }])
-        ->with(['saleActivities.user' => function ($query) use ($user) {
-            return $query->orderBy('id', 'DESC');
-        }])
-        ->with('lead.student')
-        ->first();
+            ->with('lead.user')
+            ->with(['lead.saleActivities' => function ($query) use ($user) {
+                return $query->with('user')->orderBy('id', 'DESC');
+            }])
+            ->with(['saleActivities.user' => function ($query) use ($user) {
+                return $query->orderBy('id', 'DESC');
+            }])
+            ->with('lead.student')
+            ->first();
 
         return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
@@ -211,18 +212,33 @@ class LeadsController extends Controller
             }
         }
         $lead = Lead::where('id', $id)->update([
-            'name' => $request->name,
-            'courses' => $request->courses,
-            'phone' => $request->phone,
-            'status' => $request->status,
-            'email' => $request->email,
-            'origin' => $request->origin,
-            'document' => $request->document,
-            'user_id' => $user_id
+            'name'             => $request->name,
+            'courses'          => $request->courses,
+            'phone'            => $request->phone,
+            'status'           => $request->status,
+            'email'            => $request->email,
+            'origin'           => $request->origin,
+            'document'         => $request->document,
+            'user_id'          => $user_id,
+            'country_id'       => $request->country_id,
+            'city_id'          => $request->city_id,
+            'document_type_id' => $request->document_type_id,
 
         ]);
 
-        $lead = Lead::with('observations.user')->find($id);
+        $lead = Lead::with('observations.user')->with('student')->find($id);
+
+        if ($lead->student_id) {
+            $student = Student::where('id', $lead->student_id)->update([
+                'name'             => $request->name,
+                'email'            => $request->email,
+                'phone'            => $request->phone,
+                'document'         => $request->document,
+                'country_id'       => $request->country_id,
+                'city_id'          => $request->city_id,
+                'document_type_id' => $request->document_type_id,
+            ]);
+        }
 
         return ApiResponseController::response("Exito", 200, $lead);
     }
@@ -286,7 +302,7 @@ class LeadsController extends Controller
                 });
             })
             ->when($request->project_id, function ($query) use ($request) {
-                if($request->project_id != 'Todos'){
+                if ($request->project_id != 'Todos') {
                     $p = $request->project_id == 'Base' ? null : $request->project_id;
                     return $query->where('lead_project_id', $p);
                 }
@@ -300,7 +316,7 @@ class LeadsController extends Controller
             ->when(!$request->project_id, function ($query) use ($request) {
                 return $query->where('lead_project_id', "Base");
             })
-            ->when($request->automatic_import==='true', function ($query) use ($request) {
+            ->when($request->automatic_import === 'true', function ($query) use ($request) {
                 return $query->where('channel_id', '<>', NULL);
             })
             ->when($request->numbers, function ($query) use ($request) {
@@ -534,7 +550,7 @@ class LeadsController extends Controller
                     'status' => 'Interesado',
                     'user_id' => $request->user()->id,
                 ]);
-            }else{
+            } else {
                 // Update lead status as "No interesado"
                 Lead::where('id', $request->lead_id)->update([
                     'status' => $request->lead_status,
@@ -609,8 +625,7 @@ class LeadsController extends Controller
     {
         $user = $request->user();
 
-        $sale = SaleActivity::
-            where('user_id', $user->id)
+        $sale = SaleActivity::where('user_id', $user->id)
             ->with('user')
             ->orderBy('end', 'DESC')
             ->first();
@@ -782,5 +797,49 @@ class LeadsController extends Controller
             'callsCount' => $callsCount
         ];
         return ApiResponseController::response("Exito", 200, $data);
+    }
+
+    public function createStudentFromLead(Request $request, $lead_id, $lead_assignment_id)
+    {
+        $student             = new Student();
+        $student->name       = $request->input('name');
+        $student->country_id = $request->input('country_id');
+
+        $student->phone            = $request->input('phone');
+        $student->document         = $request->input('document');
+        $student->document_type_id = $request->input('document_type_id');
+        $student->email            = $request->input('email');
+        $student->lead_id          = $lead_id;
+        $student->save();
+
+        // Save lead
+        $lead = Lead::where('id', $lead_id)->update([
+            'name'             => $request->name,
+            'courses'          => $request->courses,
+            'phone'            => $request->phone,
+            'status'           => $request->status,
+            'email'            => $request->email,
+            'origin'           => $request->origin,
+            'document'         => $request->document,
+            'country_id'       => $request->country_id,
+            'city_id'          => $request->city_id,
+            'document_type_id' => $request->document_type_id,
+        ]);
+
+        $leadAssignament = LeadAssignment::where('id', $lead_assignment_id)
+            ->with('lead.user')
+            ->with(['lead.saleActivities' => function ($query) {
+                return $query->with('user')->orderBy('id', 'DESC');
+            }])
+            ->with(['saleActivities.user' => function ($query) {
+                return $query->orderBy('id', 'DESC');
+            }])
+            ->with('lead.student')
+            ->first();
+
+
+
+
+        return ApiResponseController::response("Exito", 200, $leadAssignament);
     }
 }
