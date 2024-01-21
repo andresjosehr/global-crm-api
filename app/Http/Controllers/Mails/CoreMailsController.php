@@ -13,9 +13,29 @@ class CoreMailsController extends Controller
         $toAddress,
         $subject,
         $content,
-        $scheduleTime,
+        $scheduleTime = null,
     )
     {
+
+        $body = [
+            'fromAddress' => 'coordinacionacademica@globaltecnologiasacademy.com',
+            'toAddress' => $toAddress,
+            'subject' => $subject,
+            'content' => $content,
+            "mailFormat" => "html",
+            "isSchedule" => true,
+            "scheduleType" => "6",
+            "timeZone" => "America/Lima",
+            "scheduleTime" => $scheduleTime . " 00:10:00"
+        ];
+
+        if($scheduleTime == null){
+            unset($body['isSchedule']);
+            unset($body['scheduleType']);
+            unset($body['timeZone']);
+            unset($body['scheduleTime']);
+        }
+
         $token = ZohoToken::where('token', '<>', '')->first()->token;
         $client = new GuzzleHttp\Client();
         $res = $client->request('POST', 'https://mail.zoho.com/api/accounts/6271576000000008002/messages', [
@@ -23,17 +43,7 @@ class CoreMailsController extends Controller
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Zoho-oauthtoken ' . $token
             ],
-            'body' => json_encode([
-                'fromAddress' => 'coordinacionacademica@globaltecnologiasacademy.com',
-                'toAddress' => $toAddress,
-                'subject' => $subject,
-                'content' => $content,
-                "mailFormat" => "html",
-                "isSchedule" => true,
-                "scheduleType" => "6",
-                "timeZone" => "America/Lima",
-                "scheduleTime" => $scheduleTime . " 00:10:00"
-            ])
+            'body' => json_encode($body)
         ]);
     }
 }

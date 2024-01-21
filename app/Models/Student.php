@@ -64,4 +64,10 @@ class Student extends Model
         }
         return $this;
     }
+
+    // Accesor for password
+    public function getPasswordAttribute($value)
+    {
+        return $value;
+    }
 }

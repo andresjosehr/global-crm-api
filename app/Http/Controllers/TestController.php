@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Mails\CoreMailsController;
 use App\Models\Student;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use App\Models\Order;
 
 class TestController extends Controller
 {
@@ -16,14 +18,19 @@ class TestController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($order_id)
     {
 
-        $excelController = new StudentsExcelController();
-        $students = $excelController->index('test');
-        $students = $excelController->attachCertificacionTestStatus($students);
+        $order = Order::where('key', $order_id)->first();
+        $content = view("mails.terms")->with(['order' => $order])->render();
 
-        return '<pre>'.json_encode($students).'</pre>';
+        CoreMailsController::sendMail(
+            'andresjosehr@gmail.com',
+            'PRUEBA | Confirmacion de terminos y condiciones',
+            $content
+        );
+
+        return "Exito";
     }
 
 

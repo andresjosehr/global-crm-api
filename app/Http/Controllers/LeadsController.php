@@ -820,9 +820,9 @@ class LeadsController extends Controller
             'status'           => $request->status,
             'email'            => $request->email,
             'origin'           => $request->origin,
-            'document'         => $request->document,
+            // 'document'         => $request->document,
             'country_id'       => $request->country_id,
-            'city_id'          => $request->city_id,
+            // 'city_id'          => $request->city_id,
             'document_type_id' => $request->document_type_id,
         ]);
 
