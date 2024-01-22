@@ -22,8 +22,14 @@ class TestController extends Controller
     {
 
         $order = Order::where('key', $order_id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
+
+        $mailTemplate = [
+            'Contado'=> 'terms-contado',
+            'Cuotas' => 'terms-cuotas'
+        ];
+
         // $content = view("mails.terms")->with(['order' => $order])->render();
-        return view("mails.terms")->with(['order' => $order]);
+        return view("mails.".$mailTemplate[$order->payment_mode])->with(['order' => $order]);
 
         // CoreMailsController::sendMail(
         //     'andresjosehr@gmail.com',

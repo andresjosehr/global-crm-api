@@ -69,12 +69,40 @@
                     @endforeach
                 </ul>
 
-            <p>Has realizado {{$s2 ? 'los' : 'el'}} siguiente{{$s2}} pago{{$s2}} </p>
-            <ul>
-                @foreach($order->dues as $due)
-                    <li>{{$due->amount}} {{$order->currency->iso_code}} - {{$due->created_at->format('d/m/Y')}}</li>
-                @endforeach
-            </ul>
+                {{-- @foreach($order->dues as $due)
+                <li>
+                    {{$due->amount}} {{$order->currency->iso_code}} - {{$due->created_at->format('d/m/Y')}}
+                </li>
+            @endforeach --}}
+
+            <p>Tu{{$s2}} pago{{$s2}} ha{{$s2 ? 'n' : ''}} quedado de la siguiente manera
+            <table style="width: 100%; border: 1px solid #333; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #333; padding: 5px;">Fecha</th>
+                        <th style="border: 1px solid #333; padding: 5px;">Monto</th>
+                        <th style="border: 1px solid #333; padding: 5px;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($order->dues as $due)
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 5px;">{{ DateTime::createFromFormat('Y-m-d', $due->date)->format('d/m/Y')}} </td>
+                        <td style="border: 1px solid #333; padding: 5px;">{{$due->amount}} {{$order->currency->iso_code}}</td>
+                        <td style="border: 1px solid #333; padding: 5px;">
+                            <span
+                            style="
+
+                        background: {{$due->paid ? '#79c970' : '#c58d8d'}};
+                        color: {{$due->paid ? '#092d05' : '#3b0606'}};
+                        padding: 5px 14px;
+                        border-radius: 8px;"
+                            "
+                            >{{$due->paid ? 'Pagada' : 'Pendiente por pagar'}}</span></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
             <p>Siendo tu fecha de inicio de clases:
                 @php
                     // get min date of all order courses
@@ -98,6 +126,10 @@
                 <li>Si finaliza el tiempo de tu aula virtual y licencia SAP, y no logras culminar el contenido para certificarte, podrás obtener más tiempo, por un pago adicional.</li>
             </ul>
 
+            @php
+            $freeCourses = $order->orderCourses->where('type', 'free');
+            @endphp
+             @if(count($freeCourses) > 0)
             <p>Además, recuerda que como obsequio tendrás acceso a {{$s3 ? 'los' : 'el'}} siguiente{{$s3}} curso{{$s3}}:
             <ul>
                 @foreach($order->orderCourses as $orderCourse)
@@ -106,6 +138,7 @@
                 @endif
                 @endforeach
             </ul>
+            @endif
 
             <p class="whatsapp-info">A través de nuestro número oficial de WhatsApp: +51 935355105, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️ <br>OJO: 👀 No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado</p>
 

@@ -227,9 +227,14 @@ class StudentsController extends Controller
         $order->terms_confirmed_by_student = true;
         $order->save();
 
-        Order::where('id', $order->id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
+        $order = Order::where('id', $order->id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
 
-        $content = view("mails.terms")->with(['order' => $order])->render();
+        $mailTemplate = [
+            'Contado'=> 'terms-contado',
+            'Cuotas' => 'terms-cuotas'
+        ];
+
+        $content =view("mails.".$mailTemplate[$order->payment_mode])->with(['order' => $order])->render();
 
         CoreMailsController::sendMail(
             'andresjosehr@gmail.com',
