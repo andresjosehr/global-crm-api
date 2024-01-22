@@ -21,14 +21,15 @@ class TestController extends Controller
     public function index($order_id)
     {
 
-        $order = Order::where('key', $order_id)->first();
-        $content = view("mails.terms")->with(['order' => $order])->render();
+        $order = Order::where('key', $order_id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
+        // $content = view("mails.terms")->with(['order' => $order])->render();
+        return view("mails.terms")->with(['order' => $order]);
 
-        CoreMailsController::sendMail(
-            'andresjosehr@gmail.com',
-            'PRUEBA | Confirmacion de terminos y condiciones',
-            $content
-        );
+        // CoreMailsController::sendMail(
+        //     'andresjosehr@gmail.com',
+        //     'PRUEBA | Confirmacion de terminos y condiciones',
+        //     $content
+        // );
 
         return "Exito";
     }

@@ -19,7 +19,7 @@ $basePathController = 'App\Http\Controllers\\';
 
 Route::prefix('auth')->group(function () {
     Route::post('sign-in', [AuthController::class, 'signIn'])->name('auth.sign-in');
-    Route::post('sign-in-enrollment', [AuthController::class, 'signInEnrollment'])->name('auth.sign-in-enrollment');
+    Route::post('sign-in-enrollment/{order_jey}', [AuthController::class, 'signInEnrollment'])->name('auth.sign-in-enrollment');
     Route::post('check-auth', [AuthController::class, 'checkAuth'])->name('auth.check-auth')->middleware(['api_access']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('passwords.sent');
     Route::post('check-password-reset-token', [AuthController::class, 'checkPasswordResetToken']);

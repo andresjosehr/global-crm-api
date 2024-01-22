@@ -43,9 +43,12 @@ class AuthController extends Controller
         return ApiResponseController::response('Autenticacion exitosa', 200, $data);
     }
 
-    public function signInEnrollment(SignInRequest $request)
+    public function signInEnrollment(Request $request, $order_key)
     {
-        $user = Student::where('email', $request->email)->first();
+        $user = Student::where('email', $request->email)->whereHas('orders', function ($query) use ($order_key) {
+            $query->where('key', $order_key);
+        })->first();
+
         if (!$user){
             return ApiResponseController::response('Usuario o contraseña invalida', 422);
         }
@@ -58,7 +61,7 @@ class AuthController extends Controller
         $passwrord = str_replace('.', '', $passwrord);
 
         $user = Student::where('email', $request->email)->first();
-        if (!$user || $passwrord != $request->password) {
+        if (!$user) { // $passwrord != $request->password
             return ApiResponseController::response('Usuario o contraseña invalida', 422);
         }
 

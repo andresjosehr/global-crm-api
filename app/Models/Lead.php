@@ -19,6 +19,7 @@ class Lead extends Model
         'chat_date',
         'country_id',
         'city_id',
+        'document',
         'document_type_id',
         'status'
     ];
