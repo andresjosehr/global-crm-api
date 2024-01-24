@@ -42,6 +42,10 @@ class StudentsController extends Controller
                 $q->where('status', 'Matriculado');
             })->where('user_id', $user->id);
         })
+        ->with('orders')
+        ->whereHas('orders', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })
         ->orderByDesc('id')
         ->paginate($perPage);
 
