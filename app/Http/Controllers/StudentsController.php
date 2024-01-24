@@ -24,36 +24,6 @@ class StudentsController extends Controller
     public function index(Request $request)
     {
 
-        $Matriculados = $request->input('Matriculados');
-
-        if($Matriculados == 1 || filter_var($Matriculados, FILTER_VALIDATE_BOOLEAN)){
-        $user = $request->user();
-
-        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
-
-        $studentIds = DB::table('user_student')
-        ->where('user_id', $user->id)
-        ->orderBy('id', 'DESC')
-        ->pluck('student_id');
-
-        $users = Student::whereHas('lead', function ($q) {
-        $q->where('status', 'Matriculado');
-    })
-    ->whereIn('id', $studentIds)
-    ->when($request->input('searchString'), function ($q) use ($request) {
-        $searchString = $request->input('searchString');
-        $q->where('name', 'LIKE', "%$searchString%")
-            ->orWhere('country_id', 'LIKE', "%$searchString%")
-            ->orWhere("email", 'LIKE', "%$searchString%")
-            ->orWhere('phone', 'LIKE', "%$searchString%")
-            ->orWhere('document', 'LIKE', "%$searchString%");
-    })
-
-    ->paginate($request->input($perPage));
-
-        return ApiResponseController::response('Consulta Exitosa, hay matriculados', 200, $users);
-        };
-
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
@@ -67,12 +37,15 @@ class StudentsController extends Controller
                 ->orWhere("email", 'LIKE', "%$searchString%")
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
+        })->when($request->input('Matriculados'), function ($q) use ($user){
+            $q->whereHas('lead', function ($q) {
+                $q->where('status', 'Matriculado');
+            })->where('user_id', $user->id);
         })
-            ->orderByDesc('id')
-            ->paginate($perPage);
+        ->orderByDesc('id')
+        ->paginate($perPage);
 
         return ApiResponseController::response('Consulta Exitosa,pero no hay matriculados', 200, $users);
-
     }
 
     /**
@@ -94,23 +67,23 @@ class StudentsController extends Controller
     public function store(Request $request)
     {
 
-           // Crear el estudiante
-            $student = new Student();
-            $student->name = $request->input('name');
-            $student->country_id = $request->input('country_id');
-            $student->document_type_id = $request->input('document_type_id');
-            $student->phone = $request->input('phone');
-            $student->document = $request->input('document');
-            $student->email = $request->input('email');
+        // Crear el estudiante
+        $student = new Student();
+        $student->name = $request->input('name');
+        $student->country_id = $request->input('country_id');
+        $student->document_type_id = $request->input('document_type_id');
+        $student->phone = $request->input('phone');
+        $student->document = $request->input('document');
+        $student->email = $request->input('email');
 
-            // Asignar user_id dinámicamente
+        // Asignar user_id dinámicamente
 
-            $student->save();
+        $student->save();
 
-            // Obtener el ID del estudiante creado
+        // Obtener el ID del estudiante creado
 
 
-            return ApiResponseController::response('Usuario creado con éxito', 200, $student);
+        return ApiResponseController::response('Usuario creado con éxito', 200, $student);
     }
 
     /**
@@ -266,14 +239,14 @@ class StudentsController extends Controller
         $order->terms_confirmed_by_student = true;
         $order->save();
 
-        $order = Order::where('id', $order->id)->with('orderCourses.course' ,'dues', 'student.users', 'currency')->first();
+        $order = Order::where('id', $order->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
 
         $mailTemplate = [
-            'Contado'=> 'terms-contado',
+            'Contado' => 'terms-contado',
             'Cuotas' => 'terms-cuotas'
         ];
 
-        $content =view("mails.".$mailTemplate[$order->payment_mode])->with(['order' => $order])->render();
+        $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order])->render();
 
         CoreMailsController::sendMail(
             'andresjosehr@gmail.com',
@@ -287,24 +260,25 @@ class StudentsController extends Controller
             $content
         );
 
-        $noti = new NotificationController();
-        $noti = $noti->store([
-            'title'      => 'Ficha de matriculada confirmada | '. $order->student->name,
-            'body'       => 'El alumno '. $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
-            'icon'       => 'check_circle_outline',
-            'url'        => 'https://www.google.com',
-            'user_id'    => $order->student->users[0]->id,
-            'use_router' => false
-        ]);
+        // $noti = new NotificationController();
+        // $noti = $noti->store([
+        //     'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
+        //     'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
+        //     'icon'       => 'check_circle_outline',
+        //     'url'        => 'https://www.google.com',
+        //     'user_id'    => $order->student->users[0]->id,
+        //     'use_router' => false
+        // ]);
 
-        $processesController = new ProcessesController();
-        $processesController->updateSellsExcel($order->id);
+        // $processesController = new ProcessesController();
+        // $processesController->updateSellsExcel($order->id);
 
 
         return ApiResponseController::response('Consulta exitosa', 200, $order);
     }
 
-    public function saveTermsPdfTemplate(Request $request, $order_id){
+    public function saveTermsPdfTemplate(Request $request, $order_id)
+    {
         $base64String = $request->input('base64'); // Asegúrate de enviar la cadena base64 como parte de tu solicitud
 
         // Decodificar la cadena base64
@@ -313,7 +287,7 @@ class StudentsController extends Controller
         $order = Order::find($order_id);
 
         // Definir el nombre del archivo PDF
-        $pdfFileName = 'orden_'.Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+        $pdfFileName = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
 
         // Guardar el archivo en la carpeta storage/app/public/terminos-aceptados
         $path = storage_path('app/public/terminos-aceptados/' . $pdfFileName);
@@ -329,7 +303,7 @@ class StudentsController extends Controller
 
         $order = Order::find($order_id);
 
-        $filename = 'orden_'.Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+        $filename = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
         // return $filename;
 
         if (!Storage::disk('local')->exists("public/terminos-aceptados/$filename")) {
@@ -350,7 +324,7 @@ class StudentsController extends Controller
 
         $order = Order::where('key', $order_key)->first();
 
-        $filename = 'orden_'.Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+        $filename = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
 
         // Verificar si el archivo existe
         if (!Storage::disk('local')->exists("public/terminos-aceptados/$filename")) {
