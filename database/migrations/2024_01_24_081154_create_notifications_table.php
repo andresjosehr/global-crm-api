@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('icon');
             $table->string('url');
             $table->boolean('read')->default(false);
+            $table->boolean('use_router')->default(false);
             $table->foreignId('user_id')->constrained();
             $table->timestamps();
         });

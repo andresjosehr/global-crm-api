@@ -233,7 +233,7 @@ class StudentsController extends Controller
         $order->terms_confirmed_by_student = true;
         $order->save();
 
-        $order = Order::where('id', $order->id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
+        $order = Order::where('id', $order->id)->with('orderCourses.course' ,'dues', 'student.users', 'currency')->first();
 
         $mailTemplate = [
             'Contado'=> 'terms-contado',
@@ -247,6 +247,26 @@ class StudentsController extends Controller
             'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
             $content
         );
+
+        CoreMailsController::sendMail(
+            'llazayanaalex@gmail.com',
+            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
+
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => 'Ficha de matriculada confirmada | '. $order->student->name,
+            'body'       => 'El alumno '. $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
+            'icon'       => 'check_circle_outline',
+            'url'        => 'https://www.google.com',
+            'user_id'    => $order->student->users[0]->id,
+            'use_router' => false
+        ]);
+
+        $processesController = new ProcessesController();
+        $processesController->updateSellsExcel($order->id);
+
 
         return ApiResponseController::response('Consulta exitosa', 200, $order);
     }

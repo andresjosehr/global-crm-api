@@ -19,7 +19,8 @@ class Student extends Model
         'document_type_id',
         'document',
         'email',
-        'lead_id'
+        'lead_id',
+        'user_id'
     ];
 
     function orders()
@@ -73,5 +74,10 @@ class Student extends Model
     public function leads()
     {
         return $this->belongsTo(Lead::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

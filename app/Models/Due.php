@@ -24,4 +24,9 @@ class Due extends Model
     {
         $this->attributes['date'] = Carbon::parse($value)->format('Y-m-d');
     }
+
+    public function paymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class);
+    }
 }

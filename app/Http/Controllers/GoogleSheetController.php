@@ -14,7 +14,7 @@ use Google_Service_Sheets_BatchUpdateSpreadsheetRequest;
 
 class GoogleSheetController extends Controller
 {
-    protected $service;
+    public $service;
     protected $sheets;
 
     public function __construct()

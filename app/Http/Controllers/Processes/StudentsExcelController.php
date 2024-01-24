@@ -703,7 +703,7 @@ class StudentsExcelController extends Controller
         ]);
         $client->setAccessType('offline');
 
-        $this->service = new Google_Service_Sheets($client);
+        return $this->service = new Google_Service_Sheets($client);
     }
 
     /**
@@ -908,8 +908,8 @@ class StudentsExcelController extends Controller
             endfor;
         endforeach;
 
-        
-        // El siguiente FIX es para 1 curso SAP que tiene 
+
+        // El siguiente FIX es para 1 curso SAP que tiene
         //- Examen: Aprobado
         //- Certificado: Emitido
         // exit;

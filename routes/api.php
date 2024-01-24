@@ -36,6 +36,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::get('make-session/{id}', 'App\Http\Controllers\AuthController@makeSession');
     Route::get('notifications', 'App\Http\Controllers\NotificationController@index');
+    Route::put('notifications/{id}', 'App\Http\Controllers\NotificationController@update');
 
     Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
@@ -106,7 +107,7 @@ Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController
 
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
 Route::get('countries', 'App\Http\Controllers\CountriesController@index');
-Route::get('test/{key}', 'App\Http\Controllers\TestController@index');
+Route::get('test', 'App\Http\Controllers\TestController@index');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 

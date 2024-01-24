@@ -854,6 +854,7 @@ class LeadsController extends Controller
 
     public function createStudentFromLead(Request $request, $lead_id, $lead_assignment_id)
     {
+        $userId = auth()->user()->id;
         $student             = new Student();
         $student->name       = $request->input('name');
         $student->country_id = $request->input('country_id');
@@ -863,9 +864,10 @@ class LeadsController extends Controller
         $student->document_type_id = $request->input('document_type_id');
         $student->email            = $request->input('email');
         $student->lead_id          = $lead_id;
+        $student->user_id          = $userId;
         $student->save();
 
-        $userId = auth()->user()->id;
+
         $studentId = $student->id;
 
         DB::table('user_student')->insert([

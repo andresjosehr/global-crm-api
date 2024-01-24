@@ -18,10 +18,11 @@ class NotificationController extends Controller
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
         $user_id = $request->user()->id;
         $notifications = Notification::where('user_id', $user_id)
-                        ->orderBy('created_at', 'desc')
+
                         ->when($request->read, function($query) use ($request){
                             return $query->where('read', $request->read);
                         })
+                        ->orderBy('created_at', 'desc')
                         ->paginate($perPage);
 
         return ApiResponseController::response('Exito', 200, $notifications);
@@ -90,7 +91,12 @@ class NotificationController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = auth()->user();
+        Notification::where('id', $id)
+        ->where('user_id', $user->id)
+        ->update(['read' => true]);
+
+        return ApiResponseController::response('Exito', 200, 'Notificación actualizada');
     }
 
     /**

@@ -20,33 +20,82 @@ class TestController extends Controller
      */
     public function index($order_id)
     {
-        $noti = new NotificationController();
-        $noti = $noti->store([
-            'title' => 'Test',
-            'body'  => 'Test body',
-            'icon'  => 'folder_shared',
-            'url'   => 'https://www.google.com',
-            'user_id' => 8
-        ]);
+        $google_sheet = new GoogleSheetController();
 
-        return 'Exito';
+        $spreadsheetId = '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs';
+        $range = 'ENERO 24!A1:AH';
 
+        // 1. Obtener los datos existentes para encontrar la primera fila vacía
+        $response = $google_sheet->service->spreadsheets_values->get($spreadsheetId, $range);
+        $rows = $response->getValues();
+        $header = array_shift($rows);
+        $rows = array_map(function ($row) {
+            return count($row);
+        }, $rows);
 
-        $order = Order::where('key', $order_id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
+        $emptyRow = array_search(1, $rows) + 2; // Suponiendo que la primera columna debe estar vacía
 
-        $mailTemplate = [
-            'Contado'=> 'terms-contado',
-            'Cuotas' => 'terms-cuotas'
+        $order = Order::where('id', $order_id)->with('orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user')->first();
+
+        $courses = array_reduce($order->orderCourses->toArray(), function ($carry, $item) {
+            $carry  .= $item['course']['short_name'];
+            return $carry . ' + ';
+        }, '');
+        $courses = substr($courses, 0, -3);
+        $order->student['courses'] = $courses;
+        $start = $order->orderCourses->min('start');
+        $order->student['start'] = Carbon::parse($start)->format('d/m/Y');
+        $order->student['license'] = $order->orderCourses->first()->license . ' de licensia y aula virtual';
+        $order->student['user'] = $order->student->user->name;
+        $order->student['row'] = $emptyRow;
+
+        $ref = [
+            'row'       => 'A',
+            'name'     => 'B',
+            'document' => 'C',
+            'courses'  => 'D',
+            'phone'    => 'E',
+            'email'    => 'F',
+            'start'    => 'AB',
+            'license'  => 'AC',
+            'user'     => 'AD'
         ];
 
-        // $content = view("mails.terms")->with(['order' => $order])->render();
-        return view("mails.".$mailTemplate[$order->payment_mode])->with(['order' => $order]);
+        foreach ($ref as $key => $col) {
+            $dataToUpdate[] = ['column' => $col, 'value' => $order->student[$key] . ''];
+        }
 
-        // CoreMailsController::sendMail(
-        //     'andresjosehr@gmail.com',
-        //     'PRUEBA | Confirmacion de terminos y condiciones',
-        //     $content
-        // );
+        $col = 'G';
+        foreach ($order->dues as $due) {
+            $dataToUpdate[] = ['column' => $col, 'value' => $due->amount . ' ' . $order->currency->iso_code];
+            $col++;
+            $date = Carbon::parse($due->date)->format('d/m/Y');
+            $dataToUpdate[] = ['column' => $col, 'value' => $date];
+            $col++;
+            $dataToUpdate[] = ['column' => $col, 'value' => $due->paymentMethod];
+            $col++;
+        }
+
+        // 'sheet_id'          => '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs',
+        // 'course_row_number' => $emptyRow,
+        // 'tab_id'            => '1992733426',
+        // Add all this properties to the array
+
+        $dataToUpdate = array_map(function ($item) use ($emptyRow, $spreadsheetId) {
+            $item['sheet_id'] = $spreadsheetId;
+            $item['course_row_number'] = $emptyRow;
+            $item['tab_id'] = '1438941447';
+            return $item;
+        }, $dataToUpdate);
+        // return $dataToUpdate;
+
+        // return $dataToUpdate;
+
+        $google_sheet = new GoogleSheetController();
+        $data = $google_sheet->transformData($dataToUpdate);
+        $data = $google_sheet->prepareRequests($data);
+
+        $google_sheet->updateGoogleSheet($data);
 
         return "Exito";
     }
