@@ -43,7 +43,8 @@ class StudentsController extends Controller
     ->when($request->input('searchString'), function ($q) use ($request) {
         $searchString = $request->input('searchString');
         $q->where('name', 'LIKE', "%$searchString%")
-            ->orWhere('country', 'LIKE', "%$searchString%")
+            ->orWhere('country_id', 'LIKE', "%$searchString%")
+            ->orWhere("email", 'LIKE', "%$searchString%")
             ->orWhere('phone', 'LIKE', "%$searchString%")
             ->orWhere('document', 'LIKE', "%$searchString%");
     })
@@ -62,7 +63,8 @@ class StudentsController extends Controller
 
         $users = Student::when($searchString, function ($q) use ($searchString) {
             $q->where('name', 'LIKE', "%$searchString%")
-                ->orWhere('country', 'LIKE', "%$searchString%")
+                ->orWhere('country_id', 'LIKE', "%$searchString%")
+                ->orWhere("email", 'LIKE', "%$searchString%")
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
         })
