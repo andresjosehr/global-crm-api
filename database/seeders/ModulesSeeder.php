@@ -65,14 +65,6 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
-                'name'        => 'Matriculados',
-                'description' => '',
-                'icon'        => 'heroicons_outline:list-bullet',
-                'path'        => 'lista/matriculados',
-                'type'        => 'basic',
-                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
-            ],
-            [
                 'name'        => 'Nube de documentos',
                 'description' => '',
                 'icon'        => 'heroicons_outline:document-text',
@@ -103,6 +95,14 @@ class ModulesSeeder extends Seeder
                 'description' => '',
                 'icon'        => 'heroicons_outline:calendar',
                 'path'        => '2',
+                'type'        => 'basic',
+                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
+            ],
+            [
+                'name'        => 'Matriculados',
+                'description' => '',
+                'icon'        => 'heroicons_outline:list-bullet',
+                'path'        => 'lista/matriculados',
                 'type'        => 'basic',
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
