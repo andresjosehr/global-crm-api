@@ -23,6 +23,37 @@ class StudentsController extends Controller
      */
     public function index(Request $request)
     {
+
+        $Matriculados = $request->input('Matriculados');
+
+        if($Matriculados == 1 || filter_var($Matriculados, FILTER_VALIDATE_BOOLEAN)){
+        $user = $request->user();
+
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+
+        $studentIds = DB::table('user_student')
+        ->where('user_id', $user->id)
+        ->orderBy('id', 'DESC')
+        ->pluck('student_id');
+
+        $users = Student::whereHas('lead', function ($q) {
+        $q->where('status', 'Matriculado');
+    })
+    ->whereIn('id', $studentIds)
+    ->when($request->input('searchString'), function ($q) use ($request) {
+        $searchString = $request->input('searchString');
+        $q->where('name', 'LIKE', "%$searchString%")
+            ->orWhere('country_id', 'LIKE', "%$searchString%")
+            ->orWhere("email", 'LIKE', "%$searchString%")
+            ->orWhere('phone', 'LIKE', "%$searchString%")
+            ->orWhere('document', 'LIKE', "%$searchString%");
+    })
+
+    ->paginate($request->input($perPage));
+
+        return ApiResponseController::response('Consulta Exitosa, hay matriculados', 200, $users);
+        };
+
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
@@ -32,14 +63,16 @@ class StudentsController extends Controller
 
         $users = Student::when($searchString, function ($q) use ($searchString) {
             $q->where('name', 'LIKE', "%$searchString%")
-                ->orWhere('country', 'LIKE', "%$searchString%")
+                ->orWhere('country_id', 'LIKE', "%$searchString%")
+                ->orWhere("email", 'LIKE', "%$searchString%")
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
         })
             ->orderByDesc('id')
             ->paginate($perPage);
 
-        return ApiResponseController::response('Consulta Exitosa', 200, $users);
+        return ApiResponseController::response('Consulta Exitosa,pero no hay matriculados', 200, $users);
+
     }
 
     /**
