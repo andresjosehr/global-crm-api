@@ -264,15 +264,15 @@ class StudentsController extends Controller
             $content
         );
 
-        // $noti = new NotificationController();
-        // $noti = $noti->store([
-        //     'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
-        //     'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
-        //     'icon'       => 'check_circle_outline',
-        //     'url'        => 'https://www.google.com',
-        //     'user_id'    => $order->student->users[0]->id,
-        //     'use_router' => false
-        // ]);
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
+            'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
+            'icon'       => 'check_circle_outline',
+            'url'        => 'https://www.google.com',
+            'user_id'    => $order->student->users[0]->id,
+            'use_router' => false
+        ]);
 
         // $processesController = new ProcessesController();
         // $processesController->updateSellsExcel($order->id);
