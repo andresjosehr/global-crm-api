@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Mails\CoreMailsController;
 use App\Models\Student;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use App\Models\Order;
 
 class TestController extends Controller
 {
@@ -16,14 +18,37 @@ class TestController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($order_id)
     {
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title' => 'Test',
+            'body'  => 'Test body',
+            'icon'  => 'folder_shared',
+            'url'   => 'https://www.google.com',
+            'user_id' => 8
+        ]);
 
-        $excelController = new StudentsExcelController();
-        $students = $excelController->index('test');
-        $students = $excelController->attachCertificacionTestStatus($students);
+        return 'Exito';
 
-        return '<pre>'.json_encode($students).'</pre>';
+
+        $order = Order::where('key', $order_id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
+
+        $mailTemplate = [
+            'Contado'=> 'terms-contado',
+            'Cuotas' => 'terms-cuotas'
+        ];
+
+        // $content = view("mails.terms")->with(['order' => $order])->render();
+        return view("mails.".$mailTemplate[$order->payment_mode])->with(['order' => $order]);
+
+        // CoreMailsController::sendMail(
+        //     'andresjosehr@gmail.com',
+        //     'PRUEBA | Confirmacion de terminos y condiciones',
+        //     $content
+        // );
+
+        return "Exito";
     }
 
 

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Correo de Bienvenida - Global Tecnologías Academy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .banner {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .important {
+            /* color: #ff0000; */
+        }
+        .whatsapp-info {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    @php
+        $s = '';
+        if(count($order->orderCourses->where('type', 'paid')) > 1) {
+            $s = 's';
+        }
+
+
+        $s2 = '';
+        if(count($order->dues) > 1) {
+            $s2 = 's';
+        }
+
+
+        $s3 = '';
+        if(count($order->orderCourses->where('type', 'free')) > 1) {
+            $s3 = 's';
+        }
+    @endphp
+
+
+    <div class="container">
+        <!-- BANER DE GLOBAL TECNOLOGÍAS ACADEMY -->
+        <div class="banner">
+            <!-- Aquí va la imagen del banner, reemplazar 'path_to_banner_image.jpg' con la ruta de la imagen real -->
+            <img style="width: 100%" src="https://globaltecnologiasacademy.com/wp-content/uploads/2023/08/banner-email.png" alt="Global Tecnologías Academy">
+        </div>
+
+        <!-- SEGUIMIENTO ACADÉMICO (CUANDO EL ALUMNO REALIZA UN SOLO PAGO) -->
+        <div class="seguimiento-academico" style="font-size: 19px">
+            <p>¡Hola! 🤓 <span class="important">
+                {{$order->student->name}}
+                </span></p>
+            <p>Te saludamos del área académica🤓 de Global Tecnologías Academy, para darte la bienvenida a tu{{$s}} curso{{$s}} de SAP:
+
+                <ul>
+                    @foreach($order->orderCourses as $orderCourse)
+                    @if($orderCourse->type == 'paid')
+                        <li>{{$orderCourse->course->name}}</li>
+                    @endif
+                    @endforeach
+                </ul>
+
+                {{-- @foreach($order->dues as $due)
+                <li>
+                    {{$due->amount}} {{$order->currency->iso_code}} - {{$due->created_at->format('d/m/Y')}}
+                </li>
+            @endforeach --}}
+
+            <p>Tu{{$s2}} pago{{$s2}} ha{{$s2 ? 'n' : ''}} quedado de la siguiente manera
+            <table style="width: 100%; border: 1px solid #333; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #333; padding: 5px;">Fecha</th>
+                        <th style="border: 1px solid #333; padding: 5px;">Monto</th>
+                        <th style="border: 1px solid #333; padding: 5px;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($order->dues as $due)
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 5px;">{{ DateTime::createFromFormat('Y-m-d', $due->date)->format('d/m/Y')}} </td>
+                        <td style="border: 1px solid #333; padding: 5px;">{{$due->amount}} {{$order->currency->iso_code}}</td>
+                        <td style="border: 1px solid #333; padding: 5px;">
+                            <span
+                            style="
+
+                        background: {{$due->paid ? '#79c970' : '#c58d8d'}};
+                        color: {{$due->paid ? '#092d05' : '#3b0606'}};
+                        padding: 5px 14px;
+                        border-radius: 8px;"
+                            "
+                            >{{$due->paid ? 'Pagada' : 'Pendiente por pagar'}}</span></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <p>Siendo tu fecha de inicio de clases:
+                @php
+                    // get min date of all order courses
+                    $minDate = $order->orderCourses->min('start');
+                    $dateObj = DateTime::createFromFormat('Y-m-d', $minDate);
+                    $date = $dateObj->format('d/m/Y');
+                @endphp
+
+                {{$date}}
+
+            <!-- Puntos a tener en cuenta -->
+            <p>PUNTOS A TENER EN CUENTA:</p>
+            <ul>
+                <li>Te enviaremos un correo con tus accesos el día de tu fecha de inicio.</li>
+                <li>La instalación se realizará el mismo día de la fecha de inicio, y será agendada con unos días de anticipación.</li>
+                <li>El no cumplir con el agendamiento de la instalación, no te eximirá del inicio de tu licencia SAP.</li>
+                <li>El tiempo de licencia y aula virtual de tu curso, es de {{$order->orderCourses->first()->license}}.</li>
+                <li>Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico.</li>
+                <li>De tener inconvenientes para avanzar en tu curso, podemos congelarlo por única vez, por un máximo de 3 meses (únicamente SAP).</li>
+                <li>Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio previamente acordada.</li>
+                <li>Si finaliza el tiempo de tu aula virtual y licencia SAP, y no logras culminar el contenido para certificarte, podrás obtener más tiempo, por un pago adicional.</li>
+            </ul>
+
+            @php
+            $freeCourses = $order->orderCourses->where('type', 'free');
+            @endphp
+             @if(count($freeCourses) > 0)
+            <p>Además, recuerda que como obsequio tendrás acceso a {{$s3 ? 'los' : 'el'}} siguiente{{$s3}} curso{{$s3}}:
+            <ul>
+                @foreach($order->orderCourses as $orderCourse)
+                @if($orderCourse->type == 'free')
+                    <li>{{$orderCourse->course->name}}</li>
+                @endif
+                @endforeach
+            </ul>
+            @endif
+
+            <p class="whatsapp-info">A través de nuestro número oficial de WhatsApp: +51 935355105, estaremos en contacto sobre cualquier inquietud que tengas o apoyo que requieras✍️ <br>OJO: 👀 No está habilitado para llamadas por ningún medio, debido a que pertenece a un sistema computarizado</p>
+
+            <p>Nuestro horario de atención comprende ⏰📅<br>Lunes a Viernes de 9am a 7pm (Hora Perú 🇵🇪)<br>Sábados de 9am a 5pm (Hora Perú 🇵🇪)<br>Los DOMINGOS NO laboramos.</p>
+
+            <p>¡Bienvenido/a a la familia Global Tecnologías Academy! 🤩</p>
+        </div>
+    </div>
+</body>
+</html>

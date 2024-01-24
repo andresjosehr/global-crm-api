@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Controllers\ApiResponseController;
 use Illuminate\Support\Facades\Password;
 use App\Http\Requests\Auth\SignInRequest;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -40,6 +41,45 @@ class AuthController extends Controller
         ];
 
         return ApiResponseController::response('Autenticacion exitosa', 200, $data);
+    }
+
+    public function signInEnrollment(Request $request, $order_key)
+    {
+        $user = Student::where('email', $request->email)->whereHas('orders', function ($query) use ($order_key) {
+            $query->where('key', $order_key);
+        })->first();
+
+        if (!$user){
+            return ApiResponseController::response('Usuario o contraseña invalida', 422);
+        }
+
+        $passwrord = $user->created_at->format('YmdHis');
+        $passwrord = ($passwrord + $user->id) * 2;
+        $passwrord = $passwrord * $passwrord * $user->id;
+        $passwrord = substr($passwrord, -22);
+        $passwrord = str_replace('E+', '', $passwrord);
+        $passwrord = str_replace('.', '', $passwrord);
+
+        $user = Student::where('email', $request->email)->first();
+        if (!$user) { // $passwrord != $request->password
+            return ApiResponseController::response('Usuario o contraseña invalida', 422);
+        }
+
+        // Configurar el TTL para una semana (60 minutos * 24 horas * 7 días)
+        // $myTTL = 60 * 24 * 7;
+        // JWTAuth::factory()->setTTL($myTTL);
+
+        // // Generar el token con el nuevo TTL
+        // $token = JWTAuth::fromUser($user);
+
+        // $user->modules = $user->getModules();
+        // $data = [
+        //     'accessToken' => $token,
+        //     'tokenType' => 'bearer',
+        //     'user' => $user
+        // ];
+
+        return ApiResponseController::response('Autenticacion exitosa', 200, []);
     }
 
 

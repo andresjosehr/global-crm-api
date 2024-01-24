@@ -19,6 +19,7 @@ $basePathController = 'App\Http\Controllers\\';
 
 Route::prefix('auth')->group(function () {
     Route::post('sign-in', [AuthController::class, 'signIn'])->name('auth.sign-in');
+    Route::post('sign-in-enrollment/{order_jey}', [AuthController::class, 'signInEnrollment'])->name('auth.sign-in-enrollment');
     Route::post('check-auth', [AuthController::class, 'checkAuth'])->name('auth.check-auth')->middleware(['api_access']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('passwords.sent');
     Route::post('check-password-reset-token', [AuthController::class, 'checkPasswordResetToken']);
@@ -34,6 +35,7 @@ Route::post('sales/disconnect-call-activity', 'App\Http\Controllers\LeadsControl
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
 
     Route::get('make-session/{id}', 'App\Http\Controllers\AuthController@makeSession');
+    Route::get('notifications', 'App\Http\Controllers\NotificationController@index');
 
     Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
@@ -97,12 +99,14 @@ Route::get('users/find-available-staff/{date}', 'App\Http\Controllers\UsersContr
 
 Route::get('auth/check-term-access/{key}', 'App\Http\Controllers\StudentsController@checkTermsAccess');
 Route::get('terms-info/{key}', 'App\Http\Controllers\StudentsController@getTermsInfo');
+Route::post('terms-pdf-template/{order_id}', 'App\Http\Controllers\StudentsController@saveTermsPdfTemplate');
+Route::get('download-terms-pdf-template/{order_id}', 'App\Http\Controllers\StudentsController@downloadTermsPdfTemplate');
 Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController@confirmTermsInfo');
 
 
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
 Route::get('countries', 'App\Http\Controllers\CountriesController@index');
-Route::get('test', 'App\Http\Controllers\TestController@index');
+Route::get('test/{key}', 'App\Http\Controllers\TestController@index');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 

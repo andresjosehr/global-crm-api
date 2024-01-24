@@ -83,14 +83,14 @@ class PricesSeeder extends Seeder
             ],
 
             [
-                'description' => 'Primera campaña',
+                'description' => 'Primera campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 300,
                 'months' => 3,
                 'mode' => 'contado'
             ],
             [
-                'description' => 'Segunda campaña',
+                'description' => 'Segunda campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
                 'amount' => 260,
                 'months' => 3,
@@ -155,14 +155,14 @@ class PricesSeeder extends Seeder
             ],
 
             [
-                'description' => 'Primera campaña',
+                'description' => 'Primera campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 300000,
                 'months' => 3,
                 'mode' => 'contado'
             ],
             [
-                'description' => 'Segunda campaña',
+                'description' => 'Segunda campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 260000,
                 'months' => 3,
@@ -230,14 +230,14 @@ class PricesSeeder extends Seeder
             ],
 
             [
-                'description' => 'Primera campaña',
+                'description' => 'Primera campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 1900,
+                'amount' => 2100,
                 'months' => 3,
                 'mode' => 'contado'
             ],
             [
-                'description' => 'Segunda campaña',
+                'description' => 'Segunda campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
                 'amount' => 1800,
                 'months' => 3,
@@ -302,14 +302,14 @@ class PricesSeeder extends Seeder
             ],
 
             [
-                'description' => 'Primera campaña',
+                'description' => 'Primera campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 90000,
+                'amount' => 100000,
                 'months' => 3,
                 'mode' => 'contado'
             ],
             [
-                'description' => 'Segunda campaña',
+                'description' => 'Segunda campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 85000,
                 'months' => 3,
@@ -374,14 +374,14 @@ class PricesSeeder extends Seeder
             ],
 
             [
-                'description' => 'Primera campaña',
+                'description' => 'Primera campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 90,
+                'amount' => 110,
                 'months' => 3,
                 'mode' => 'contado'
             ],
             [
-                'description' => 'Segunda campaña',
+                'description' => 'Segunda campaña (PLAN PLUS)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 85,
                 'months' => 3,
@@ -406,9 +406,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Precio normal)',
+                'description' => 'Dos cursos (Precio normal - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 600,
+                'amount' => 500,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -420,9 +420,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Descuento final)',
+                'description' => 'Dos cursos (Descuento final - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 500,
+                'amount' => 400,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -500,9 +500,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Precio normal)',
+                'description' => 'Cinco cursos (Precio normal - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 900,
+                'amount' => 700,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -514,9 +514,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Descuento final)',
+                'description' => 'Cinco cursos (Descuento final - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 800,
+                'amount' => 600,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -565,9 +565,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Precio normal)',
+                'description' => 'Dos cursos (Precio normal - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 600000,
+                'amount' => 500000,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -579,9 +579,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Descuento final)',
+                'description' => 'Dos cursos (Descuento final - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 500000,
+                'amount' => 400000,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -655,9 +655,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Precio normal)',
+                'description' => 'Cinco cursos (Precio normal - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 900000,
+                'amount' => 700000,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -669,9 +669,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Descuento final)',
+                'description' => 'Cinco cursos (Descuento final - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 800000,
+                'amount' => 600000,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -727,9 +727,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Precio normal)',
+                'description' => 'Dos cursos (Precio normal - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 3600,
+                'amount' => 2900,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -741,9 +741,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Descuento final)',
+                'description' => 'Dos cursos (Descuento final - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 2900,
+                'amount' => 2600,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -817,9 +817,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Precio normal)',
+                'description' => 'Cinco cursos (Precio normal - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 5300,
+                'amount' => 4200,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -831,9 +831,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Descuento final)',
+                'description' => 'Cinco cursos (Descuento final - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 4700,
+                'amount' => 3600,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -889,9 +889,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Precio normal)',
+                'description' => 'Dos cursos (Precio normal - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 170000,
+                'amount' => 135000,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -903,9 +903,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Descuento final)',
+                'description' => 'Dos cursos (Descuento final - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 135000,
+                'amount' => 110000,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -979,7 +979,7 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Precio normal)',
+                'description' => 'Cinco cursos (Precio normal - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
                 'amount' => 260000,
                 'months' => 15,
@@ -988,14 +988,14 @@ class PricesSeeder extends Seeder
             [
                 'description' => 'Cinco cursos (Descuento final)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 390000,
+                'amount' => 170000,
                 'months' => 15,
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Descuento final)',
+                'description' => 'Cinco cursos (Descuento final - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 225000,
+                'amount' => 150000,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -1049,9 +1049,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Precio normal)',
+                'description' => 'Dos cursos (Precio normal - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 170,
+                'amount' => 135,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -1063,9 +1063,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Dos cursos (Descuento final)',
+                'description' => 'Dos cursos (Descuento final - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 135,
+                'amount' => 110,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -1139,9 +1139,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Precio normal)',
+                'description' => 'Cinco cursos (Precio normal - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 260,
+                'amount' => 170,
                 'months' => 15,
                 'mode' => 'contado'
             ],
@@ -1153,9 +1153,9 @@ class PricesSeeder extends Seeder
                 'mode' => 'cuotas'
             ],
             [
-                'description' => 'Cinco cursos (Descuento final)',
+                'description' => 'Cinco cursos (Descuento final - PLAN PLATINUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 225,
+                'amount' => 150,
                 'months' => 15,
                 'mode' => 'contado'
             ],

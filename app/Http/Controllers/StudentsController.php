@@ -3,10 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Mails\CoreMailsController;
+use App\Models\Car;
 use App\Models\DocumentType;
 use App\Models\Order;
 use App\Models\Student;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\DB;
 
 class StudentsController extends Controller
@@ -18,6 +23,37 @@ class StudentsController extends Controller
      */
     public function index(Request $request)
     {
+
+        $Matriculados = $request->input('Matriculados');
+
+        if($Matriculados == 1 || filter_var($Matriculados, FILTER_VALIDATE_BOOLEAN)){
+        $user = $request->user();
+
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+
+        $studentIds = DB::table('user_student')
+        ->where('user_id', $user->id)
+        ->orderBy('id', 'DESC')
+        ->pluck('student_id');
+
+        $users = Student::whereHas('lead', function ($q) {
+        $q->where('status', 'Matriculado');
+    })
+    ->whereIn('id', $studentIds)
+    ->when($request->input('searchString'), function ($q) use ($request) {
+        $searchString = $request->input('searchString');
+        $q->where('name', 'LIKE', "%$searchString%")
+            ->orWhere('country_id', 'LIKE', "%$searchString%")
+            ->orWhere("email", 'LIKE', "%$searchString%")
+            ->orWhere('phone', 'LIKE', "%$searchString%")
+            ->orWhere('document', 'LIKE', "%$searchString%");
+    })
+
+    ->paginate($request->input($perPage));
+
+        return ApiResponseController::response('Consulta Exitosa, hay matriculados', 200, $users);
+        };
+
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
@@ -27,14 +63,16 @@ class StudentsController extends Controller
 
         $users = Student::when($searchString, function ($q) use ($searchString) {
             $q->where('name', 'LIKE', "%$searchString%")
-                ->orWhere('country', 'LIKE', "%$searchString%")
+                ->orWhere('country_id', 'LIKE', "%$searchString%")
+                ->orWhere("email", 'LIKE', "%$searchString%")
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
         })
             ->orderByDesc('id')
             ->paginate($perPage);
 
-        return ApiResponseController::response('Consulta Exitosa', 200, $users);
+        return ApiResponseController::response('Consulta Exitosa,pero no hay matriculados', 200, $users);
+
     }
 
     /**
@@ -86,6 +124,15 @@ class StudentsController extends Controller
         if (!$student = Student::with('orders.orderCourses.course', 'orders.orderCourses.extensions', 'orders.orderCourses.certificationTests', 'orders.orderCourses.sapInstalations', 'orders.orderCourses.freezings', 'orders.orderCourses.dateHistory', 'orders.currency', 'orders.dues', 'orders.user', 'orders.invoice')->find($id)->attachCertificationTest()) {
             return ApiResponseController::response('', 204);
         }
+
+        $passwrord = $student->created_at->format('YmdHis');
+        $passwrord = ($passwrord + $student->id) * 2;
+        $passwrord = $passwrord * $passwrord * $student->id;
+        $passwrord = substr($passwrord, -22);
+        $passwrord = str_replace('E+', '', $passwrord);
+        $passwrord = str_replace('.', '', $passwrord);
+
+        $student->password = $passwrord;
 
         return ApiResponseController::response('Consulta exitosa', 200, $student);
     }
@@ -219,6 +266,81 @@ class StudentsController extends Controller
         $order->terms_confirmed_by_student = true;
         $order->save();
 
+        $order = Order::where('id', $order->id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
+
+        $mailTemplate = [
+            'Contado'=> 'terms-contado',
+            'Cuotas' => 'terms-cuotas'
+        ];
+
+        $content =view("mails.".$mailTemplate[$order->payment_mode])->with(['order' => $order])->render();
+
+        CoreMailsController::sendMail(
+            'andresjosehr@gmail.com',
+            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
+
         return ApiResponseController::response('Consulta exitosa', 200, $order);
+    }
+
+    public function saveTermsPdfTemplate(Request $request, $order_id){
+        $base64String = $request->input('base64'); // Asegúrate de enviar la cadena base64 como parte de tu solicitud
+
+        // Decodificar la cadena base64
+        $pdfDecoded = base64_decode($base64String);
+
+        $order = Order::find($order_id);
+
+        // Definir el nombre del archivo PDF
+        $pdfFileName = 'orden_'.Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+
+        // Guardar el archivo en la carpeta storage/app/public/terminos-aceptados
+        $path = storage_path('app/public/terminos-aceptados/' . $pdfFileName);
+        file_put_contents($path, $pdfDecoded);
+
+        // Devolver alguna respuesta
+        return response()->json(['mensaje' => 'PDF guardado con éxito', 'ruta' => $path]);
+    }
+
+
+    public function downloadTermsPdfTemplate($order_id)
+    {
+
+        $order = Order::find($order_id);
+
+        $filename = 'orden_'.Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+        // return $filename;
+
+        if (!Storage::disk('local')->exists("public/terminos-aceptados/$filename")) {
+            return response()->json(['message' => 'File not found.'], 404);
+        }
+
+        $path = storage_path("app/public/terminos-aceptados/$filename");
+        $headers = [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        return Response::download($path, $filename, $headers);
+    }
+
+    public function downloadTermsPdfTemplate2($order_key)
+    {
+
+        $order = Order::where('key', $order_key)->first();
+
+        $filename = 'orden_'.Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+
+        // Verificar si el archivo existe
+        if (!Storage::disk('local')->exists("public/terminos-aceptados/$filename")) {
+            return response()->json(['message' => 'File not found.'], 404);
+        }
+
+        // Ruta al archivo en el sistema de archivos
+        $path = storage_path("app/public/terminos-aceptados/$filename");
+
+        // Descargar el archivo
+        return response()->download($path);
     }
 }

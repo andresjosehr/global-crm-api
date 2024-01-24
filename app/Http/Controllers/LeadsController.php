@@ -228,8 +228,8 @@ class LeadsController extends Controller
 
         $lead = Lead::with('observations.user')->with('student')->find($id);
 
-        if ($lead->student_id) {
-            $student = Student::where('id', $lead->student_id)->update([
+        if ($lead->student) {
+            $student = Student::where('id', $lead->student->id)->update([
                 'name'             => $request->name,
                 'email'            => $request->email,
                 'phone'            => $request->phone,
@@ -885,7 +885,7 @@ class LeadsController extends Controller
             'origin'           => $request->origin,
             'document'         => $request->document,
             'country_id'       => $request->country_id,
-            'city_id'          => $request->city_id,
+            // 'city_id'          => $request->city_id,
             'document_type_id' => $request->document_type_id,
         ]);
 
