@@ -64,4 +64,14 @@ class Student extends Model
         }
         return $this;
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_student', 'student_id', 'user_id');
+    }
+
+    public function leads()
+    {
+        return $this->belongsTo(Lead::class);
+    }
 }

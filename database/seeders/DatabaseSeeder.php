@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,6 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        // Disable foreign key checks
+         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         $this->call(RolesSeeder::class);
         $this->call(ModulesSeeder::class);
         $this->call(ModulesRolesSeeder::class);
@@ -31,6 +34,7 @@ class DatabaseSeeder extends Seeder
         $this->call(StaffAvailabilitySlotsSeeder::class);
         $this->call(SapInstalationsSeeder::class);
         $this->call(SheetsSeeder::class);
+         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         // $this->call(LeadsSeeder::class);
     }
 }

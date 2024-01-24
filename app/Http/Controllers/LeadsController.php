@@ -285,7 +285,8 @@ class LeadsController extends Controller
         $searchString = $request->input('searchString') ? $request->input('searchString') : '';
         $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
 
-        $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
+        if($mode === "potenciales"){
+          $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
             return $query->where('user_id', $user->id)->where('status', '<>', 'Archivado');
         })
             ->when($mode == 'potenciales', function ($q) use ($user) {
@@ -336,10 +337,62 @@ class LeadsController extends Controller
             });
             return $leadAssignment;
         });
-
-
-
         return ApiResponseController::response("Exito", 200, $leads);
+        };
+
+        if ($mode === 'matriculados') {
+    // Obtener el usuario actual
+    $usuario = User::find($user->id);
+
+    // Obtener los IDs de los estudiantes asociados al usuario actual
+    $studentIds = $usuario->students()->pluck('students.id'); //cambiar
+
+    $studentIds = array_values(array_filter($studentIds->toArray(), function($student_id) use ($usuario){
+        $user_id = DB::table('user_student')->where('student_id',$student_id)->orderBy('id', 'DESC')->first()->user_id;
+        return $usuario->id == $user_id;
+    }));
+
+    $leads = Lead::whereIn('id', function ($query) use ($studentIds) {
+        $query->select('lead_id')->from('students')->whereIn('id', $studentIds);
+    })
+    ->where('status', 'Matriculado')
+    ->when($searchString, function ($q) use ($searchString) {
+        return $q->where(function ($q) use ($searchString) {
+            return $q->where('name', 'LIKE', "%$searchString%")
+                ->orWhere('courses', 'LIKE', "%$searchString%")
+                ->orWhere('status', 'LIKE', "%$searchString%")
+                ->orWhere('origin', 'LIKE', "%$searchString%")
+                ->orWhere('phone', 'LIKE', "%$searchString%")
+                ->orWhere('email', 'LIKE', "%$searchString%")
+                ->orWhere('document', 'LIKE', "%$searchString%");
+        });
+    })
+    ->when($request->project_id, function ($query) use ($request) {
+        // Resto de la lógica del proyecto
+    })
+    ->when(!$request->project_id, function ($query) use ($request) {
+        // Resto de la lógica cuando no hay un proyecto seleccionado
+    })
+    ->when($request->automatic_import === 'true', function ($query) use ($request) {
+        return $query->where('channel_id', '<>', NULL);
+    })
+    ->when($request->numbers, function ($query) use ($request) {
+        return $query->whereIn('phone', explode(',', $request->numbers));
+    })
+    ->with(['observations' => function ($query) {
+        return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+    }])
+    ->with('user', 'leadProject', 'saleActivities.user')
+    ->orderBy('id', 'DESC')
+    ->paginate($perPage);
+
+    $leads->getCollection()->transform(function ($leadAssignment) {
+        // Añadir cualquier lógica de transformación necesaria
+        return $leadAssignment;
+    });
+
+    return ApiResponseController::response("Éxito", 200, $leads);
+    }
     }
 
 
@@ -811,6 +864,16 @@ class LeadsController extends Controller
         $student->email            = $request->input('email');
         $student->lead_id          = $lead_id;
         $student->save();
+
+        $userId = auth()->user()->id;
+        $studentId = $student->id;
+
+        DB::table('user_student')->insert([
+            'user_id' => $userId,
+            'student_id' => $studentId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         // Save lead
         $lead = Lead::where('id', $lead_id)->update([
