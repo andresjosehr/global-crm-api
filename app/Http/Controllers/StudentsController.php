@@ -12,7 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
-
+use Illuminate\Support\Facades\DB;
 
 class StudentsController extends Controller
 {
@@ -60,18 +60,24 @@ class StudentsController extends Controller
      */
     public function store(Request $request)
     {
-        $student                       = new Student();
-        $student->name                = $request->input('name');
-        $student->country_id           = $request->input('country_id');
-        $student->document_type_id     = $request->input('document_type_id');
 
-        $student->phone               = $request->input('phone');
-        $student->document            = $request->input('document');
-        $student->email               = $request->input('email');
-        $student->lead_id               = $request->input('lead_id');
-        $student->save();
+           // Crear el estudiante
+            $student = new Student();
+            $student->name = $request->input('name');
+            $student->country_id = $request->input('country_id');
+            $student->document_type_id = $request->input('document_type_id');
+            $student->phone = $request->input('phone');
+            $student->document = $request->input('document');
+            $student->email = $request->input('email');
 
-        return ApiResponseController::response('Usuario creado con exito', 200, $student);
+            // Asignar user_id dinámicamente
+
+            $student->save();
+
+            // Obtener el ID del estudiante creado
+
+
+            return ApiResponseController::response('Usuario creado con éxito', 200, $student);
     }
 
     /**

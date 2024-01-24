@@ -65,9 +65,13 @@ class Student extends Model
         return $this;
     }
 
-    // Accesor for password
-    public function getPasswordAttribute($value)
+    public function users()
     {
-        return $value;
+        return $this->belongsToMany(User::class, 'user_student', 'student_id', 'user_id');
+    }
+
+    public function leads()
+    {
+        return $this->belongsTo(Lead::class);
     }
 }
