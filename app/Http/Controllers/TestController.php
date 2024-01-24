@@ -20,6 +20,17 @@ class TestController extends Controller
      */
     public function index($order_id)
     {
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title' => 'Test',
+            'body'  => 'Test body',
+            'icon'  => 'folder_shared',
+            'url'   => 'https://www.google.com',
+            'user_id' => 8
+        ]);
+
+        return 'Exito';
+
 
         $order = Order::where('key', $order_id)->with('orderCourses.course' ,'dues', 'student', 'currency')->first();
 

@@ -11,4 +11,9 @@ class PusherController extends Controller
         event(new \App\Events\CallActivityEvent('Call Activity Event'));
         return [];
     }
+
+    public function sendNotification(){
+        event(new \App\Events\SendNotificationEvent(8, ['title' => 'Test', 'body' => 'Test body']));
+        return [];
+    }
 }
