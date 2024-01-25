@@ -31,6 +31,7 @@ class DocumentTypesSeeder extends Seeder
             ],
             'Perú' => [
                 ['name' => 'DNI', 'code' => 'DNI', 'description' => 'Documento Nacional de Identidad'],
+                ['name' => 'CE', 'code' => 'CE', 'description' => 'Carné de Identidad Para Extranjeros'],
             ],
             'Chile' => [
                 ['name' => 'RUT', 'code' => 'RUT', 'description' => 'Rol Único Tributario'],

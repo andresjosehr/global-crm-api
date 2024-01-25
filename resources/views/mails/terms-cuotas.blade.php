@@ -74,7 +74,7 @@
             $s4 = '';
             if(count($paidDues) > 1) {
                 $s4 = 's';
-            }
+            }reserva
             @endphp
 
             <p>Has realizado {{$s4 ? 'los' : 'el'}} siguiente{{$s4}} pago{{$s4}}</p>
