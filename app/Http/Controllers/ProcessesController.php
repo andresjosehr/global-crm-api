@@ -313,15 +313,16 @@ class ProcessesController extends Controller
         $order->student['row'] = $emptyRow;
 
         $ref = [
-            'row'       => 'A',
-            'name'     => 'B',
-            'document' => 'C',
-            'courses'  => 'D',
-            'phone'    => 'E',
-            'email'    => 'F',
-            'start'    => 'AB',
-            'license'  => 'AC',
-            'user'     => 'AD'
+            'row'          => 'A',
+            'name'         => 'B',
+            'document'     => 'C',
+            'courses'      => 'D',
+            'phone'        => 'E',
+            'email'        => 'F',
+            'start'        => 'AB',
+            'license'      => 'AC',
+            'user'         => 'AD',
+            'observations' => 'AG'
         ];
 
         foreach ($ref as $key => $col) {
