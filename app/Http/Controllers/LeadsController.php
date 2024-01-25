@@ -287,7 +287,9 @@ class LeadsController extends Controller
 
         if($mode === "potenciales"){
           $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
-            return $query->where('user_id', $user->id)->where('status', '<>', 'Archivado');
+            return $query->where('user_id', $user->id)
+                    ->where('status', '<>', 'Archivado')
+                    ->where('status', '<>', 'Nuevo');
         })
             ->when($mode == 'potenciales', function ($q) use ($user) {
             })
@@ -607,7 +609,6 @@ class LeadsController extends Controller
                 // Update lead status as "No interesado"
                 Lead::where('id', $request->lead_id)->update([
                     'status' => $request->lead_status,
-                    'user_id' => $request->user()->id,
                 ]);
             }
 

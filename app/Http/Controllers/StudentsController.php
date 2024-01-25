@@ -274,8 +274,8 @@ class StudentsController extends Controller
             'use_router' => false
         ]);
 
-        // $processesController = new ProcessesController();
-        // $processesController->updateSellsExcel($order->id);
+        $processesController = new ProcessesController();
+        $processesController->updateSellsExcel($order->id);
 
 
         return ApiResponseController::response('Consulta exitosa', 200, $order);
