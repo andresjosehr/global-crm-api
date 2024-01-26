@@ -406,7 +406,7 @@ class LeadsController extends Controller
             ->when($user->role->name != 'Administrador', function ($query) use ($user) {
                 return $query->where('user_id', $user->id);
             })
-            ->with('user', 'saleActivities.user')
+            ->with('student', 'user', 'saleActivities.user')
             ->first();
 
         return ApiResponseController::response("Exito", 200, $lead);
@@ -890,6 +890,7 @@ class LeadsController extends Controller
             'country_id'       => $request->country_id,
             // 'city_id'          => $request->city_id,
             'document_type_id' => $request->document_type_id,
+            'user_id'          => $userId,
         ]);
 
         $leadAssignament = LeadAssignment::where('id', $lead_assignment_id)

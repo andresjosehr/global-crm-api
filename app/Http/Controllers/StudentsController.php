@@ -40,7 +40,7 @@ class StudentsController extends Controller
         })->when($request->input('Matriculados'), function ($q) use ($user){
             $q->whereHas('lead', function ($q) {
                 $q->where('status', 'Matriculado');
-            })->where('user_id', $user->id);
+            })->where('user_id', $user->id)->with('lead');
         })
         ->with('orders')
         ->whereHas('orders', function ($q) use ($user) {
@@ -269,7 +269,7 @@ class StudentsController extends Controller
             'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
             'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
             'icon'       => 'check_circle_outline',
-            'url'        => 'https://www.google.com',
+            'url'        => '#',
             'user_id'    => $order->student->users[0]->id,
             'use_router' => false
         ]);

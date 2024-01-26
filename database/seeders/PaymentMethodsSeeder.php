@@ -35,10 +35,6 @@ class PaymentMethodsSeeder extends Seeder
                 "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
             ],
             [
-                "name" => "CUENTA BBVA / CONTINENTAL",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-            ],
-            [
                 "name" => "CUENTA INTERBANK SOLES",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
             ],
@@ -47,31 +43,32 @@ class PaymentMethodsSeeder extends Seeder
                 "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
             ],
             [
+                "name" => "CUENTA BBVA / CONTINENTAL",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
+            ],
+            [
+                "name" => "NIUBIZ",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
+            ],
+            [
                 "name" => "MERCADO PAGO",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
             ],
             [
-                "name" => "LINK DE PAGO NIUBIZ",
+                "name" => "Paypal",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
             ],
 
 
 
 
+
             [
-                "name" => "CUENTA BBVA",
+                "name" => "BINANCE",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
             ],
             [
-                "name" => "CUENTA CUENCA",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-            ],
-            [
-                "name" => "CUENTA SANTANDER MEXICO",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-            ],
-            [
-                "name" => "OXXO",
+                "name" => "MERCADO PAGO",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
             ],
             [
@@ -79,16 +76,12 @@ class PaymentMethodsSeeder extends Seeder
                 "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
             ],
             [
-                "name" => "MERCADO PAGO",
+                "name" => "OXXO",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
             ],
             [
-                "name" => "CUENTA BANORTE",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-            ],
-            [
-                "name" => "CUENTA BANCO AZTECA",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
+                "name" => "NIUBIZ",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
             ],
 
 
@@ -99,13 +92,14 @@ class PaymentMethodsSeeder extends Seeder
 
             // COP
             [
-                "name" => "CUENTA BANCOLOMBIA",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-            ],
-            [
                 "name" => "CUENTA NEQUI",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
             ],
+            [
+                "name" => "CUENTA BANCOLOMBIA",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
+            ],
+
             [
                 "name" => "MERCADO PAGO",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
@@ -116,17 +110,26 @@ class PaymentMethodsSeeder extends Seeder
 
             // CLP
             [
-                "name" => "BANCO DE CHILE",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-            ],
-            [
-                "name" => "CUENTA RUT",
-                "currency_id" => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-            ],
-            [
                 "name" => "MERCADO PAGO",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
             ],
+            [
+                "name" => "BINANCE",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
+            ],
+            [
+                "name" => "PAYPAL",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
+            ],
+            [
+                "name" => "WESTERN UNION",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
+            ],
+            [
+                "name" => "NIUBIZ",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
+            ],
+
 
 
 
