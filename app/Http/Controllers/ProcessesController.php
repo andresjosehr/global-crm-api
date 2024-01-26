@@ -330,6 +330,11 @@ class ProcessesController extends Controller
         }
 
         $col = 'G';
+        if($order->dues[0]->amount > ($order->price_amount / 2)){
+            $col = 'j';
+        }
+
+
         foreach ($order->dues as $due) {
             $dataToUpdate[] = ['column' => $col, 'value' => $due->amount . ' ' . $order->currency->iso_code];
             $col++;
