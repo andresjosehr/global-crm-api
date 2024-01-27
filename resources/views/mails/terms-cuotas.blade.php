@@ -227,6 +227,9 @@
 
             <p>Nuestro horario de atención comprende ⏰📅<br>Lunes a Viernes de 9am a 7pm (Hora Perú 🇵🇪)<br>Sábados de 9am a 5pm (Hora Perú 🇵🇪)<br>Los DOMINGOS NO laboramos.</p>
 
+            <p>Con este boton puedes descargar los términos y condiciones que has aceptado anteriormente</p>
+            <a href="{{$urlTerm}}" style="background: #0d6efd; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none;">Descargar Términos y Condiciones</a>
+
             <p>¡Bienvenido/a a la familia Global Tecnologías Academy! 🤩</p>
         </div>
     </div>

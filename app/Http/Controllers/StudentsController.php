@@ -227,6 +227,8 @@ class StudentsController extends Controller
 
         $student->save();
 
+        $student = Student::find($student->id)->with('user')->first();
+
 
 
         if ($request->input('document_type_id') == 'otro') {
@@ -253,16 +255,14 @@ class StudentsController extends Controller
             'Cuotas' => 'terms-cuotas'
         ];
 
-        $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order])->render();
+        $pdfFileName  = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+        $urlTerm      = env('APP_URL');
+        $urlTerm     .= '/storage/terminos-aceptados/' . $pdfFileName;
+
+        $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
 
         CoreMailsController::sendMail(
-            'andresjosehr@gmail.com',
-            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
-
-        CoreMailsController::sendMail(
-            'llazayanaalex@gmail.com',
+            $student->user->email,
             'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
             $content
         );

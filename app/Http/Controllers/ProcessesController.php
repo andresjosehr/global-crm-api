@@ -311,6 +311,7 @@ class ProcessesController extends Controller
         $order->student['license'] = $order->orderCourses->first()->license . ' de licensia y aula virtual';
         $order->student['user'] = $order->student->user->name;
         $order->student['row'] = $emptyRow;
+        $order->student['observations'] = $order->observations;
 
         $ref = [
             'row'          => 'A',
