@@ -37,14 +37,17 @@ class StudentsController extends Controller
                 ->orWhere("email", 'LIKE', "%$searchString%")
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
-        })->when($request->input('Matriculados'), function ($q) use ($user){
+        })
+        ->when($request->input('Matriculados')=='1', function ($q) use ($user){
             $q->whereHas('lead', function ($q) {
                 $q->where('status', 'Matriculado');
             })->where('user_id', $user->id)->with('lead');
         })
         ->with('orders')
-        ->whereHas('orders', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
+        ->when($user->role_id!=1, function ($q) use ($user){
+            return $q->whereHas('orders', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
         })
         ->orderByDesc('id')
         ->paginate($perPage);

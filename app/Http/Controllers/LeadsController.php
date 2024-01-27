@@ -285,116 +285,72 @@ class LeadsController extends Controller
         $searchString = $request->input('searchString') ? $request->input('searchString') : '';
         $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
 
-        if($mode === "potenciales"){
-          $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
-            return $query->where('user_id', $user->id)
+            $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
+                return $query->where('user_id', $user->id)
                     ->where('status', '<>', 'Archivado')
                     ->where('status', '<>', 'Nuevo');
-        })
-            ->when($mode == 'potenciales', function ($q) use ($user) {
             })
-            ->when($searchString, function ($q) use ($searchString) {
-                return $q->where(function ($q) use ($searchString) {
-                    return $q->where('name', 'LIKE', "%$searchString%")
-                        ->orWhere('courses', 'LIKE', "%$searchString%")
-                        ->orWhere('status', 'LIKE', "%$searchString%")
-                        ->orWhere('origin', 'LIKE', "%$searchString%")
-                        ->orWhere('phone', 'LIKE', "%$searchString%")
-                        ->orWhere('email', 'LIKE', "%$searchString%")
-                        ->orWhere('document', 'LIKE', "%$searchString%");
+                ->when($mode == 'potenciales', function ($q) use ($user) {
+                    return $q->where('user_id', $user->id)->where(function ($q2) {
+                        return $q2->where('status', 'Potencial')->orWhere('status', 'Interesado');
+                    });
+                })
+                ->when($mode == 'matriculados', function ($q) use ($user) {
+                    return $q->where('user_id', $user->id)
+                        ->where('status', 'Matriculado');
+                })
+                ->when($mode == 'base-general', function ($q) use ($user) {
+                    return $q;
+                })
+                ->when($searchString, function ($q) use ($searchString) {
+                    return $q->where(function ($q) use ($searchString) {
+                        return $q->where('name', 'LIKE', "%$searchString%")
+                            ->orWhere('courses', 'LIKE', "%$searchString%")
+                            ->orWhere('status', 'LIKE', "%$searchString%")
+                            ->orWhere('origin', 'LIKE', "%$searchString%")
+                            ->orWhere('phone', 'LIKE', "%$searchString%")
+                            ->orWhere('email', 'LIKE', "%$searchString%")
+                            ->orWhere('document', 'LIKE', "%$searchString%");
+                    });
+                })
+                ->when($request->project_id, function ($query) use ($request) {
+                    if ($request->project_id != 'Todos') {
+                        $p = $request->project_id == 'Base' ? null : $request->project_id;
+                        return $query->where('lead_project_id', $p);
+                    }
+
+                    // Get all projects
+                    $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
+                    // attach null to projects
+                    // $projects[] = null;
+                    return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
+                })
+                ->when(!$request->project_id, function ($query) use ($request) {
+                    return $query->where('lead_project_id', "Base");
+                })
+                ->when($request->automatic_import === 'true', function ($query) use ($request) {
+                    return $query->where('channel_id', '<>', NULL);
+                })
+                ->when($request->numbers, function ($query) use ($request) {
+                    return $query->whereIn('phone', explode(',', $request->numbers));
+                })
+                ->with(['observations' => function ($query) {
+                    return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+                }])->with('user', 'leadProject', 'saleActivities.user')
+                ->orderBy('id', 'DESC')
+                ->paginate($perPage);
+
+            $leads->getCollection()->transform(function ($leadAssignment) {
+                // Añadimos el accesorio al modelo
+                $leadAssignment->saleActivities->each(function ($saleActivity) {
+                    $saleActivity->append('duration');
+                    return $saleActivity;
                 });
-            })
-            ->when($request->project_id, function ($query) use ($request) {
-                if ($request->project_id != 'Todos') {
-                    $p = $request->project_id == 'Base' ? null : $request->project_id;
-                    return $query->where('lead_project_id', $p);
-                }
-
-                // Get all projects
-                $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
-                // attach null to projects
-                // $projects[] = null;
-                return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
-            })
-            ->when(!$request->project_id, function ($query) use ($request) {
-                return $query->where('lead_project_id', "Base");
-            })
-            ->when($request->automatic_import === 'true', function ($query) use ($request) {
-                return $query->where('channel_id', '<>', NULL);
-            })
-            ->when($request->numbers, function ($query) use ($request) {
-                return $query->whereIn('phone', explode(',', $request->numbers));
-            })
-            ->with(['observations' => function ($query) {
-                return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-            }])->with('user', 'leadProject', 'saleActivities.user')
-            ->orderBy('id', 'DESC')
-            ->paginate($perPage);
-
-        $leads->getCollection()->transform(function ($leadAssignment) {
-            // Añadimos el accesorio al modelo
-            $leadAssignment->saleActivities->each(function ($saleActivity) {
-                $saleActivity->append('duration');
-                return $saleActivity;
+                return $leadAssignment;
             });
-            return $leadAssignment;
-        });
-        return ApiResponseController::response("Exito", 200, $leads);
-        };
+            return ApiResponseController::response("Exito", 200, $leads);
 
-        if ($mode === 'matriculados') {
-    // Obtener el usuario actual
-    $usuario = User::find($user->id);
 
-    // Obtener los IDs de los estudiantes asociados al usuario actual
-    $studentIds = $usuario->students()->pluck('students.id'); //cambiar
-
-    $studentIds = array_values(array_filter($studentIds->toArray(), function($student_id) use ($usuario){
-        $user_id = DB::table('user_student')->where('student_id',$student_id)->orderBy('id', 'DESC')->first()->user_id;
-        return $usuario->id == $user_id;
-    }));
-
-    $leads = Lead::whereIn('id', function ($query) use ($studentIds) {
-        $query->select('lead_id')->from('students')->whereIn('id', $studentIds);
-    })
-    ->where('status', 'Matriculado')
-    ->when($searchString, function ($q) use ($searchString) {
-        return $q->where(function ($q) use ($searchString) {
-            return $q->where('name', 'LIKE', "%$searchString%")
-                ->orWhere('courses', 'LIKE', "%$searchString%")
-                ->orWhere('status', 'LIKE', "%$searchString%")
-                ->orWhere('origin', 'LIKE', "%$searchString%")
-                ->orWhere('phone', 'LIKE', "%$searchString%")
-                ->orWhere('email', 'LIKE', "%$searchString%")
-                ->orWhere('document', 'LIKE', "%$searchString%");
-        });
-    })
-    ->when($request->project_id, function ($query) use ($request) {
-        // Resto de la lógica del proyecto
-    })
-    ->when(!$request->project_id, function ($query) use ($request) {
-        // Resto de la lógica cuando no hay un proyecto seleccionado
-    })
-    ->when($request->automatic_import === 'true', function ($query) use ($request) {
-        return $query->where('channel_id', '<>', NULL);
-    })
-    ->when($request->numbers, function ($query) use ($request) {
-        return $query->whereIn('phone', explode(',', $request->numbers));
-    })
-    ->with(['observations' => function ($query) {
-        return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-    }])
-    ->with('user', 'leadProject', 'saleActivities.user')
-    ->orderBy('id', 'DESC')
-    ->paginate($perPage);
-
-    $leads->getCollection()->transform(function ($leadAssignment) {
-        // Añadir cualquier lógica de transformación necesaria
-        return $leadAssignment;
-    });
-
-    return ApiResponseController::response("Éxito", 200, $leads);
-    }
     }
 
 
