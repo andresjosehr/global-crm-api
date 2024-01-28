@@ -58,6 +58,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::get('get-projects', 'App\Http\Controllers\LeadProjectsController@getProjects');
         Route::get('get-leads/{mode?}', 'App\Http\Controllers\LeadsController@getLeads');
         Route::get('get-lead/{id}', 'App\Http\Controllers\LeadsController@getLead');
+        Route::get('get-lead-by-phone/{phone}', 'App\Http\Controllers\LeadsController@getLeadByPhone');
         Route::get('get-zadarma-info', 'App\Http\Controllers\SalesController@getZadarmaInfo');
         Route::get('get-next-lead', 'App\Http\Controllers\LeadsController@getNextLead');
         Route::get('archive-lead/{id}', 'App\Http\Controllers\LeadsController@archiveLead');

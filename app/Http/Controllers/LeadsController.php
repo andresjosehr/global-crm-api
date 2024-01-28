@@ -368,6 +368,22 @@ class LeadsController extends Controller
         return ApiResponseController::response("Exito", 200, $lead);
     }
 
+
+    public function getLeadByPhone(Request $request, $phone)
+    {
+        $user = $request->user();
+
+        $lead = Lead::where('phone', $phone)
+
+            ->with('student', 'user', 'saleActivities.user')
+            ->first();
+
+        return ApiResponseController::response("Exito", 200, $lead);
+    }
+
+
+
+
     public function archiveLead(Request $request, $id)
     {
         $user = $request->user();
