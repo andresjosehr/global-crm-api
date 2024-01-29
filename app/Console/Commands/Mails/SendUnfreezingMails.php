@@ -123,6 +123,11 @@ class SendUnfreezingMails extends Command
 
             $scheduleTime = Carbon::now()->setTimezone('America/Lima')->addDay()->format('m/d/Y');
 
+            // Check if scheduleTime is sunday, if so, add one more day
+            if(Carbon::parse($scheduleTime)->isSunday()){
+                $scheduleTime = Carbon::parse($scheduleTime)->addDay()->format('m/d/Y');
+            }
+
             CoreMailsController::sendMail(
                 $student['CORREO'],
                 $subject,
