@@ -75,13 +75,15 @@ class StudentsController extends Controller
     {
 
         // Crear el estudiante
-        $student = new Student();
-        $student->name = $request->input('name');
-        $student->country_id = $request->input('country_id');
+        $student                   = new Student();
+        $student->name             = $request->input('name');
+        $student->country_id       = $request->input('country_id');
+        $student->state_id         = $request->input('state_id');
+        $student->city_id          = $request->input('city_id');
         $student->document_type_id = $request->input('document_type_id');
-        $student->phone = $request->input('phone');
-        $student->document = $request->input('document');
-        $student->email = $request->input('email');
+        $student->phone            = $request->input('phone');
+        $student->document         = $request->input('document');
+        $student->email            = $request->input('email');
 
         // Asignar user_id dinámicamente
 
@@ -143,11 +145,12 @@ class StudentsController extends Controller
             return ApiResponseController::response('Estudiante no encontrado', 404);
         }
 
-        $student->name                = $request->input('name');
-        $student->country_id          = $request->input('country_id');
-        $student->city_id             = $request->input('city_id') ?? null;
-        $student->phone               = $request->input('phone');
-        $student->email               = $request->input('email');
+        $student->name       = $request->input('name');
+        $student->country_id = $request->input('country_id');
+        $student->state_id   = $request->input('state_id') ?? null;
+        $student->city_id    = $request->input('city_id') ?? null;
+        $student->phone      = $request->input('phone');
+        $student->email      = $request->input('email');
 
 
 
@@ -223,6 +226,7 @@ class StudentsController extends Controller
         $student->phone               = $request->input('phone');
         $student->phone               = $request->input('phone');
         $student->city_id             = $request->input('city_id');
+        $student->state_id             = $request->input('state_id');
         $student->email               = $request->input('email');
 
         $student->save();
@@ -261,11 +265,11 @@ class StudentsController extends Controller
 
         $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
 
-        CoreMailsController::sendMail(
-            $student->user->email,
-            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
+        // CoreMailsController::sendMail(
+        //     $student->user->email,
+        //     'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
+        //     $content
+        // );
 
         $noti = new NotificationController();
         $noti = $noti->store([

@@ -108,6 +108,10 @@ Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController
 
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
 Route::get('countries', 'App\Http\Controllers\CountriesController@index');
+Route::get('get-state-by-country/{country_id}', 'App\Http\Controllers\CountriesController@getStateByCountry');
+Route::get('get-city-by-state/{state_id}', 'App\Http\Controllers\CountriesController@getCityByState');
+Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');
+Route::get('get-state/{id}', 'App\Http\Controllers\CountriesController@getState');
 Route::get('test', 'App\Http\Controllers\TestController@index');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
 

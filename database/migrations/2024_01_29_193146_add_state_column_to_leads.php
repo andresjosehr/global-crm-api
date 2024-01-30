@@ -13,13 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('cities', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->bigInteger('country_id')->unsigned()->nullable();
-            $table->foreign('country_id')->references('id')->on('countries');
-            $table->string('timezone');
-            $table->timestamps();
+        Schema::table('leads', function (Blueprint $table) {
+            $table->foreignId('state_id')->nullable()->after('city_id');
         });
     }
 
@@ -30,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cities');
+        Schema::table('leads', function (Blueprint $table) {
+            //
+        });
     }
 };

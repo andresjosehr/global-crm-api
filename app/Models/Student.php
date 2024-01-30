@@ -15,6 +15,7 @@ class Student extends Model
         'name',
         'country_id',
         'city_id',
+        'state_id',
         'phone',
         'document_type_id',
         'document',

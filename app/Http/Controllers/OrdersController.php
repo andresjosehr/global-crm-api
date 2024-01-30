@@ -79,7 +79,7 @@ class OrdersController extends Controller
         $order->free_courses_date = $request->free_courses_date;
         $order->price_amount      = $request->price_amount;
         $order->created_by        = $id;
-        $order->comunication_type        = $request->comunication_type;
+        $order->comunication_type = $request->comunication_type;
         $order->observations      = $request->observations;
 
         // Generate random key
@@ -269,6 +269,7 @@ class OrdersController extends Controller
             $order->price_amount               = $request->price_amount;
             $order->terms_confirmed_by_student = $request->terms_confirmed_by_student;
             $order->observations               = $request->observations;
+            $order->free_courses_date          = $request->free_courses_date;
 
             $order->save();
 

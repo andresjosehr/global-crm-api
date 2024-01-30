@@ -221,7 +221,8 @@ class LeadsController extends Controller
             'document'         => $request->document,
             'user_id'          => $user_id,
             'country_id'       => $request->country_id,
-            'city_id'          => $request->city_id,
+            // 'city_id'          => $request->city_id,
+
             'document_type_id' => $request->document_type_id,
 
         ]);
@@ -235,7 +236,8 @@ class LeadsController extends Controller
                 'phone'            => $request->phone,
                 'document'         => $request->document,
                 'country_id'       => $request->country_id,
-                'city_id'          => $request->city_id,
+                // 'city_id'          => $request->city_id,
+                // 'state_id'         => $request->state_id,
                 'document_type_id' => $request->document_type_id,
             ]);
         }
