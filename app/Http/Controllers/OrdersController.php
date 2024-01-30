@@ -273,10 +273,7 @@ class OrdersController extends Controller
 
             $order->save();
 
-            // Courses
-
-            // $order->orderCourses()->createMany($request->courses);
-            // $order->orderCourses()->createMany($request->free_courses);
+            // Order Courses
             $this->syncRelation($order->orderCourses(), $request->order_courses);
 
             // Dues
