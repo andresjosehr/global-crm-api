@@ -426,6 +426,58 @@ class OrdersController extends Controller
         return [$new, $modelName];
     }
 
+//     private function syncRelation($relation, $data)
+// {
+//     $model = $relation->getModel();
+//     $fillableColumns = $model->getFillable();
+
+//     $new = array_filter($data, fn ($item) => !isset($item['id']) || $item['id'] == null);
+//     $new = array_map(function ($item) use ($fillableColumns) {
+//         return array_intersect_key($item, array_flip($fillableColumns));
+//     }, $new);
+
+//     $fillableColumns[] = 'id';
+//     $existing = array_filter($data, fn ($item) => isset($item['id']) && $item['id'] != null);
+//     $existing = array_map(function ($item) use ($fillableColumns) {
+//         return array_intersect_key($item, array_flip($fillableColumns));
+//     }, $existing);
+
+//     foreach ($existing as $item) {
+//         $existingModel = $model->newQuery()->find($item['id']);
+//         if ($existingModel) {
+//             $existingModel->fill($item);
+//             $existingModel->save();
+//         }
+//     }
+
+//     // Crear nuevos registros
+//     $record = $relation->createMany($new);
+
+//     $modelName = explode('\\', get_class($model));
+//     $modelName = $modelName[count($modelName) - 1];
+//     if (($modelName == 'Extension' || $modelName == 'Freezing') && count($new) > 0) {
+//         foreach ($new as $item) {
+//             $orderCourse = OrderCourse::find($item['order_course_id']);
+//             if ($orderCourse) {
+//                 // Actualizar la fecha de finalización del curso si es un congelamiento
+//                 $endDate = ($modelName == 'Freezing') ? $item['finish_date'] : $orderCourse->end;
+//                 // Crear el registro en DatesHistory
+//                 $data = [
+//                     'order_course_id' => $item['order_course_id'],
+//                     'order_id' => $item['order_id'],
+//                     'start_date' => $orderCourse->start,
+//                     'end_date' => $endDate,
+//                     'type' => ($modelName == 'Freezing') ? 'Congelación' : 'Extension',
+//                     strtolower($modelName) . '_id' => $record[0]['id']
+//                 ];
+//                 DatesHistory::create($data);
+//             }
+//         }
+//     }
+
+//     return [$new, $modelName];
+// }
+
 
     function getOptions()
     {
