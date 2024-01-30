@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\OrderCourse;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Extension extends Model
 {
@@ -29,6 +30,12 @@ class Extension extends Model
             $this->attributes['payment_date'] = Carbon::parse($value)->format('Y-m-d');
         }
     }
+
+    public function orderCourse()
+{
+    return $this->belongsTo(OrderCourse::class);
+}
+
 
 
 }
