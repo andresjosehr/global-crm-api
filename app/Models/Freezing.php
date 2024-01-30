@@ -36,3 +36,5 @@ class Freezing extends Model
         $this->attributes['return_date'] = Carbon::parse($value)->format('Y-m-d');
     }
 }
+
+
