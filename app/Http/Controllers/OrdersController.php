@@ -406,15 +406,15 @@ class OrdersController extends Controller
     $record = $relation->createMany($new);
 
     // Obtener el índice máximo de $new
-    $maxIndex = !empty($new) ? max(array_keys($new)) : 0;
+    $maxIndex = !empty($new) ? max(array_keys($new)) : null;
 
-    if ($maxIndex !== 0) {
+    if ($maxIndex !== null) {
         // Obtener el modelo actual
         $modelName = explode('\\', get_class($model));
         $modelName = $modelName[count($modelName) - 1];
 
-
-        $orderCourse = OrderCourse::find($new[$maxIndex]['order_course_id']);
+        if($modelName == "Extension" || $modelName == "Freezing"){
+            $orderCourse = OrderCourse::find($new[$maxIndex]['order_course_id']);
         $data = [
             'order_course_id' => $new[$maxIndex]['order_course_id'],
             'order_id' => $new[$maxIndex]['order_id'],
@@ -426,9 +426,11 @@ class OrdersController extends Controller
         DatesHistory::create($data);
 
         return [$new, $modelName];
+        }
+
     }
 
-    return [$new, null]; 
+    return [$new, null];
 }
 
 
