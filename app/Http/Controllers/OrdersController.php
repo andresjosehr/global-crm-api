@@ -16,6 +16,7 @@ use App\Models\Price;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OrdersController extends Controller
 {
@@ -405,6 +406,9 @@ class OrdersController extends Controller
     // Obtener el índice máximo de $new
     $maxIndex = !empty($new) ? max(array_keys($new)) : 0;
 
+
+    Log::info('Max index: ' . $maxIndex);
+
     if ($maxIndex !== 0) {
         // Obtener el modelo actual
         $modelName = explode('\\', get_class($model));
@@ -425,7 +429,7 @@ class OrdersController extends Controller
         return [$new, $modelName];
     }
 
-    return [$new, null]; 
+    return [$new, null];
 }
 
 
