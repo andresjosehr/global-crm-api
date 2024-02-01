@@ -29,16 +29,23 @@ class SapInstalation extends Model
         "payment_method_id",
         "sap_payment_date",
         "staff_id",
+        "draft",
         "observation",
     ];
 
-    public function getTimeAttribute()
+    public function getTimeInsAttribute()
     {
+        if(!$this->start_datetime){
+            return null;
+        }
         return Carbon::parse($this->start_datetime)->format('H:i:s');
     }
 
-    public function getDateAttribute()
+    public function getDateInsAttribute()
     {
+        if(!$this->start_datetime){
+            return null;
+        }
         return Carbon::parse($this->start_datetime)->format('Y-m-d');
     }
 
