@@ -9,7 +9,10 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Processes\StudentsExcelController;
+use App\Models\DatesHistory;
+use App\Models\OderDateHistory;
 use App\Models\Order;
+use App\Models\OrderCourse;
 
 class TestController extends Controller
 {
@@ -18,86 +21,37 @@ class TestController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($order_id)
+    public function index()
     {
-        $google_sheet = new GoogleSheetController();
+        $order_course_id = 1;
 
-        $spreadsheetId = '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs';
-        $range = 'ENERO 24!A1:AH';
+        $order_course  = OrderCourse::where('id', $order_course_id)->with('dateHistory', 'course', 'order.student', 'freezings')->first();
+        $student       = $order_course->order->student;
+        $dates_history = $order_course->dateHistory;
+        $course        = $order_course->course;
+        $freezing      = $order_course->freezings->last();
+        $remainFreezingDurationAvaliable = 3 - $order_course->freezings->reduce(function ($carry, $item) {
+            $times = ['1 Mes' => 1, '2 Meses' => 2, '3 Meses' => 3];
+            return $carry + $times[$item->duration];
+        }, 0);
 
-        // 1. Obtener los datos existentes para encontrar la primera fila vacía
-        $response = $google_sheet->service->spreadsheets_values->get($spreadsheetId, $range);
-        $rows = $response->getValues();
-        $header = array_shift($rows);
-        $rows = array_map(function ($row) {
-            return count($row);
-        }, $rows);
+        // Get date history record before the freezing by id
+        $dateRecord = DatesHistory::where('order_course_id', $order_course_id)->get();
+        // Get index of the date history record before the freezing
+        $index = $dateRecord->search(function ($item) use ($freezing) {
+            return $item->freezing_id == $freezing->id;
+        })-1;
+        $original_date = $dateRecord[$index];
 
-        $emptyRow = array_search(1, $rows) + 2; // Suponiendo que la primera columna debe estar vacía
-
-        $order = Order::where('id', $order_id)->with('orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user')->first();
-
-        $courses = array_reduce($order->orderCourses->toArray(), function ($carry, $item) {
-            $carry  .= $item['course']['short_name'];
-            return $carry . ' + ';
-        }, '');
-        $courses = substr($courses, 0, -3);
-        $order->student['courses'] = $courses;
-        $start = $order->orderCourses->min('start');
-        $order->student['start'] = Carbon::parse($start)->format('d/m/Y');
-        $order->student['license'] = $order->orderCourses->first()->license . ' de licensia y aula virtual';
-        $order->student['user'] = $order->student->user->name;
-        $order->student['row'] = $emptyRow;
-
-        $ref = [
-            'row'       => 'A',
-            'name'     => 'B',
-            'document' => 'C',
-            'courses'  => 'D',
-            'phone'    => 'E',
-            'email'    => 'F',
-            'start'    => 'AB',
-            'license'  => 'AC',
-            'user'     => 'AD'
-        ];
-
-        foreach ($ref as $key => $col) {
-            $dataToUpdate[] = ['column' => $col, 'value' => $order->student[$key] . ''];
-        }
-
-        $col = 'G';
-        foreach ($order->dues as $due) {
-            $dataToUpdate[] = ['column' => $col, 'value' => $due->amount . ' ' . $order->currency->iso_code];
-            $col++;
-            $date = Carbon::parse($due->date)->format('d/m/Y');
-            $dataToUpdate[] = ['column' => $col, 'value' => $date];
-            $col++;
-            $dataToUpdate[] = ['column' => $col, 'value' => $due->paymentMethod];
-            $col++;
-        }
-
-        // 'sheet_id'          => '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs',
-        // 'course_row_number' => $emptyRow,
-        // 'tab_id'            => '1992733426',
-        // Add all this properties to the array
-
-        $dataToUpdate = array_map(function ($item) use ($emptyRow, $spreadsheetId) {
-            $item['sheet_id'] = $spreadsheetId;
-            $item['course_row_number'] = $emptyRow;
-            $item['tab_id'] = '1438941447';
-            return $item;
-        }, $dataToUpdate);
-        // return $dataToUpdate;
-
-        // return $dataToUpdate;
-
-        $google_sheet = new GoogleSheetController();
-        $data = $google_sheet->transformData($dataToUpdate);
-        $data = $google_sheet->prepareRequests($data);
-
-        $google_sheet->updateGoogleSheet($data);
-
-        return "Exito";
+        return view('mails.freezing', [
+            'order_course'  => $order_course,
+            'student'       => $student,
+            'dates_history' => $dates_history,
+            'original_date' => $original_date,
+            'course'        => $course,
+            'freezing'      => $freezing,
+            'remainFreezingDurationAvaliable' => $remainFreezingDurationAvaliable
+        ]);
     }
 
     // public  sendDebugNotification($user_id)

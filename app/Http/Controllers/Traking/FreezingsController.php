@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Traking;
 
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
+use App\Models\DatesHistory;
 use App\Models\Freezing;
 use App\Models\OrderCourse;
 use Carbon\Carbon;
@@ -48,6 +49,24 @@ class FreezingsController extends Controller
 
             // Check if current date is between start_date and return_date
             if(isset($free2['start_date']) && isset($free2['return_date'])) {
+
+                $freezingDB = Freezing::where('id', $free['id'])->first();
+                if($freezingDB->mail_status == 'Pendiente') {
+                    self::scheduleMail($freezingDB);
+                }
+
+                $dateHistory = DatesHistory::where('freezing_id', $free['id'])->first();
+                if(!$dateHistory) {
+                    $orderCourse = OrderCourse::where('id', $free['order_course_id'])->first();
+                    DatesHistory::create([
+                        'order_id'        => $orderCourse->order_id,
+                        'order_course_id' => $free['order_course_id'],
+                        'start_date'      => $orderCourse->start,
+                        'end_date'        => Carbon::parse($free2['finish_date'])->format('Y-m-d'),
+                        'freezing_id'     => $free['id'],
+                        'type'            => 'Congelamiento',
+                    ]);
+                }
 
                 $currentDate = Carbon::now();
                 $startDate = Carbon::parse($free2['start_date']);
@@ -100,6 +119,14 @@ class FreezingsController extends Controller
 
 
         return ApiResponseController::response('Exito', 200, $lastFreezing);
+
+    }
+
+    public function scheduleMail($freezing){
+        // Get user
+        $order_course = OrderCourse::where('id', $freezing->order_course_id)->first()->order;
+        $user = $order_course->user;
+        $dates_history = $order_course->dateHistory;
 
     }
 }

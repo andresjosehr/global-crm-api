@@ -11,6 +11,8 @@ use Google_Service_Sheets;
 use Google_Service_Sheets_Request;
 use Google_Service_Sheets_CellData;
 use Google_Service_Sheets_BatchUpdateSpreadsheetRequest;
+use Google_Service_Sheets_ExtendedValue;
+use Illuminate\Support\Facades\Log;
 
 class GoogleSheetController extends Controller
 {
@@ -76,12 +78,23 @@ class GoogleSheetController extends Controller
      */
     public function prepareRequests($data)
     {
-
         $requests = [];
         foreach ($data as $sheet) {
             $requests[$sheet['sheet_id']] = [];
             foreach ($sheet['tabs'] as $tab) {
                 foreach ($tab['updates'] as $update) {
+                    // Crear la estructura de datos para la celda
+                    $cellData = new Google_Service_Sheets_CellData();
+
+                    // Establecer el valor de la celda
+                    $cellData->setUserEnteredValue(new Google_Service_Sheets_ExtendedValue(['stringValue' => $update['value']]));
+
+                    // Verificar si hay una nota para agregar y agregarla si existe
+                    if (isset($update['note'])) {
+                        $cellData->setNote($update['note']);
+                    }
+
+                    // Crear la solicitud para actualizar la celda
                     $requests[$sheet['sheet_id']][] = new Google_Service_Sheets_Request([
                         'updateCells' => [
                             'range' => [
@@ -92,9 +105,9 @@ class GoogleSheetController extends Controller
                                 'endColumnIndex'   => $this->columnLetterToNumber($update['column']) + 1,
                             ],
                             'rows' => [
-                                ['values' => [new Google_Service_Sheets_CellData(['userEnteredValue' => ['stringValue' => $update['value']]])]]
+                                ['values' => [$cellData]]
                             ],
-                            'fields' => 'userEnteredValue'
+                            'fields' => 'userEnteredValue,note'
                         ]
                     ]);
                 }
@@ -102,6 +115,7 @@ class GoogleSheetController extends Controller
         }
         return $requests;
     }
+
 
     public function transformData($originalData)
     {
@@ -130,7 +144,8 @@ class GoogleSheetController extends Controller
             $groupedData[$sheetId]['tabs'][$tabId]['updates'][] = [
                 'column' => $item['column'],  // Puedes cambiar esto según tus necesidades
                 'course_row_number' => $item['course_row_number'],
-                'value' => $item['value']
+                'value' => $item['value'],
+                'note' => isset($item['note']) ? $item['note'] : null
             ];
         }
 

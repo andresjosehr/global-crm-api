@@ -300,6 +300,9 @@ class ProcessesController extends Controller
 
         $order = Order::where('id', $order_id)->with('orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user')->first();
 
+        // Sort $orderCourses by type ASC
+        $order->orderCourses = $order->orderCourses->sortByDesc('type');
+
         $courses = array_reduce($order->orderCourses->toArray(), function ($carry, $item) {
             $carry  .= $item['course']['short_name'];
             return $carry . ' + ';
@@ -317,7 +320,6 @@ class ProcessesController extends Controller
             'row'          => 'A',
             'name'         => 'B',
             'document'     => 'C',
-            'courses'      => 'D',
             'phone'        => 'E',
             'email'        => 'F',
             'start'        => 'AB',
@@ -329,6 +331,39 @@ class ProcessesController extends Controller
         foreach ($ref as $key => $col) {
             $dataToUpdate[] = ['column' => $col, 'value' => $order->student[$key] . ''];
         }
+
+        $certificationCombo = [
+            '2-10' => 'Aplica para certificación en gestión de materiales y finanzas',
+            '4-10' => 'Aplica para certificación en finanzas y capital humano',
+            '1-3' => 'Aplica para certificación en operaciones industriales',
+            '1-2' => 'Aplica para certificación en producción y logistica',
+            '2-3' => 'Aplica para certificación en logistica y mantenimiento industrial',
+            '1-10' => 'Aplica para certificación en producción y finanzas',
+            '1-4' => 'Aplica para certificación en planificación y capital humano',
+            '2-4' => 'Aplica para certificación gestión de materiales y capital humano',
+
+            '2-4-10'=> 'Aplica para certificación en administracion de empresas',
+            '1-2-4'=> 'Aplica para certificación en procesos industriales',
+            '1-2-10'=> 'Aplica para certificación en gestión de recursos empresariales',
+            '1-2-3'=> 'Aplica para certificación en minería y gestión industrial',
+        ];
+
+        $cert = $order->orderCourses->where('type', 'paid')->sortBy('id')->reduce(function ($carry, $item) {
+            $carry .= '-'.$item['course_id'];
+            return $carry;
+        }, '');
+        // remove first '-'
+        $cert = substr($cert, 1);
+        if(array_key_exists($cert, $certificationCombo)){
+            $dataToUpdate[] = ['column' => 'D', 'value' => $order->student['courses'], 'note' => $certificationCombo[$cert]];
+        }
+        else{
+            $dataToUpdate[] = ['column' => 'D', 'value' => $order->student['courses']];
+        }
+
+        LOG::debug($cert);
+
+
 
         $col = 'G';
         if($order->dues[0]->amount > ($order->price_amount / 2)){
