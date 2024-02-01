@@ -354,10 +354,17 @@ class ProcessesController extends Controller
             '1-2-3'=> 'Aplica para certificación en minería y gestión industrial',
         ];
 
-        $cert = $order->orderCourses->where('type', 'paid')->sortBy('id')->reduce(function ($carry, $item) {
-            $carry .= '-'.$item['course_id'];
+        $cert = $order->orderCourses->where('type', 'paid')->map(function ($item) {
+            return $item['course_id'];
+        })->toArray();
+
+        sort($cert, SORT_NUMERIC);
+
+        $cert = array_reduce($cert, function ($carry, $item) {
+            $carry .= '-'.$item;
             return $carry;
         }, '');
+
         // remove first '-'
         $cert = substr($cert, 1);
         if(array_key_exists($cert, $certificationCombo)){

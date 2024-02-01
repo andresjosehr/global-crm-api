@@ -8,14 +8,14 @@ use PhpParser\Node\Stmt\TryCatch;
 
 /**
  * Clase que contiene la lógica de negocio de los mensajes de los estudiantes
- * Por ejemplo, cuando el estudiante se le envían mensajes para que haga la certificación de los cursos SAP y de obsequios 
- * 
+ * Por ejemplo, cuando el estudiante se le envían mensajes para que haga la certificación de los cursos SAP y de obsequios
+ *
  * Dependencias:
  * - Resources/views/especial-messages carpeta que contiene los mensajes en formato Blade.
- * 
+ *
  * Estados de cursos validos: COMPLETA, CURSANDO, NO APLICA, NO CULMINÓ, POR HABILITAR, ¿REPROBADO?, ¿ABANDONADO?, ¿APROBADO?
- * 
- * 
+ *
+ *
  */
 class StudentMessageService
 {
@@ -270,7 +270,7 @@ class StudentMessageService
             self::addBusinessDaysToDate($endCourseDate->copy(), 15), // agrega 15 dias habiles a la fecha de proceso
         ];
 
-        // Armado del Template      
+        // Armado del Template
         $templateFilename =  sprintf(
             "especial-messages.sap-pending-certifications.%d-dias-%s",
             $endCourseDaysAhead,
@@ -407,7 +407,7 @@ class StudentMessageService
 
         // chequeo si no hay cursos por notificar
         if (count($sapCourses) == 0 || count($freeCourses) == 0) :
-            Log::debug(sprintf("llega aca: %d - %d ", count($sapCourses), count($freeCourses)));
+            // Log::debug(sprintf("llega aca: %d - %d ", count($sapCourses), count($freeCourses)));
             return null;
         endif;
 
@@ -624,7 +624,7 @@ class StudentMessageService
             self::addBusinessDaysToDate($endCourseDate->copy(), 15), // agrega 15 dias habiles a la fecha de proceso
         ];
 
-        // Armado del Template      
+        // Armado del Template
         $templateFilename =  sprintf(
             "especial-messages.sap-and-free-pending-certifications.%d-dias-%s",
             $endCourseDaysAhead,
@@ -753,7 +753,7 @@ class StudentMessageService
 
             // chequeo si no hay cursos por notificar
             if (count($coursesToNotify) == 0) :
-                Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
+                // Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
                 return null;
             endif;
 
@@ -813,11 +813,11 @@ class StudentMessageService
             endforeach;
 
 
-            // Armado del Template      
+            // Armado del Template
             $templateFilename =  sprintf(
                 "especial-messages.free-courses-pending.%d-dias-%s",
                 $endCourseDaysAhead,
-                self::__getTemplateFileNamePartForFlags(true, false) // es la precondicion que tenga "intentos pendientes" 
+                self::__getTemplateFileNamePartForFlags(true, false) // es la precondicion que tenga "intentos pendientes"
             );
             Log::debug(sprintf('%s::%s Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
@@ -915,7 +915,7 @@ class StudentMessageService
                 $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
                 Log::debug(sprintf("Curso %s - dias de diferencia %d (%s)", $course['name'], $tmpEndCourseDaysAhead, $course['end']));
                 Log::debug('StudentMessageService::' . __FUNCTION__ . ': $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
-                // Condicion (b) (condicion (a) incluida por ser 1 dia) 
+                // Condicion (b) (condicion (a) incluida por ser 1 dia)
                 if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                     continue;
                 }
@@ -935,7 +935,7 @@ class StudentMessageService
 
             // chequeo si no hay cursos por notificar
             if (count($coursesToNotify) == 0) :
-                Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
+                // Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
                 return null;
             endif;
 
@@ -994,11 +994,11 @@ class StudentMessageService
             endforeach;
 
 
-            // Armado del Template      
+            // Armado del Template
             $templateFilename =  sprintf(
                 "especial-messages.free-courses-completed.%d-dias-%s",
                 $endCourseDaysAhead,
-                self::__getTemplateFileNamePartForFlags(false, $tmpNoFreeCertificationAttemptsFlag, $tmpApprovedSapCourseFlag) // es la precondicion que tenga "intentos pendientes" 
+                self::__getTemplateFileNamePartForFlags(false, $tmpNoFreeCertificationAttemptsFlag, $tmpApprovedSapCourseFlag) // es la precondicion que tenga "intentos pendientes"
             );
             Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
@@ -1102,7 +1102,7 @@ class StudentMessageService
 
             // chequeo si no hay cursos por notificar
             if (count($coursesToNotify) == 0) :
-                Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
+                // Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
                 return null;
             endif;
 
@@ -1142,7 +1142,7 @@ class StudentMessageService
             endforeach;
 
             // flag especial de 6 cursos en la columna SAP
-            // Filas 32 y 33: solo si en la columna SAP, tiene menos de 6 cursos 
+            // Filas 32 y 33: solo si en la columna SAP, tiene menos de 6 cursos
             $show6CoursesOffer = (count(explode("+", $this->__studentData["SAP"])) < 6);
 
 
@@ -1201,7 +1201,7 @@ class StudentMessageService
             /* Precondiciones:
             - Es un curso de Obsequio o SAP
             - Tiene estado "CURSANDO"
-            - Estudiante tiene "EXTENSION" distinto de cadena vacia            
+            - Estudiante tiene "EXTENSION" distinto de cadena vacia
             - Con fecha de fin a los 30 días, 15 días, 7 días, 4 días y 3 día de la fecha $processDate
              */
             if (empty($this->__studentData) == true || isset($this->__studentData['courses']) == false) :
@@ -1255,7 +1255,7 @@ class StudentMessageService
 
             // chequeo si no hay cursos por notificar
             if (count($coursesToNotify) == 0) :
-                Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
+                // Log::debug(sprintf("llega aca: %d ", count($coursesToNotify)));
                 return null;
             endif;
 
@@ -1287,7 +1287,7 @@ class StudentMessageService
     }
 
     /**
-     * Obtiene el mensaje para el estudiante 
+     * Obtiene el mensaje para el estudiante
      * @param $templateFilename Nombre del archivo de template
      * @param $vars Variables para el template
      */
@@ -1306,7 +1306,7 @@ class StudentMessageService
         // @todo eliminar esta linea - es solo para debug visual
         if (self::$__showTemplateNameInMessageFlag == true) :
             $message .= "
-        
+
 -- plantilla: $templateFilename --
         ";
         endif;
@@ -1563,7 +1563,7 @@ class StudentMessageService
                         else:
                             $course[$level]['pendingAttemptsCount'] =0;
                         endif;
-            
+
                     endif;
 
                     // setea el flag en el CURSO de lecciones incompletas
