@@ -81,4 +81,8 @@ class Student extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function documentType()
+    {
+        return $this->belongsTo(DocumentType::class);
+    }
 }

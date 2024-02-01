@@ -298,7 +298,7 @@ class ProcessesController extends Controller
 
         $emptyRow = array_search(1, $rows) + 2; // Suponiendo que la primera columna debe estar vacía
 
-        $order = Order::where('id', $order_id)->with('orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user')->first();
+        $order = Order::where('id', $order_id)->with('orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user', 'student.documentType')->first();
 
         // Sort $orderCourses by type ASC
         $order->orderCourses = $order->orderCourses->sortByDesc('type');
@@ -307,19 +307,25 @@ class ProcessesController extends Controller
             $carry  .= $item['course']['short_name'];
             return $carry . ' + ';
         }, '');
-        $courses = substr($courses, 0, -3);
-        $order->student['courses'] = $courses;
-        $start = $order->orderCourses->min('start');
-        $order->student['start'] = Carbon::parse($start)->format('d/m/Y');
-        $order->student['license'] = $order->orderCourses->first()->license . ' de licensia y aula virtual';
-        $order->student['user'] = $order->student->user->name;
-        $order->student['row'] = $emptyRow;
-        $order->student['observations'] = $order->observations;
+        $courses                        = substr($courses, 0, -3);
+        $order->student['courses']      = $courses;
+        $start                          = $order->orderCourses->min('start');
+        $order->student['start']        = Carbon::parse($start)->format('d/m/Y');
+        $order->student['license']      = $order->orderCourses->first()->license . ' de licensia y aula virtual';
+        $order->student['user']         = $order->student->user->name;
+        $order->student['row']          = $emptyRow;
+        try{
+            $order->student['documento'] = $order->student->documentType->name.' '.$order->student->document;
+        }catch(\Exception $e){
+            $order->student['documento'] = $order->student->document;
+        }
+
+
 
         $ref = [
             'row'          => 'A',
             'name'         => 'B',
-            'document'     => 'C',
+            'documento'    => 'C',
             'phone'        => 'E',
             'email'        => 'F',
             'start'        => 'AB',
