@@ -92,6 +92,26 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::get('get-main-stats', 'App\Http\Controllers\LeadsController@getMainStats');
         });
     });
+
+    Route::prefix('traking')->group(function () {
+        Route::prefix('sap-instalations')->group(function () {
+            Route::post('save-draft', 'App\Http\Controllers\Traking\SapInstalationsController@saveDraft');
+            Route::put('update/{id}', 'App\Http\Controllers\Traking\SapInstalationsController@update');
+        });
+
+        Route::prefix('certification-tests')->group(function () {
+            Route::put('update', 'App\Http\Controllers\Traking\CertificationTestsController@update');
+        });
+        Route::prefix('extensions')->group(function () {
+            Route::post('save-draft', 'App\Http\Controllers\Traking\ExtensionsController@saveDraft');
+            Route::put('update', 'App\Http\Controllers\Traking\ExtensionsController@update');
+        });
+
+        Route::prefix('freezings')->group(function () {
+            Route::post('save-draft', 'App\Http\Controllers\Traking\FreezingsController@saveDraft');
+            Route::put('update', 'App\Http\Controllers\Traking\FreezingsController@update');
+        });
+    });
     /* Add new routes here */
 });
 

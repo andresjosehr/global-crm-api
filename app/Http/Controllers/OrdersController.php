@@ -9,6 +9,7 @@ use App\Models\Currency;
 use App\Models\DatesHistory;
 use App\Models\DocumentType;
 use App\Models\Invoice;
+use App\Models\Message;
 use App\Models\Order;
 use App\Models\OrderCourse;
 use App\Models\PaymentMethod;
@@ -89,7 +90,7 @@ class OrdersController extends Controller
         $order->save();
 
         $orderCourses = $request->order_courses;  // Copiar el valor a una variable
-        if($request->free_courses_date == 'Misma fecha de curso SAP'){
+        if ($request->free_courses_date == 'Misma fecha de curso SAP') {
             // Get minor date in paid courses
             $paidCourses = array_values(array_filter($request->order_courses, function ($item) {
                 return $item['type'] == 'paid';
@@ -106,13 +107,13 @@ class OrdersController extends Controller
 
 
 
-            $i=0;
+            $i = 0;
             foreach ($orderCourses as $orderCourse) {
-                if($orderCourse['type'] == 'free') {
+                if ($orderCourse['type'] == 'free') {
                     $orderCourses[$i]['start'] = $lessStartDate;
                     $orderCourses[$i]['end'] = Carbon::parse($lessStartDate)->addMonths($this->months[$orderCourse['license']])->format('Y-m-d');
                     // Check if end date is sunday, if true, add one day
-                    if(Carbon::parse($orderCourses[$i]['end'])->dayOfWeek == 0){
+                    if (Carbon::parse($orderCourses[$i]['end'])->dayOfWeek == 0) {
                         $orderCourses[$i]['end'] = Carbon::parse($orderCourses[$i]['end'])->addDay()->format('Y-m-d');
                     }
                 }
@@ -171,7 +172,7 @@ class OrdersController extends Controller
                 $cert = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
                 foreach ($cert as $c) {
                     for ($i = 0; $i < 4; $i++) {
-                        $name = $i < 3 ? $c . " " . ($i + 1) : "Ponderación ". $c;
+                        $name = $i < 3 ? $c . " " . ($i + 1) : "Ponderación " . $c;
                         $premium = $i < 3 ? false : true;
                         $certificationTest = new CertificationTest();
                         $certificationTest->description = $name;
@@ -230,7 +231,7 @@ class OrdersController extends Controller
     {
         if (Order::where('id', $id)->exists()) {
             $order = Order::with('orderCourses.course', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
-            $order=$order->attachCertificationTest($order->student_id);
+            $order = $order->attachCertificationTest($order->student_id);
             return ApiResponseController::response('Consulta exitosa', 200, $order);
         } else {
             return ApiResponseController::response('La orden no existe', 404);
@@ -361,7 +362,7 @@ class OrdersController extends Controller
             $this->syncRelation($orderCourseDB->extensions(), $orderCourse['extensions']);
 
             $i = 0;
-            foreach($orderCourse['sap_instalations'] as $sapInstalation) {
+            foreach ($orderCourse['sap_instalations'] as $sapInstalation) {
                 $dateTime = explode('T', $sapInstalation['date'])[0];
                 $dateTime = $dateTime . ' ' . $sapInstalation['time'];
                 $orderCourse['sap_instalations'][$i]['start_datetime'] = Carbon::parse($dateTime)->format('Y-m-d H:i:s');
@@ -379,59 +380,58 @@ class OrdersController extends Controller
     }
 
     private function syncRelation($relation, $data)
-{
-    $model = $relation->getModel();
-    $fillableColumns = $model->getFillable();
+    {
+        $model = $relation->getModel();
+        $fillableColumns = $model->getFillable();
 
-    $new = array_filter($data, fn ($item) => !isset($item['id']) || $item['id'] == null);
-    $new = array_map(function ($item) use ($fillableColumns) {
-        return array_intersect_key($item, array_flip($fillableColumns));
-    }, $new);
+        $new = array_filter($data, fn ($item) => !isset($item['id']) || $item['id'] == null);
+        $new = array_map(function ($item) use ($fillableColumns) {
+            return array_intersect_key($item, array_flip($fillableColumns));
+        }, $new);
 
-    $fillableColumns[] = 'id';
-    $existing = array_filter($data, fn ($item) => isset($item['id']) && $item['id'] != null);
-    $existing = array_map(function ($item) use ($fillableColumns) {
-        return array_intersect_key($item, array_flip($fillableColumns));
-    }, $existing);
+        $fillableColumns[] = 'id';
+        $existing = array_filter($data, fn ($item) => isset($item['id']) && $item['id'] != null);
+        $existing = array_map(function ($item) use ($fillableColumns) {
+            return array_intersect_key($item, array_flip($fillableColumns));
+        }, $existing);
 
-    foreach ($existing as $item) {
-        $existingModel = $model->newQuery()->find($item['id']);
-        if ($existingModel) {
-            $existingModel->fill($item);
-            $existingModel->save();
-        }
-    }
-
-    // Crear nuevos registros
-    $record = $relation->createMany($new);
-
-    // Obtener el índice máximo de $new
-    $maxIndex = !empty($new) ? max(array_keys($new)) : null;
-
-    if ($maxIndex !== null) {
-        // Obtener el modelo actual
-        $modelName = explode('\\', get_class($model));
-        $modelName = $modelName[count($modelName) - 1];
-
-        if($modelName == "Extension" || $modelName == "Freezing"){
-            $orderCourse = OrderCourse::find($new[$maxIndex]['order_course_id']);
-        $data = [
-            'order_course_id' => $new[$maxIndex]['order_course_id'],
-            'order_id' => $new[$maxIndex]['order_id'],
-            'start_date' => $orderCourse->start,
-            'end_date' => $modelName == 'Freezing' ? $new[$maxIndex]['finish_date'] : $orderCourse->end,
-            'type' => $modelName == 'Freezing' ? 'Congelación' : 'Extension'
-        ];
-        $data[strtolower($modelName) . '_id'] = $record[0]['id'];
-        DatesHistory::create($data);
-
-        return [$new, $modelName];
+        foreach ($existing as $item) {
+            $existingModel = $model->newQuery()->find($item['id']);
+            if ($existingModel) {
+                $existingModel->fill($item);
+                $existingModel->save();
+            }
         }
 
-    }
+        // Crear nuevos registros
+        $record = $relation->createMany($new);
 
-    return [$new, null];
-}
+        // Obtener el índice máximo de $new
+        $maxIndex = !empty($new) ? max(array_keys($new)) : null;
+
+        if ($maxIndex !== null) {
+            // Obtener el modelo actual
+            $modelName = explode('\\', get_class($model));
+            $modelName = $modelName[count($modelName) - 1];
+
+            if ($modelName == "Extension" || $modelName == "Freezing") {
+                $orderCourse = OrderCourse::find($new[$maxIndex]['order_course_id']);
+                $data = [
+                    'order_course_id' => $new[$maxIndex]['order_course_id'],
+                    'order_id' => $new[$maxIndex]['order_id'],
+                    'start_date' => $orderCourse->start,
+                    'end_date' => $modelName == 'Freezing' ? $new[$maxIndex]['finish_date'] : $orderCourse->end,
+                    'type' => $modelName == 'Freezing' ? 'Congelación' : 'Extension'
+                ];
+                $data[strtolower($modelName) . '_id'] = $record[0]['id'];
+                DatesHistory::create($data);
+
+                return [$new, $modelName];
+            }
+        }
+
+        return [$new, null];
+    }
 
 
 
@@ -440,28 +440,31 @@ class OrdersController extends Controller
     function getOptions()
     {
 
-        $courses = Course::with('prices.currency')->get();
-        $prices = Price::with('currency')->get();
-        $currencies = Currency::all();
+        $courses        = Course::with('prices.currency')->get();
+        $prices         = Price::with('currency')->get();
+        $currencies     = Currency::all();
         $paymentMethods = PaymentMethod::all();
-        $documentTypes = DocumentType::all();
-        $user = User::whereHas('role', function ($query) {
+        $documentTypes  = DocumentType::all();
+        $messages       = Message::all();
+        $user           = User::whereHas('role', function ($query) {
             $query->where('name', 'Tecnico de instalación');
         })->get()->append(['unavailableTimes', 'bussyTimes']);
 
         $options = [
-            'courses' => $courses,
-            'prices' => $prices,
-            'currencies' => $currencies,
+            'courses'        => $courses,
+            'prices'         => $prices,
+            'currencies'     => $currencies,
             'paymentMethods' => $paymentMethods,
-            'documentTypes' => $documentTypes,
-            'staff' => $user
+            'documentTypes'  => $documentTypes,
+            'staff'          => $user,
+            'messages'      => $messages
         ];
 
         return ApiResponseController::response('Consulta exitosa', 200, $options);
     }
 
-    public function datesHistory($id){
+    public function datesHistory($id)
+    {
         $datesHistory = DatesHistory::with('course')->where('order_course_id', $id)->orderBy('created_at', 'ASC')->get();
         return ApiResponseController::response('Consulta exitosa', 200, $datesHistory);
     }

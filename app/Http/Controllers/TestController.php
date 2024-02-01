@@ -100,5 +100,5 @@ class TestController extends Controller
         return "Exito";
     }
 
-    public  sendDebugNotification($user_id)
+    // public  sendDebugNotification($user_id)
 }

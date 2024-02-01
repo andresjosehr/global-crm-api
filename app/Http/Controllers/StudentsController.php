@@ -107,15 +107,6 @@ class StudentsController extends Controller
             return ApiResponseController::response('', 204);
         }
 
-        $passwrord = $student->created_at->format('YmdHis');
-        $passwrord = ($passwrord + $student->id) * 2;
-        $passwrord = $passwrord * $passwrord * $student->id;
-        $passwrord = substr($passwrord, -22);
-        $passwrord = str_replace('E+', '', $passwrord);
-        $passwrord = str_replace('.', '', $passwrord);
-
-        $student->password = $passwrord;
-
         return ApiResponseController::response('Consulta exitosa', 200, $student);
     }
 
