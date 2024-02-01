@@ -29,7 +29,7 @@ class DocumentTypesSeeder extends Seeder
             'Argentina' => [
                 ['name' => 'DNI', 'code' => 'DNI', 'description' => 'Documento Nacional de Identidad'],
             ],
-            'Perú' => [
+            'Peru' => [
                 ['name' => 'DNI', 'code' => 'DNI', 'description' => 'Documento Nacional de Identidad'],
                 ['name' => 'CE', 'code' => 'CE', 'description' => 'Carné de Identidad Para Extranjeros'],
             ],

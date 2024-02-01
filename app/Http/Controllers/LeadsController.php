@@ -210,6 +210,10 @@ class LeadsController extends Controller
             if ($request->status == 'Interesado') {
                 $user_id = $user->id;
             }
+
+            if ($request->status == 'Matriculado') {
+                $user_id = $user->id;
+            }
         }
         $lead = Lead::where('id', $id)->update([
             'name'             => $request->name,

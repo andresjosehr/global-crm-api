@@ -22,6 +22,7 @@ class Lead extends Model
         'state_id',
         'document',
         'document_type_id',
+        'user_id',
         'status'
     ];
 
