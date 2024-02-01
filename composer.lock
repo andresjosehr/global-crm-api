@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bd3e21c3dc113b49059c04f16aeddf50",
+    "content-hash": "9e03507a034806ae3e74bee2b3169d20",
     "packages": [
         {
             "name": "based/laravel-typescript",
