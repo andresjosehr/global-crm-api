@@ -21,6 +21,7 @@ class OrderCourse extends Model
         'type',
         'enabled',
         'end',
+        'classroom_status',
         'observation',
     ];
 

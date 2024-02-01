@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(StudentsSeeder::class);
         // $this->call(CurrenciesSeeder::class);
         // $this->call(CoursesSeeder::class);
-        // $this->call(PricesSeeder::class);
+        $this->call(PricesSeeder::class);
         // $this->call(CoursesPricesSeeder::class);
         $this->call(PaymentMethodsSeeder::class);
         // $this->call(MessagesSeeder::class);

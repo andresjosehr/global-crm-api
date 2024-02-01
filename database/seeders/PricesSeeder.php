@@ -1192,50 +1192,45 @@ class PricesSeeder extends Seeder
 
 
 
-
-
-
-
-
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 20,
+                'amount' => 10,
                 'months' => 1,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 40,
+                'amount' => 20,
                 'months' => 2,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 60,
+                'amount' => 30,
                 'months' => 3,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 80,
+                'amount' => 40,
                 'months' => 4,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 100,
+                'amount' => 50,
                 'months' => 5,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 95,
+                'amount' => 60,
                 'months' => 6,
                 'mode' => ''
             ],
