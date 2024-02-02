@@ -392,7 +392,7 @@ class ProcessesController extends Controller
 
 
         foreach ($order->dues as $due) {
-            $amount = $order->currency->iso_code == 'PEN' ? $order->currency->symbol.'.'.$due->amount : $due->amount . '' . $order->currency->symbol;
+            $amount = $order->currency->iso_code == 'PEN' ? $order->currency->symbol.'.'.$due->amount : $due->amount . '' . $order->currency->iso_code;
             $dataToUpdate[] = ['column' => $col, 'value' => $amount];
             $col++;
             $date = Carbon::parse($due->date)->format('d/m/Y');

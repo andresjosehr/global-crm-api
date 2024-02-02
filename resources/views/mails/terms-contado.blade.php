@@ -88,7 +88,14 @@
                     @foreach($order->dues as $due)
                     <tr>
                         <td style="border: 1px solid #333; padding: 5px;">{{ DateTime::createFromFormat('Y-m-d', $due->date)->format('d/m/Y')}} </td>
-                        <td style="border: 1px solid #333; padding: 5px;">{{$due->amount}} {{$order->currency->iso_code}}</td>
+                        <td style="border: 1px solid #333; padding: 5px;">
+                            @if($order->currency->iso_code=='PEN')
+                            {{$order->currency->symbol}}.{{$due->amount}}
+                            @endif
+                            @if($order->currency->iso_code!='PEN')
+                            {{$due->amount}} {{$order->currency->iso_code}}
+                            @endif
+                        </td>
                         <td style="border: 1px solid #333; padding: 5px;">
                             <span
                             style="

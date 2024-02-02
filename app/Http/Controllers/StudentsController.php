@@ -263,6 +263,18 @@ class StudentsController extends Controller
         //     $content
         // );
 
+        CoreMailsController::sendMail(
+            'andresjosehr@gmail.com',
+            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
+
+        CoreMailsController::sendMail(
+            'llazayanaalex@gmail.com',
+            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
+
         $noti = new NotificationController();
         $noti = $noti->store([
             'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
