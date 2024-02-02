@@ -329,13 +329,19 @@ class ProcessesController extends Controller
             'phone'        => 'E',
             'email'        => 'F',
             'start'        => 'AB',
-            'license'      => 'AC',
+            // 'license'      => 'AC',
             'user'         => 'AD',
             'observations' => 'AG'
         ];
 
         foreach ($ref as $key => $col) {
             $dataToUpdate[] = ['column' => $col, 'value' => $order->student[$key] . ''];
+        }
+        Log::debug('Cursos: '.count($order->orderCourses->where('type', 'paid')->toArray()));
+        if(count($order->orderCourses->where('type', 'paid')->toArray()) > 1 && count($order->orderCourses->where('type', 'paid')->toArray()) < 5){
+            $dataToUpdate[] = ['column' => 'AC', 'value' => $order->student['license'], 'note' => '3 Meses para cada curso SAP'];
+        }else{
+            $dataToUpdate[] = ['column' => 'AC', 'value' => $order->student['license']];
         }
 
         $certificationCombo = [

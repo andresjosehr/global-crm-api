@@ -211,15 +211,15 @@ class StudentsController extends Controller
         }
 
 
-        $student                       = Student::find($order->student->id);
+        $student = Student::find($order->student->id);
 
-        $student->name                = $request->input('name');
-        $student->country_id          = $request->input('country_id');
-        $student->phone               = $request->input('phone');
-        $student->phone               = $request->input('phone');
-        $student->city_id             = $request->input('city_id');
-        $student->state_id             = $request->input('state_id');
-        $student->email               = $request->input('email');
+        $student->name       = $request->input('name');
+        $student->country_id = $request->input('country_id');
+        $student->phone      = $request->input('phone');
+        $student->phone      = $request->input('phone');
+        $student->city_id    = $request->input('city_id');
+        $student->state_id   = $request->input('state_id');
+        $student->email      = $request->input('email');
 
         $student->save();
 
@@ -270,7 +270,12 @@ class StudentsController extends Controller
             'icon'       => 'check_circle_outline',
             'url'        => '#',
             'user_id'    => $order->student->users[0]->id,
-            'use_router' => false
+            'use_router' => false,
+            'custom_data' => [
+                'type'     => 'terms_confirmed_by_student',
+                'student'  => $student,
+                'order_id' => $order->id
+            ]
         ]);
 
         $processesController = new ProcessesController();

@@ -17,6 +17,10 @@ class NotificationController extends Controller
     {
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
         $user_id = $request->user()->id;
+
+
+
+
         $notifications = Notification::where('user_id', $user_id)
 
                         ->when($request->read, function($query) use ($request){
@@ -46,16 +50,18 @@ class NotificationController extends Controller
      */
     public function store($notification)
     {
-        $not = new Notification();
-        $not->title = $notification['title'];
-        $not->body = $notification['body'];
-        $not->icon = $notification['icon'];
-        $not->url = $notification['url'];
-        $not->read = false;
-        $not->user_id = $notification['user_id'];
-        $not->save();
 
-        event(new \App\Events\SendNotificationEvent($notification['user_id'], $not));
+        $not = new Notification();
+
+        // Get fillable fields
+        $fillable = (new Notification())->getFillable();
+        $noti = array_filter($notification, function($key) use ($fillable) {
+            return in_array($key, $fillable);
+        }, ARRAY_FILTER_USE_KEY);
+
+        $not->fill($noti);
+
+        event(new \App\Events\SendNotificationEvent($notification['user_id'], $notification));
 
         return ApiResponseController::response('Exito', 200, $not);
     }
