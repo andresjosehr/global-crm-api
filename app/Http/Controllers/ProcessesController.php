@@ -355,10 +355,11 @@ class ProcessesController extends Controller
             '1-4' => 'Aplica para certificación en planificación y capital humano',
             '2-4' => 'Aplica para certificación gestión de materiales y capital humano',
 
-            '2-4-10'=> 'Aplica para certificación en administracion de empresas',
-            '1-2-4'=> 'Aplica para certificación en procesos industriales',
-            '1-2-10'=> 'Aplica para certificación en gestión de recursos empresariales',
-            '1-2-3'=> 'Aplica para certificación en minería y gestión industrial',
+            '2-4-10'     => 'Aplica para certificación en administracion de empresas',
+            '1-2-4'      => 'Aplica para certificación en procesos industriales',
+            '1-2-10'     => 'Aplica para certificación en gestión de recursos empresariales',
+            '1-2-3'      => 'Aplica para certificación en minería y gestión industrial',
+            '1-2-3-4-10' => 'Aplica para certificación en master sap integral',
         ];
 
         $cert = $order->orderCourses->where('type', 'paid')->map(function ($item) {

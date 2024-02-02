@@ -132,6 +132,10 @@ class PaymentMethodsSeeder extends Seeder
 
             // USD (Ecuador)
             [
+                "name" => "BINANCE",
+                "currency_id" => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+            ],
+            [
                 "name" => "PRODUBANCO",
                 "currency_id" => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
             ],
