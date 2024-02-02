@@ -68,20 +68,22 @@ class LeadProjectsController extends Controller
     public function getProjects(Request $request)
     {
 
+
         $user = $request->user();
         // Get projects with leads count
         $projects = LeadProject::
         withCount('leads')
-        ->when(!$user->role_id == 1, function ($query) use ($user) {
+        ->with('users')
+        ->when($user->role_id != 1, function ($query) use ($user) {
             return $query->whereHas('users', function ($q) use ($user) {
-                return $q->where('user_id', $user->id);
+                return $q->where('email', $user->email);
             });
         })
         ->get();
 
         $base = [
-            'id' => 'Base',
-            'name' => 'Base',
+            'id'          => 'Base',
+            'name'        => 'Base',
             'leads_count' => Lead::whereNull('lead_project_id')->count()
         ];
 

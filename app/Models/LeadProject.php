@@ -17,4 +17,9 @@ class LeadProject extends Model
     {
         return $this->hasMany(Lead::class);
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_lead_projects');
+    }
 }

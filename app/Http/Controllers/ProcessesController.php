@@ -337,8 +337,9 @@ class ProcessesController extends Controller
         foreach ($ref as $key => $col) {
             $dataToUpdate[] = ['column' => $col, 'value' => $order->student[$key] . ''];
         }
+        $cCount = count($order->orderCourses->where('type', 'paid')->toArray());
         Log::debug('Cursos: '.count($order->orderCourses->where('type', 'paid')->toArray()));
-        if(count($order->orderCourses->where('type', 'paid')->toArray()) > 1 && count($order->orderCourses->where('type', 'paid')->toArray()) < 5){
+        if($cCount > 1 && $cCount < 5){
             $dataToUpdate[] = ['column' => 'AC', 'value' => $order->student['license'], 'note' => '3 Meses para cada curso SAP'];
         }else{
             $dataToUpdate[] = ['column' => 'AC', 'value' => $order->student['license']];
