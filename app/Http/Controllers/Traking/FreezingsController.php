@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Traking;
 
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Mails\CoreMailsController;
 use App\Models\DatesHistory;
 use App\Models\Freezing;
 use App\Models\OrderCourse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FreezingsController extends Controller
 {
@@ -43,17 +45,14 @@ class FreezingsController extends Controller
 
             foreach($datesFields as $date) {
                 if(isset($free2[$date])) {
-                    $free2[$date] = date('Y-m-d', strtotime($free2[$date]));
+                    $free2[$date] = Carbon::parse($free2[$date])->format('Y-m-d');
                 }
             }
 
+            $order_course_id = $request->all()[0]['order_course_id'];
+
             // Check if current date is between start_date and return_date
             if(isset($free2['start_date']) && isset($free2['return_date'])) {
-
-                $freezingDB = Freezing::where('id', $free['id'])->first();
-                if($freezingDB->mail_status == 'Pendiente') {
-                    self::scheduleMail($freezingDB);
-                }
 
                 $dateHistory = DatesHistory::where('freezing_id', $free['id'])->first();
                 if(!$dateHistory) {
@@ -77,9 +76,17 @@ class FreezingsController extends Controller
             }
 
             Freezing::where('id', $free['id'])->update($free2);
+
+            if(isset($free2['start_date']) && isset($free2['return_date'])) {
+
+                $freezingDB = Freezing::where('id', $free['id'])->first();
+                if($freezingDB->mail_status == 'Pendiente') {
+                    self::scheduleMail($freezingDB, $order_course_id);
+                }
+            }
         }
 
-        $order_course_id = $request->all()[0]['order_course_id'];
+
         // Get last freezing
         $lastFreezing = Freezing::where('order_course_id', $order_course_id)->orderBy('id', 'desc')->first();
         $now = Carbon::now();
@@ -122,11 +129,58 @@ class FreezingsController extends Controller
 
     }
 
-    public function scheduleMail($freezing){
+    public function scheduleMail($freezing, $order_course_id){
         // Get user
-        $order_course = OrderCourse::where('id', $freezing->order_course_id)->first()->order;
-        $user = $order_course->user;
+
+
+        $order_course  = OrderCourse::where('id', $order_course_id)->with('dateHistory', 'course', 'order.student', 'freezings')->first();
+        $student       = $order_course->order->student;
         $dates_history = $order_course->dateHistory;
+        $course        = $order_course->course;
+        $remainFreezingDurationAvaliable = 3 - $order_course->freezings->reduce(function ($carry, $item) {
+            $times = ['1 Mes' => 1, '2 Meses' => 2, '3 Meses' => 3];
+            return $carry + $times[$item->duration];
+        }, 0);
+
+        // Get date history record before the freezing by id
+        $dateRecord = DatesHistory::where('order_course_id', $order_course_id)->get();
+        // Get index of the date history record before the freezing
+        $index = $dateRecord->search(function ($item) use ($freezing) {
+            return $item->freezing_id == $freezing->id;
+        })-1;
+        $original_date = $dateRecord[$index];
+
+
+        $content = view('mails.freezing')->with([
+            'order_course'  => $order_course,
+            'student'       => $student,
+            'dates_history' => $dates_history,
+            'original_date' => $original_date,
+            'course'        => $course,
+            'freezing'      => $freezing,
+            'remainFreezingDurationAvaliable' => $remainFreezingDurationAvaliable
+        ])->render();
+
+        $scheduleTime = null;
+
+        Log::info('Fecha de inicio: ' . Carbon::parse($freezing->start_date)->format('Y-m-d'));
+        Log::info('Fecha actual: ' . Carbon::now()->format('Y-m-d'));
+
+        if(Carbon::parse($freezing->start_date)->format('Y-m-d') == Carbon::now()->format('Y-m-d')) {
+            Freezing::where('id', $freezing->id)->update(['mail_status' => 'Enviado']);
+        }
+
+        if(Carbon::parse($freezing->start_date) > Carbon::now()) {
+            $scheduleTime = Carbon::parse($freezing->start_date)->format('m/d/Y');
+            Freezing::where('id', $freezing->id)->update(['mail_status' => 'Programado']);
+        }
+
+        CoreMailsController::sendMail(
+            'andresjosehr@gmail.com',
+             'Has congelado tu curso',
+            $content,
+            $scheduleTime
+        );
 
     }
 }
