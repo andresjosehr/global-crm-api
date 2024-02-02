@@ -315,7 +315,7 @@ class ProcessesController extends Controller
         $order->student['user']         = $order->student->user->name;
         $order->student['row']          = $emptyRow;
         try{
-            $order->student['documento'] = $order->student->documentType->name.' '.$order->student->document;
+            $order->student['documento'] = $order->student->documentType->code.' '.$order->student->document;
         }catch(\Exception $e){
             $order->student['documento'] = $order->student->document;
         }
@@ -392,7 +392,8 @@ class ProcessesController extends Controller
 
 
         foreach ($order->dues as $due) {
-            $dataToUpdate[] = ['column' => $col, 'value' => $due->amount . ' ' . $order->currency->iso_code];
+            $amount = $order->currency->iso_code == 'PEN' ? $order->currency->symbol.'.'.$due->amount : $due->amount . '' . $order->currency->symbol;
+            $dataToUpdate[] = ['column' => $col, 'value' => $amount];
             $col++;
             $date = Carbon::parse($due->date)->format('d/m/Y');
             $dataToUpdate[] = ['column' => $col, 'value' => $date];

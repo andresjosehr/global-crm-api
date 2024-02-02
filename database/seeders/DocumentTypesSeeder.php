@@ -40,7 +40,18 @@ class DocumentTypesSeeder extends Seeder
                 ['name' => 'CURP', 'code' => 'CURP', 'description' => 'Clave Única de Registro de Población'],
                 ['name' => 'INE', 'code' => 'INE', 'description' => 'Credencial para Votar con Fotografía'],
             ],
-            // Agrega más países y documentos según lo necesites...
+
+            'Ecuador' => [
+                ['name' => 'Cedula de Identidad', 'code' => 'CI', 'description' => 'Cedula de Identidad'],
+            ],
+
+            'Bolivia' => [
+                ['name' => 'Cedula de Identidad', 'code' => 'CI', 'description' => 'Cedula de Identidad'],
+            ],
+
+            'Guatemala' => [
+                ['name' => 'DPI', 'code' => 'DPI', 'description' => 'DPI'],
+            ],
         ];
 
         foreach ($documents as $countryName => $types) {
@@ -57,7 +68,7 @@ class DocumentTypesSeeder extends Seeder
 
         DB::table('document_types')->insert([
             'country_id' => null,
-            'name' => 'Otro (Especifique)',
+            'name' => 'Otro',
             'code' => 'Otro',
             'description' => 'Cualquier otro tipo de documento',
         ]);
