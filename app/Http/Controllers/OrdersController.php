@@ -122,6 +122,17 @@ class OrdersController extends Controller
             }
         }
 
+        if ($request->free_courses_date == 'Delegar al area academica') {
+            $i = 0;
+            foreach ($orderCourses as $orderCourse) {
+                if ($orderCourse['type'] == 'free') {
+                    $orderCourses[$i]['start'] = null;
+                    $orderCourses[$i]['end'] = null;
+                }
+                $i++;
+            }
+        }
+
 
         foreach ($orderCourses as $orderCourse) {
             $oc = $order->orderCourses()->create($orderCourse);
