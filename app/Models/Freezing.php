@@ -11,12 +11,17 @@ class Freezing extends Model
     use HasFactory;
 
     protected $fillable = [
-        'duration',
+        'months',
         'start_date',
         'finish_date',
         'return_date',
         'payment_date',
         'order_id',
+        'price_id',
+        'price_amount',
+        'payment_date',
+        'currency_id',
+        'payment_method_id',
         'remain_license',
         'order_course_id',
     ];

@@ -144,8 +144,7 @@ class FreezingsController extends Controller
         $dates_history = $order_course->dateHistory;
         $course        = $order_course->course;
         $remainFreezingDurationAvaliable = 3 - $order_course->freezings->reduce(function ($carry, $item) {
-            $times = ['1 Mes' => 1, '2 Meses' => 2, '3 Meses' => 3];
-            return $carry + $times[$item->duration];
+            return $carry + $item->months;
         }, 0);
 
         // Get date history record before the freezing by id

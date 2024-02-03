@@ -1192,45 +1192,50 @@ class PricesSeeder extends Seeder
 
 
 
+
+
+
+
+
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 10,
+                'amount' => 20,
                 'months' => 1,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 20,
+                'amount' => 40,
                 'months' => 2,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 30,
+                'amount' => 60,
                 'months' => 3,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 40,
+                'amount' => 80,
                 'months' => 4,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 50,
+                'amount' => 100,
                 'months' => 5,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 60,
+                'amount' => 95,
                 'months' => 6,
                 'mode' => ''
             ],
@@ -1556,6 +1561,51 @@ class PricesSeeder extends Seeder
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
                 'amount' => 20000,
                 'months' => 0,
+                'mode' => ''
+            ],
+
+
+
+            [
+                'description' => 'Congelacion Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 10,
+                'months' => 1,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Congelacion Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 20,
+                'months' => 2,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Congelacion Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 30,
+                'months' => 3,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Congelacion Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 40,
+                'months' => 4,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Congelacion Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 50,
+                'months' => 5,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Congelacion Curso gratis',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 60,
+                'months' => 6,
                 'mode' => ''
             ],
 
