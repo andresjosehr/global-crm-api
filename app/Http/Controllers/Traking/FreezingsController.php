@@ -238,12 +238,12 @@ class FreezingsController extends Controller
             Freezing::where('id', $freezing->id)->update(['mail_status' => 'Programado']);
         }
 
-        // CoreMailsController::sendMail(
-        //     'andresjosehr@gmail.com',
-        //      'Has congelado tu curso',
-        //     $content,
-        //     $scheduleTime
-        // );
+        CoreMailsController::sendMail(
+            'andresjosehr@gmail.com',
+             'Has congelado tu curso',
+            $content,
+            $scheduleTime
+        );
 
     }
 }
