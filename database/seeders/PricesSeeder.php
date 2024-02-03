@@ -1240,6 +1240,53 @@ class PricesSeeder extends Seeder
                 'mode' => ''
             ],
 
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 110,
+                'months' => 7,
+                'mode' => ''
+            ],
+
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 120,
+                'months' => 8,
+                'mode' => ''
+            ],
+
+
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 130,
+                'months' => 9,
+                'mode' => ''
+            ],
+
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 140,
+                'months' => 10,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 150,
+                'months' => 11,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Extension Curso SAP',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 160,
+                'months' => 12,
+                'mode' => ''
+            ],
+
 
             // 20USD
             // 40USD
@@ -1298,190 +1345,6 @@ class PricesSeeder extends Seeder
                 'description' => 'Extension Curso gratis',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 115,
-                'months' => 6,
-                'mode' => ''
-            ],
-
-
-
-
-
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 90,
-                'months' => 1,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 150,
-                'months' => 2,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 210,
-                'months' => 3,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 320,
-                'months' => 4,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 380,
-                'months' => 5,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 450,
-                'months' => 6,
-                'mode' => ''
-            ],
-
-
-
-
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 90000,
-                'months' => 1,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 150000,
-                'months' => 2,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 200000,
-                'months' => 3,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 320000,
-                'months' => 4,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 380000,
-                'months' => 5,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 450000,
-                'months' => 6,
-                'mode' => ''
-            ],
-
-
-
-
-
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 490,
-                'months' => 1,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 810,
-                'months' => 2,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 1000,
-                'months' => 3,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 1655,
-                'months' => 4,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 1980,
-                'months' => 5,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 2350,
-                'months' => 6,
-                'mode' => ''
-            ],
-
-
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 20000,
-                'months' => 1,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 30000,
-                'months' => 2,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 45000,
-                'months' => 3,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 74300,
-                'months' => 4,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 88200,
-                'months' => 5,
-                'mode' => ''
-            ],
-            [
-                'description' => 'Extension Curso gratis',
-                'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 103700,
                 'months' => 6,
                 'mode' => ''
             ],

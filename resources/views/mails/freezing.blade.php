@@ -72,7 +72,7 @@
                 <p>El tiempo maximo total que se puede congelar un curso es de 3 meses, y nos has solicitado congelarlo por:</p>
 
                 <ul>
-                    <li>Tiempo a congelar: {{$freezing->duration}}</li>
+                    <li>Tiempo a congelar: {{$freezing->months}} Mes(es)</li>
                     <li>Tiempo disponible para volver a congelar: {{$remainFreezingDurationAvaliable}} Meses</li>
                 </ul>
 

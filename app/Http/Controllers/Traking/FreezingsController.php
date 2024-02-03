@@ -9,6 +9,7 @@ use App\Models\DatesHistory;
 use App\Models\Freezing;
 use App\Models\OrderCourse;
 use Carbon\Carbon;
+use Google\Service\AdExchangeBuyerII\Date;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -102,14 +103,15 @@ class FreezingsController extends Controller
             $courseFreezing = true;
         }
 
+
         return ApiResponseController::response('Exito', 200, ['freezing' => $courseFreezing]);
     }
 
-    public function unfreezeCourse($id)
+    public function unfreezeCourse($order_course_id)
     {
-        OrderCourse::where('id', $id)->update(['classroom_status' => 'Cursando']);
+        OrderCourse::where('id', $order_course_id)->update(['classroom_status' => 'Cursando']);
         // Get last freezing
-        $lastFreezing = Freezing::where('order_course_id', $id)->orderBy('id', 'desc')->first();
+        $lastFreezing = Freezing::where('order_course_id', $order_course_id)->orderBy('id', 'desc')->first();
 
         if(!$lastFreezing) {
             return ApiResponseController::response('No hay congelamientos', 422);
@@ -128,10 +130,18 @@ class FreezingsController extends Controller
 
         Freezing::where('id', $lastFreezing->id)->update(['new_return_date' => $newReturnDate, 'new_finish_date' => $newFinishDate]);
 
-        $lastFreezing = Freezing::where('order_course_id', $id)->orderBy('id', 'desc')->first();
+        DatesHistory::create([
+            'order_course_id' => $order_course_id,
+            'start_date'      => OrderCourse::where('id', $order_course_id)->first()->start,
+            'end_date'        => $newFinishDate,
+            'type'            => 'Descongelamiento',
+            'freezing_id'     => $lastFreezing->id
+        ]);
+
+        $last_freezing = Freezing::where('order_course_id', $order_course_id)->orderBy('id', 'desc')->first();
 
 
-        return ApiResponseController::response('Exito', 200, $lastFreezing);
+        return ApiResponseController::response('Exito', 200, $last_freezing);
 
     }
 

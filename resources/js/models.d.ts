@@ -160,7 +160,7 @@ declare namespace App.Models {
 
     export interface Extension {
         id: number;
-        months: number;
+        months: number | null;
         order_id: number | null;
         order_course_id: number | null;
         price_id: number | null;
@@ -168,6 +168,7 @@ declare namespace App.Models {
         payment_date: string | null;
         currency_id: number | null;
         payment_method_id: number | null;
+        draft: boolean;
         created_at: string | null;
         updated_at: string | null;
         order_course?: App.Models.OrderCourse | null;
@@ -175,14 +176,21 @@ declare namespace App.Models {
 
     export interface Freezing {
         id: number;
-        duration: string;
-        start_date: string;
-        finish_date: string;
-        return_date: string;
+        months: number | null;
+        start_date: string | null;
+        finish_date: string | null;
+        new_finish_date: string | null;
+        return_date: string | null;
+        new_return_date: string | null;
         payment_date: string | null;
+        price_id: number | null;
+        price_amount: number | null;
+        currency_id: number | null;
+        payment_method_id: number | null;
         order_id: number | null;
         order_course_id: number | null;
-        remain_license: string;
+        remain_license: string | null;
+        mail_status: string;
         created_at: string | null;
         updated_at: string | null;
     }
@@ -281,7 +289,9 @@ declare namespace App.Models {
         created_at: string | null;
         updated_at: string | null;
         leads?: Array<App.Models.Lead> | null;
+        users?: Array<App.Models.User> | null;
         leads_count?: number | null;
+        users_count?: number | null;
     }
 
     export interface LiveConnectRequest {
@@ -468,13 +478,13 @@ declare namespace App.Models {
         sap_payment_date: string | null;
         staff_id: number | null;
         observation: string | null;
-        previus_sap_instalation: boolean;
+        previus_sap_instalation: boolean | null;
         payment_enabled: boolean;
         draft: boolean;
         created_at: string | null;
         updated_at: string | null;
-        readonly time?: any;
-        readonly date?: any;
+        readonly time_ins?: any;
+        readonly date_ins?: any;
     }
 
     export interface SapInstalationStatus {}
@@ -549,6 +559,7 @@ declare namespace App.Models {
         users?: Array<App.Models.User> | null;
         lead?: App.Models.Lead | null;
         user?: App.Models.User | null;
+        document_type?: App.Models.DocumentType | null;
         orders_count?: number | null;
         wp_learnpress_user_items_count?: number | null;
         users_count?: number | null;
