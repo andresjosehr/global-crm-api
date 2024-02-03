@@ -112,7 +112,7 @@ class OrdersController extends Controller
             foreach ($orderCourses as $orderCourse) {
                 if ($orderCourse['type'] == 'free') {
                     $orderCourses[$i]['start'] = $lessStartDate;
-                    $orderCourses[$i]['end'] = Carbon::parse($lessStartDate)->addMonths($this->months[$orderCourse['license']])->format('Y-m-d');
+                    $orderCourses[$i]['end'] = Carbon::parse($lessStartDate)->addMonths(3)->format('Y-m-d');
                     // Check if end date is sunday, if true, add one day
                     if (Carbon::parse($orderCourses[$i]['end'])->dayOfWeek == 0) {
                         $orderCourses[$i]['end'] = Carbon::parse($orderCourses[$i]['end'])->addDay()->format('Y-m-d');

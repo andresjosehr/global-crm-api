@@ -28,7 +28,7 @@ class FreezingsController extends Controller
 
     public function update(Request $request)
     {
-
+        // return Carbon::parse($request->all()[0]['finish_date'])->format('Y-m-d');
         if(count($request->all()) == 0) {
             return ApiResponseController::response('No hay datos', 422);
         }
@@ -61,15 +61,21 @@ class FreezingsController extends Controller
                         'order_id'        => $orderCourse->order_id,
                         'order_course_id' => $free['order_course_id'],
                         'start_date'      => $orderCourse->start,
-                        'end_date'        => Carbon::parse($free2['finish_date'])->format('Y-m-d'),
+                        'end_date'        => $free2['finish_date'],
                         'freezing_id'     => $free['id'],
                         'type'            => 'Congelamiento',
+                    ]);
+                    // Get date_history created
+                    $dateHistory = DatesHistory::where('freezing_id', $free['id'])->first();
+
+                    OrderCourse::where('id', $free2['order_course_id'])->update([
+                        'end' => $dateHistory->end_date
                     ]);
                 }
 
                 $currentDate = Carbon::now();
-                $startDate = Carbon::parse($free2['start_date']);
-                $returnDate = Carbon::parse($free2['return_date']);
+                $startDate   = Carbon::parse($free2['start_date']);
+                $returnDate  = Carbon::parse($free2['return_date']);
                 if($currentDate->between($startDate, $returnDate)) {
                     OrderCourse::where('id', $free['order_course_id'])->update(['classroom_status' => 'Congelado']);
                 }

@@ -123,14 +123,16 @@
             <!-- Puntos a tener en cuenta -->
             <p>PUNTOS A TENER EN CUENTA:</p>
             <ul>
-                <li>Te enviaremos un correo con tus accesos el día de tu fecha de inicio.</li>
-                <li>La instalación se realizará el mismo día de la fecha de inicio, y será agendada con unos días de anticipación.</li>
-                <li>El no cumplir con el agendamiento de la instalación, no te eximirá del inicio de tu licencia SAP.</li>
-                <li>El tiempo de licencia y aula virtual de tu curso, es de {{$order->orderCourses->first()->license}}.</li>
-                <li>Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico.</li>
-                <li>De tener inconvenientes para avanzar en tu curso, podemos congelarlo por única vez, por un máximo de 3 meses (únicamente SAP).</li>
-                <li>Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio previamente acordada.</li>
-                <li>Si finaliza el tiempo de tu aula virtual y licencia SAP, y no logras culminar el contenido para certificarte, podrás obtener más tiempo, por un pago adicional.</li>
+                <li>✅ Te enviaremos un correo con tus accesos el día de tu fecha de inicio.</li>
+                <li>✅ La instalación se realizará el mismo día de la fecha de inicio, y será agendada con unos días de anticipación, por lo tanto es importante tu pago puntual.</li>
+                <li>✅ El no cumplir con el agendamiento de la instalación, no te eximirá de los pagos acordados previamente, ni del inicio de tu licencia SAP.</li>
+                <li>✅ El tiempo de licencia y aula virtual de tu curso, es de {{$order->orderCourses->first()->license}}.</li>
+                <li>✅ Dentro de este tiempo, debes realizar y aprobar tu examen de certificación teórico-práctico. Las condiciones para rendirlo, se encuentran en tu aula virtual.</li>
+                <li>✅ Tus cursos gratuitos los podrás habilitar una vez hayas completado tus pagos, y los tiempos de cada uno se han detallado en tu confirmación de compra.</li>
+                <li>✅ Te recuerdo que, al 5to día de retraso, tus accesos serán bloqueados.</li>
+                <li>✅ Te recuerdo que, a partir del 2do día de retraso, empieza a correr la mora indicada en tu ficha de matrícula. Evita los retrasos o podrías perder el precio promocional.</li>
+                <li>✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio previamente acordada:</li>
+                <li>✅ Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes, no te eximirá de los pagos acordados previamente.</li>
             </ul>
 
             @php

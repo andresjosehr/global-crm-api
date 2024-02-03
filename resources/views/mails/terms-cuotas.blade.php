@@ -218,7 +218,6 @@
                 <li>✅ Tus cursos gratuitos los podrás habilitar una vez hayas completado tus pagos, y los tiempos de cada uno se han detallado en tu confirmación de compra.</li>
                 <li>✅ Te recuerdo que, al 5to día de retraso, tus accesos serán bloqueados.</li>
                 <li>✅ Te recuerdo que, a partir del 2do día de retraso, empieza a correr la mora indicada en tu ficha de matrícula. Evita los retrasos o podrías perder el precio promocional.</li>
-
                 <li>✅ Te estaremos avisando por este medio que tus accesos han sido enviados al correo en la fecha de inicio previamente acordada:</li>
                 <li>✅ Si por alguna razón ajena a nosotros, no ingresas a tu curso o no lo revisas a pesar de haberte enviado los accesos correspondientes, no te eximirá de los pagos acordados previamente.</li>
             </ul>
