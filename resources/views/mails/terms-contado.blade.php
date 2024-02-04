@@ -123,6 +123,7 @@
 
                 @php
             $pendingDue = false
+            @endphp
             @foreach($order->dues as $due){
                 if(!$due->paid){
                     $pendingDue = true;
