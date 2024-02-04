@@ -124,12 +124,12 @@
                 @php
             $pendingDue = false
             @endphp
-            @foreach($order->dues as $due){
-                if(!$due->paid){
-                    $pendingDue = true;
-                }
-
-            }
+            @foreach($order->dues as $due)
+                @if(!$due->paid)
+                    @php
+                        $pendingDue = true
+                    @endphp
+                @endif
             @endforeach
 
             <!-- Puntos a tener en cuenta -->
