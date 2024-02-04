@@ -130,7 +130,7 @@
                 }
 
             }
-            @endphp
+            @endforeach
 
             <!-- Puntos a tener en cuenta -->
             <p>PUNTOS A TENER EN CUENTA:</p>
