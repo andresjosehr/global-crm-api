@@ -38,19 +38,19 @@ class StudentsController extends Controller
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
         })
-        ->when($request->input('Matriculados')=='1', function ($q) use ($user){
-            $q->whereHas('lead', function ($q) {
-                $q->where('status', 'Matriculado');
-            })->where('user_id', $user->id)->with('lead');
-        })
-        ->with('orders')
-        ->when($user->role_id!=1, function ($q) use ($user){
-            return $q->whereHas('orders', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        })
-        ->orderByDesc('id')
-        ->paginate($perPage);
+            ->when($request->input('Matriculados') == '1', function ($q) use ($user) {
+                $q->whereHas('lead', function ($q) {
+                    $q->where('status', 'Matriculado');
+                })->where('user_id', $user->id)->with('lead');
+            })
+            ->with('orders')
+            ->when($user->role_id != 1, function ($q) use ($user) {
+                return $q->whereHas('orders', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+            })
+            ->orderByDesc('id')
+            ->paginate($perPage);
 
         return ApiResponseController::response('Consulta Exitosa,pero no hay matriculados', 200, $users);
     }
@@ -257,11 +257,11 @@ class StudentsController extends Controller
 
         $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
 
-        // CoreMailsController::sendMail(
-        //     $student->user->email,
-        //     'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
-        //     $content
-        // );
+        CoreMailsController::sendMail(
+            $student->user->email,
+            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
 
         CoreMailsController::sendMail(
             'andresjosehr@gmail.com',
