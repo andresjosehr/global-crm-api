@@ -264,16 +264,12 @@ class StudentsController extends Controller
         );
 
         CoreMailsController::sendMail(
-            'andresjosehr@gmail.com',
+            'finanzas@globaltecnologiasacademy.com',
             'Has aceptado los términos y condiciones | Bienvenido a tu curso',
             $content
         );
 
-        CoreMailsController::sendMail(
-            'llazayanaalex@gmail.com',
-            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
+
 
         $noti = new NotificationController();
         $noti = $noti->store([
