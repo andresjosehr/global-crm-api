@@ -307,16 +307,18 @@ class ProcessesController extends Controller
             $carry  .= $item['course']['short_name'];
             return $carry . ' + ';
         }, '');
+
+        // TO UPPERCASE
         $courses                        = substr($courses, 0, -3);
         $order->student['courses']      = $courses;
         $start                          = $order->orderCourses->min('start');
         $order->student['start']        = Carbon::parse($start)->format('d/m/Y');
-        $order->student['license']      = $order->orderCourses->first()->license . ' de licensia y aula virtual';
+        $order->student['license']      =  strtoupper($order->orderCourses->first()->license) . ' DE LICENCIA SAP Y AULA VIRTUAL';
         $order->student['user']         = $order->student->user->name;
         $order->student['row']          = $emptyRow;
-        try{
-            $order->student['documento'] = $order->student->documentType->code.' '.$order->student->document;
-        }catch(\Exception $e){
+        try {
+            $order->student['documento'] = $order->student->documentType->code . ' ' . $order->student->document;
+        } catch (\Exception $e) {
             $order->student['documento'] = $order->student->document;
         }
 
@@ -338,10 +340,10 @@ class ProcessesController extends Controller
             $dataToUpdate[] = ['column' => $col, 'value' => $order->student[$key] . ''];
         }
         $cCount = count($order->orderCourses->where('type', 'paid')->toArray());
-        Log::debug('Cursos: '.count($order->orderCourses->where('type', 'paid')->toArray()));
-        if($cCount > 1 && $cCount < 5){
+        Log::debug('Cursos: ' . count($order->orderCourses->where('type', 'paid')->toArray()));
+        if ($cCount > 1 && $cCount < 5) {
             $dataToUpdate[] = ['column' => 'AC', 'value' => $order->student['license'], 'note' => '3 Meses para cada curso SAP'];
-        }else{
+        } else {
             $dataToUpdate[] = ['column' => 'AC', 'value' => $order->student['license']];
         }
 
@@ -369,16 +371,15 @@ class ProcessesController extends Controller
         sort($cert, SORT_NUMERIC);
 
         $cert = array_reduce($cert, function ($carry, $item) {
-            $carry .= '-'.$item;
+            $carry .= '-' . $item;
             return $carry;
         }, '');
 
         // remove first '-'
         $cert = substr($cert, 1);
-        if(array_key_exists($cert, $certificationCombo)){
+        if (array_key_exists($cert, $certificationCombo)) {
             $dataToUpdate[] = ['column' => 'D', 'value' => $order->student['courses'], 'note' => $certificationCombo[$cert]];
-        }
-        else{
+        } else {
             $dataToUpdate[] = ['column' => 'D', 'value' => $order->student['courses']];
         }
 
@@ -387,19 +388,19 @@ class ProcessesController extends Controller
 
 
         $col = 'G';
-        if($order->dues[0]->amount > ($order->price_amount / 2)){
+        if ($order->dues[0]->amount > ($order->price_amount / 2)) {
             $col = 'j';
         }
 
 
         foreach ($order->dues as $due) {
-            $amount = $order->currency->iso_code == 'PEN' ? $order->currency->symbol.'.'.$due->amount : $due->amount . ' ' . $order->currency->iso_code;
+            $amount = $order->currency->iso_code == 'PEN' ? $order->currency->symbol . '.' . $due->amount : $due->amount . ' ' . $order->currency->iso_code;
             $dataToUpdate[] = ['column' => $col, 'value' => $amount];
             $col++;
             $date = Carbon::parse($due->date)->format('d/m/Y');
             $dataToUpdate[] = ['column' => $col, 'value' => $date];
             $col++;
-            $dataToUpdate[] = ['column' => $col, 'value' => $due->paymentMethod ? $due->paymentMethod->name:''];
+            $dataToUpdate[] = ['column' => $col, 'value' => $due->paymentMethod ? $due->paymentMethod->name : ''];
             $col++;
         }
 

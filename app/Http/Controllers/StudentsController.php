@@ -274,6 +274,18 @@ class StudentsController extends Controller
 
         $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
 
+        CoreMailsController::sendMail(
+            'finanzas@globaltecnologiasacademy.com',
+            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
+
+        $student = Student::find($order->student->id)->first();
+        CoreMailsController::sendMail(
+            $student->email,
+            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
         $noti = new NotificationController();
         $noti = $noti->store([
             'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
