@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Traking;
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Mails\CoreMailsController;
+use App\Jobs\GeneralJob;
 use App\Models\DatesHistory;
 use App\Models\Freezing;
 use App\Models\OrderCourse;
+use App\Models\Process;
 use Carbon\Carbon;
-use Google\Service\AdExchangeBuyerII\Date;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -69,6 +70,14 @@ class FreezingsController extends Controller
                         'type'            => 'Congelamiento',
                     ]);
 
+                    Process::create([
+                        'name'              => 'Congelamiento de curso',
+                        'command'           => 'php artisan course:update-status ' . $free['order_course_id'] . ' Congelado',
+                        'related_entity'    => 'freezing',
+                        'related_entity_id' => $free_id,
+                        'datetime_to_execute' => Carbon::parse($free['start_date'])->format('Y-m-d H:i:s')
+                    ]);
+
                     // Get date_history created
                     $dateHistory = DatesHistory::where('freezing_id', $free_id)->first();
 
@@ -113,10 +122,12 @@ class FreezingsController extends Controller
             self::moveNextCoursesDate($freeDB);
         }
 
-        $allFreezings = Freezing::where('order_course_id', $order_course_id)->get();
+        $freezings = Freezing::where('order_course_id', $order_course_id)->get();
+
+        $order_courses = OrderCourse::where('order_id', $freezings[0]->order_id)->where('type', 'paid')->get();
 
 
-        return ApiResponseController::response('Exito', 200, ['freezing' => $courseFreezing, 'allFreezings' => $allFreezings]);
+        return ApiResponseController::response('Exito', 200, ['freezing' => $courseFreezing, 'freezings' => $freezings, 'order_courses' => $order_courses]);
     }
 
 
@@ -157,8 +168,10 @@ class FreezingsController extends Controller
 
         $last_freezing = Freezing::where('order_course_id', $order_course_id)->orderBy('id', 'desc')->first();
 
+        $order_courses = OrderCourse::where('order_id', $last_freezing->order_id)->where('type', 'paid')->get();
 
-        return ApiResponseController::response('Exito', 200, $last_freezing);
+
+        return ApiResponseController::response('Exito', 200, ['last_freezing' => $last_freezing, 'order_courses' => $order_courses]);
     }
 
     public function moveNextCoursesDate(Freezing $freezing, $to = 'forward')
@@ -170,7 +183,7 @@ class FreezingsController extends Controller
             return;
         }
 
-        if($to == 'backward'){
+        if ($to == 'backward') {
             OrderCourse::where('id', $freezing->order_course_id)->update(['end' => $finish_date]);
         }
 
@@ -185,7 +198,7 @@ class FreezingsController extends Controller
                 'order_course_id' => $order_course->id,
                 'start_date'      => $newStartDate,
                 'end_date'        => $newEndDate,
-                'type'            => 'Congelamiento de un curso anterior a este',
+                'type'            => $to == 'forward' ? 'Congelamiento de un curso anterior a este' : 'Descongelamiento de un curso anterior a este',
             ]);
         }
 
@@ -218,12 +231,12 @@ class FreezingsController extends Controller
 
 
         $content = view('mails.freezing')->with([
-            'order_course'  => $order_course,
-            'student'       => $student,
-            'dates_history' => $dates_history,
-            'original_date' => $original_date,
-            'course'        => $course,
-            'freezing'      => $freezing,
+            'order_course'                    => $order_course,
+            'student'                         => $student,
+            'dates_history'                   => $dates_history,
+            'original_date'                   => $original_date,
+            'course'                          => $course,
+            'freezing'                        => $freezing,
             'remainFreezingDurationAvaliable' => $remainFreezingDurationAvaliable
         ])->render();
 
@@ -238,12 +251,20 @@ class FreezingsController extends Controller
             Freezing::where('id', $freezing->id)->update(['mail_status' => 'Programado']);
         }
 
-        CoreMailsController::sendMail(
-            'andresjosehr@gmail.com',
-             'Has congelado tu curso',
-            $content,
-            $scheduleTime
-        );
+        $params = [
+            'email'        => 'andresjosehr@gmail.com',
+            'subject'      => 'Has congelado tu curso',
+            'content'      => $content,
+            'scheduleTime' => $scheduleTime,
+            'freezing_id'  => $freezing->id
+        ];
 
+        GeneralJob::dispatch(FreezingsController::class, 'dispatchMail', $params)->onQueue('default');
+    }
+
+    public function dispatchMail($email, $subject, $content, $scheduleTime, $freezing_id)
+    {
+        $message = CoreMailsController::sendMail($email, $subject, $content, $scheduleTime);
+        Freezing::where('id', $freezing_id)->update(['mail_id' => $message->messageId]);
     }
 }

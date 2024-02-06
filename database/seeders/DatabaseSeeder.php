@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // Disable foreign key checks
-         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         $this->call(RolesSeeder::class);
         $this->call(ModulesSeeder::class);
         $this->call(ModulesRolesSeeder::class);
@@ -31,10 +31,11 @@ class DatabaseSeeder extends Seeder
         $this->call(PaymentMethodsSeeder::class);
         // $this->call(MessagesSeeder::class);
         $this->call(DocumentTypesSeeder::class);
+        $this->call(HolidaysSeeder::class);
         // $this->call(StaffAvailabilitySlotsSeeder::class);
         // $this->call(SapInstalationsSeeder::class);
         // $this->call(SheetsSeeder::class);
-         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         // $this->call(LeadsSeeder::class);
     }
 }

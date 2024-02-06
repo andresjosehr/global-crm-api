@@ -23,6 +23,7 @@ class OrderCourse extends Model
         'end',
         'classroom_status',
         'observation',
+        'welcome_mail_id',
     ];
 
     function course()
@@ -48,7 +49,7 @@ class OrderCourse extends Model
     public function sapInstalations()
     {
         return $this->hasMany(SapInstalation::class)
-        ->select(['sap_instalations.*', DB::raw('TIME(sap_instalations.start_datetime) as time'), DB::raw('DATE(sap_instalations.start_datetime) as date')]);
+            ->select(['sap_instalations.*', DB::raw('TIME(sap_instalations.start_datetime) as time'), DB::raw('DATE(sap_instalations.start_datetime) as date')]);
     }
 
     public function dateHistory()
@@ -66,32 +67,33 @@ class OrderCourse extends Model
 
     public function setStartAttribute($value)
     {
-        if($value){
+        if ($value) {
             $this->attributes['start'] = Carbon::parse($value)->format('Y-m-d');
         }
     }
 
     public function setEndAttribute($value)
     {
-        if($value){
+        if ($value) {
             $this->attributes['end'] = Carbon::parse($value)->format('Y-m-d');
         }
     }
 
 
-    public function attachCertificationTestCourse($user_id){
+    public function attachCertificationTestCourse($user_id)
+    {
 
-        $wp_certification_tests = WpLearnpressUserItem::whereHas('item', function($q){
-                                            $q->where('post_title', 'LIKE', '%Certificación%');
-                                        })
-                                        ->where('user_id', $user_id)
-                                        ->where('ref_id', $this->course->wp_post_id)
-                                        ->where('item_type', 'lp_quiz')
-                                        ->orderBy('start_time', 'ASC')
-                                        ->get();
+        $wp_certification_tests = WpLearnpressUserItem::whereHas('item', function ($q) {
+            $q->where('post_title', 'LIKE', '%Certificación%');
+        })
+            ->where('user_id', $user_id)
+            ->where('ref_id', $this->course->wp_post_id)
+            ->where('item_type', 'lp_quiz')
+            ->orderBy('start_time', 'ASC')
+            ->get();
 
 
-        foreach($wp_certification_tests as $key => $wp_certification_test){
+        foreach ($wp_certification_tests as $key => $wp_certification_test) {
             $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
             $this->certificationTests[$key]->start_time = $wp_certification_test->start_time;
             $this->certificationTests[$key]->wp_certification = $wp_certification_test;
@@ -99,5 +101,4 @@ class OrderCourse extends Model
 
         return $this;
     }
-
 }

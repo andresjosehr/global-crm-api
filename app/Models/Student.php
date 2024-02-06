@@ -52,12 +52,12 @@ class Student extends Model
 
     public function attachCertificationTest()
     {
-        if(!$this->orders){
+        if (!$this->orders) {
             return $this;
         }
 
         foreach ($this->orders as $i => $order) {
-            if(!$order->orderCourses || !$this->wp_user){
+            if (!$order->orderCourses || !$this->wp_user) {
                 continue;
             }
             foreach ($order->orderCourses as $k => $order_course) {
@@ -84,5 +84,10 @@ class Student extends Model
     public function documentType()
     {
         return $this->belongsTo(DocumentType::class);
+    }
+
+    public function sapInstalations()
+    {
+        return $this->hasMany(SapInstalation::class);
     }
 }

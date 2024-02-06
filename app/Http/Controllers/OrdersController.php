@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Mails\CoreMailsController;
+use App\Jobs\GeneralJob;
 use App\Models\CertificationTest;
 use App\Models\Course;
 use App\Models\Currency;
@@ -23,15 +25,15 @@ class OrdersController extends Controller
 {
 
     public $months = [
-        '1 mes' => 1,
-        '2 meses' => 2,
-        '3 meses' => 3,
-        '4 meses' => 4,
-        '5 meses' => 5,
-        '6 meses' => 6,
-        '7 meses' => 7,
-        '8 meses' => 8,
-        '9 meses' => 9,
+        '1 mes'    => 1,
+        '2 meses'  => 2,
+        '3 meses'  => 3,
+        '4 meses'  => 4,
+        '5 meses'  => 5,
+        '6 meses'  => 6,
+        '7 meses'  => 7,
+        '8 meses'  => 8,
+        '9 meses'  => 9,
         '10 meses' => 10,
         '11 meses' => 11,
         '12 meses' => 12,
@@ -138,10 +140,10 @@ class OrdersController extends Controller
             $oc = $order->orderCourses()->create($orderCourse);
             DatesHistory::create([
                 'order_course_id' => $oc->id,
-                'order_id' => $order->id,
-                'start_date' => $orderCourse['start'],
-                'end_date' => $orderCourse['end'],
-                'type' => 'Primero'
+                'order_id'        => $order->id,
+                'start_date'      => $orderCourse['start'],
+                'end_date'        => $orderCourse['end'],
+                'type'            => 'Primero'
             ]);
         }
 
@@ -230,8 +232,49 @@ class OrdersController extends Controller
         // Get id
         $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'orderCourses.sapInstalations', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
 
+        $params = [
+            'order' => $order,
+        ];
+
+        // GeneralJob::dispatch(OrdersController::class, 'dispatchWelcomeMails', $params)->onQueue('default');
+
         return ApiResponseController::response('Orden creada exitosamente', 201, $order);
     }
+
+
+    public function dispatchWelcomeMails(Order $order)
+    {
+        $emails = [
+            1  => 'sap-welcome',
+            2  => 'sap-welcome',
+            3  => 'sap-welcome',
+            4  => 'sap-welcome',
+            5  => 'integral-welcome',
+            6  => 'excel-welcome',
+            7  => 'powerbi-welcome',
+            8  => 'powerbi-welcome',
+            9  => 'msproject-welcome',
+            10 => 'sap-welcome',
+        ];
+
+        foreach ($order->orderCourses as $orderCourse) {
+            $id = $orderCourse->course->id;
+            $content = view("mails." . $emails[$id])->with([
+                'orderCourse' => $orderCourse
+            ])->render();
+
+            $scheduleTime = Carbon::parse($orderCourse->start)->format('m/d/Y');
+            $subject = '-Bienvenido(a) a tu curso de ' . $orderCourse->course->name . ' ¡Global Tecnologías Academy!';
+
+            $message = CoreMailsController::sendMail($order->student->email, $subject, $content, $scheduleTime);
+
+            Log::info('Este es el mensaje:');
+            Log::info(['EPAA' => $message]);
+            OrderCourse::where('id', $orderCourse->id)->update(['welcome_mail_id' => $message->id]);
+        }
+    }
+
+
 
     /**
      * Display the specified resource.
@@ -439,8 +482,8 @@ class OrdersController extends Controller
             }
         }
 
-    return [$new, null];
-}
+        return [$new, null];
+    }
 
 
 

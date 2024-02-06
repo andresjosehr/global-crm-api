@@ -29,7 +29,8 @@ class Order extends Model
         return $this->hasMany(Due::class);
     }
 
-    function user(){
+    function user()
+    {
         return $this->belongsTo(User::class, 'created_by');
     }
 
@@ -39,7 +40,8 @@ class Order extends Model
     }
 
 
-    function price(){
+    function price()
+    {
         return $this->belongsTo(Price::class);
     }
 
@@ -52,14 +54,14 @@ class Order extends Model
 
     public function attachCertificationTest($user_id)
     {
-            $student = Student::with('wp_user')->find($user_id);
+        $student = Student::with('wp_user')->find($user_id);
 
-            if(!$this->orderCourses || !$this->wp_user){
-                return $this;
-            }
-            foreach ($this->orderCourses as $k => $order_course) {
-                $this->orderCourses[$k]->attachCertificationTestCourse($student->wp_user->ID);
-            }
+        if (!$this->orderCourses || !$this->wp_user) {
+            return $this;
+        }
+        foreach ($this->orderCourses as $k => $order_course) {
+            $this->orderCourses[$k]->attachCertificationTestCourse($student->wp_user->ID);
+        }
         return $this;
     }
 }
