@@ -15,6 +15,7 @@ use App\Models\Freezing;
 use App\Models\OderDateHistory;
 use App\Models\Order;
 use App\Models\OrderCourse;
+use App\Models\SapInstalation;
 use Illuminate\Support\Facades\Log;
 
 class TestController extends Controller
@@ -26,15 +27,12 @@ class TestController extends Controller
      */
     public function index()
     {
-        $params = [
-            'to' => 'andresjosehr@gmail.com',
-            'in' => '6271576000000008028',
-            // 'subject' => 'Bienvenido(a) a tu curso deSAP PP Planificación de la Producción ¡Global Tecnologías Academy!',
-            'fromDate' => '05-Feb-2024',
-            'toDate' => '05-Feb-2024',
-        ];
-        return CoreMailsController::getMails($params);
-    }
 
-    // public  sendDebugNotification($user_id)
+        return Order::first();
+
+        $freezing = Freezing::with('orderCourse.course', 'orderCourse.sap_instalations', 'orderCourse.order.currency', 'orderCourse.order.orderCourses')->first();
+
+
+        return view('mails.unfreezing_new', compact('freezing'));
+    }
 }

@@ -54,6 +54,8 @@
             <p>El programa de capacitación de sap comprende <b> 50 horas teórico-prácticas certificadas como Key User (usuario experto) {{$freezing->orderCourse->course->name}}</b></p>
 
 
+            @php $freeCourses = $freezing->orderCourse->order->orderCourses->where('type', 'free') @endphp
+
             @if(count($freeCourses) > 0)
 
             <p>Te recordamos la información de los siguientes cursos de obsequio que tienes disponibles:</p>
@@ -95,7 +97,13 @@
 
              <div style="margin-bottom: 40px">
                 <b> Acceso al <u>SOFTWARE DE SAP:</u></b>
-                <li style="margin-left: 30px">Usuario: 'POR DEFINIR'</li>
+                <li style="margin-left: 30px">Usuario:
+                    @if(count($freezing->orderCourse->sapInstalations)==0)
+                        No se ha instalado aún
+                    @else
+                        {{$freezing->orderCourse->sapInstalations->orderBy('id', 'desc')->first()->user}}
+                    @endif
+                </li>
                 <li style="margin-left: 30px">Contraseña: CREADA POR TI, desde el inicio de tu capacitación. La misma te indicamos que debías conservar hasta el momento de tu retorno.</li>
              </div>
 

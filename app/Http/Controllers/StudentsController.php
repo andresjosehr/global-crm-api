@@ -42,7 +42,10 @@ class StudentsController extends Controller
             ->when($request->input('Matriculados') == '1', function ($q) use ($user) {
                 $q->whereHas('lead', function ($q) {
                     $q->where('status', 'Matriculado');
-                })->where('user_id', $user->id)->with('lead');
+                })
+                    ->when($user->role_id != 1, function ($q) use ($user) {
+                        $q->where('user_id', $user->id)->with('lead');
+                    });
             })
             ->with('orders')
             ->when($user->role_id != 1, function ($q) use ($user) {

@@ -102,7 +102,7 @@ class FreezingsController extends Controller
 
                 $freezingDB = Freezing::where('id', $free_id)->first();
                 if ($freezingDB->mail_status == 'Pendiente') {
-                    self::scheduleMail($freezingDB, $order_course_id);
+                    self::sendFreezeMail($freezingDB, $order_course_id);
                 }
             }
         }
@@ -166,9 +166,16 @@ class FreezingsController extends Controller
         $freezingDB = Freezing::where('id', $lastFreezing->id)->first();
         self::moveNextCoursesDate($freezingDB, 'backward');
 
-        $last_freezing = Freezing::where('order_course_id', $order_course_id)->orderBy('id', 'desc')->first();
+        $last_freezing = Freezing::where('order_course_id', $order_course_id)
+            ->with('orderCourse.course', 'orderCourse.sapInstalations', 'orderCourse.order.currency', 'orderCourse.order.orderCourses', 'orderCourse.order.student')
+            ->orderBy('id', 'desc')->first();
 
         $order_courses = OrderCourse::where('order_id', $last_freezing->order_id)->where('type', 'paid')->get();
+
+        $params = [
+            'freezing' => $last_freezing
+        ];
+        GeneralJob::dispatch(FreezingsController::class, 'sendUnfreezingEmail', $params)->onQueue('default');
 
 
         return ApiResponseController::response('Exito', 200, ['last_freezing' => $last_freezing, 'order_courses' => $order_courses]);
@@ -208,7 +215,7 @@ class FreezingsController extends Controller
     }
 
 
-    public function scheduleMail($freezing, $order_course_id)
+    public function sendFreezeMail($freezing, $order_course_id)
     {
         // Get user
 
@@ -253,13 +260,23 @@ class FreezingsController extends Controller
 
         $params = [
             'email'        => 'andresjosehr@gmail.com',
-            'subject'      => 'Has congelado tu curso',
+            'subject'      => 'Tómalo con Calma ¡Te congelamos tu curso!',
             'content'      => $content,
             'scheduleTime' => $scheduleTime,
             'freezing_id'  => $freezing->id
         ];
 
         GeneralJob::dispatch(FreezingsController::class, 'dispatchMail', $params)->onQueue('default');
+    }
+
+    public function sendUnfreezingEmail($freezing)
+    {
+
+        $subject = 'Continúa con tu Capacitación de ' . $freezing->orderCourse->course->name . ' con ¡Global Tecnologías Academy!';
+        $email   = $freezing->orderCourse->order->student->email;
+        $content = view('mails.unfreezing_new')->with(['freezing' => $freezing])->render();
+        $message = CoreMailsController::sendMail($email, $subject, $content);
+        Freezing::where('id', $freezing->id)->update(['mail_unfreeze_id' => $message->messageId]);
     }
 
     public function dispatchMail($email, $subject, $content, $scheduleTime, $freezing_id)
