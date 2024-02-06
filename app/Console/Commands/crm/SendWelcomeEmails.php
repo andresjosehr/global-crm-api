@@ -65,7 +65,7 @@ class SendWelcomeEmails extends Command
 
                 $message = CoreMailsController::sendMail($orderCourse->order->student->email, $subject, $content, $scheduleTime);
                 // Conver stdclass to array
-                Log::info($message->messageId);
+                OrderCourse::where('id', $orderCourse->id)->update(['welcome_mail_id' => $message->messageId]);
             });
 
         return Command::SUCCESS;
