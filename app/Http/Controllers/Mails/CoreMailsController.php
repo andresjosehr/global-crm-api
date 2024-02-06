@@ -24,14 +24,14 @@ class CoreMailsController extends Controller
             $toAddress = env('MAIL_DEBUG');
         }
         $body = [
-            'fromAddress' => 'coordinacionacademica@globaltecnologiasacademy.com',
-            'toAddress' => $toAddress,
-            'subject' => $subject,
-            'content' => $content,
-            "mailFormat" => "html",
-            "isSchedule" => true,
+            'fromAddress'  => 'coordinacionacademica@globaltecnologiasacademy.com',
+            'toAddress'    => $toAddress,
+            'subject'      => $subject,
+            'content'      => $content,
+            "mailFormat"   => "html",
+            "isSchedule"   => true,
             "scheduleType" => "6",
-            "timeZone" => "America/Lima",
+            "timeZone"     => "America/Lima",
             "scheduleTime" => $scheduleTime . " 00:10:00"
         ];
 

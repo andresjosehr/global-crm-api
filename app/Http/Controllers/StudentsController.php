@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Mails\CoreMailsController;
+use App\Jobs\GeneralJob;
 use App\Models\Car;
 use App\Models\DocumentType;
 use App\Models\Order;
@@ -38,19 +39,19 @@ class StudentsController extends Controller
                 ->orWhere('phone', 'LIKE', "%$searchString%")
                 ->orWhere('document', 'LIKE', "%$searchString%");
         })
-        ->when($request->input('Matriculados')=='1', function ($q) use ($user){
-            $q->whereHas('lead', function ($q) {
-                $q->where('status', 'Matriculado');
-            })->where('user_id', $user->id)->with('lead');
-        })
-        ->with('orders')
-        ->when($user->role_id!=1, function ($q) use ($user){
-            return $q->whereHas('orders', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        })
-        ->orderByDesc('id')
-        ->paginate($perPage);
+            ->when($request->input('Matriculados') == '1', function ($q) use ($user) {
+                $q->whereHas('lead', function ($q) {
+                    $q->where('status', 'Matriculado');
+                })->where('user_id', $user->id)->with('lead');
+            })
+            ->with('orders')
+            ->when($user->role_id != 1, function ($q) use ($user) {
+                return $q->whereHas('orders', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+            })
+            ->orderByDesc('id')
+            ->paginate($perPage);
 
         return ApiResponseController::response('Consulta Exitosa,pero no hay matriculados', 200, $users);
     }
@@ -246,9 +247,25 @@ class StudentsController extends Controller
 
         $order = Order::where('id', $order->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
 
+
+
+        $params = [
+            'order'   => $order,
+            'student' => $student
+        ];
+
+        GeneralJob::dispatch(StudentsController::class, 'dipatchNotification', $params)->onQueue('default');
+
+
+        return ApiResponseController::response('Consulta exitosa', 200, $order);
+    }
+
+    public function dipatchNotification($order, $student)
+    {
+
         $mailTemplate = [
             'Contado' => 'terms-contado',
-            'Cuotas' => 'terms-cuotas'
+            'Cuotas'  => 'terms-cuotas'
         ];
 
         $pdfFileName  = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
@@ -256,24 +273,6 @@ class StudentsController extends Controller
         $urlTerm     .= '/storage/terminos-aceptados/' . $pdfFileName;
 
         $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
-
-        // CoreMailsController::sendMail(
-        //     $student->user->email,
-        //     'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
-        //     $content
-        // );
-
-        CoreMailsController::sendMail(
-            'andresjosehr@gmail.com',
-            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
-
-        CoreMailsController::sendMail(
-            'llazayanaalex@gmail.com',
-            'PRUEBA | Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
 
         $noti = new NotificationController();
         $noti = $noti->store([
@@ -292,9 +291,6 @@ class StudentsController extends Controller
 
         $processesController = new ProcessesController();
         $processesController->updateSellsExcel($order->id);
-
-
-        return ApiResponseController::response('Consulta exitosa', 200, $order);
     }
 
     public function saveTermsPdfTemplate(Request $request, $order_id)
