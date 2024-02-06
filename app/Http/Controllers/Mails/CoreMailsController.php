@@ -22,6 +22,7 @@ class CoreMailsController extends Controller
         // Check if not in production
         if (env('APP_ENV') != 'production') {
             $toAddress = env('MAIL_DEBUG');
+            $subject = "PRUEBA | $subject";
         }
         $body = [
             'fromAddress'  => 'coordinacionacademica@globaltecnologiasacademy.com',

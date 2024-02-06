@@ -57,10 +57,19 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     protected function gate(): void
     {
+        // Get IP
         Gate::define('viewTelescope', function (User $user) {
-            return in_array($user->email, [
-                'andresjosehr@gmail.com',
-            ]);
+            if (env('APP_ENV') !== 'local') {
+
+                $request = app('request');
+                $ipWhitelist = env('IP_WHITELIST', '');
+                $ipWhitelist = explode(',', $ipWhitelist);
+
+                if (!in_array($request->ip(), $ipWhitelist)) {
+                    return false;
+                }
+            }
+            return true;
         });
     }
 }

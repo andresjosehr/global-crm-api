@@ -280,7 +280,8 @@ class StudentsController extends Controller
             $content
         );
 
-        $student = Student::find($order->student->id)->first();
+        $student = Student::where('id', $order->student->id)->with('users')->first();
+
         CoreMailsController::sendMail(
             $student->email,
             'Has aceptado los términos y condiciones | Bienvenido a tu curso',
@@ -292,7 +293,7 @@ class StudentsController extends Controller
             'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
             'icon'       => 'check_circle_outline',
             'url'        => '#',
-            'user_id'    => $order->student->users[0]->id,
+            'user_id'    => $student->users[0]->id,
             'use_router' => false,
             'custom_data' => [
                 'type'     => 'terms_confirmed_by_student',

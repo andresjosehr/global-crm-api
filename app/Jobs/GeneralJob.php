@@ -37,33 +37,22 @@ class GeneralJob implements ShouldQueue
      */
     public function handle()
     {
-        try {
-
-            // Asegúrate de que la clase del controlador exista y sea válida
-            if (!class_exists($this->controllerClass)) {
-                // Maneja el error adecuadamente
-                return;
-            }
-
-            $controller = resolve($this->controllerClass);
-
-            // Verifica si el método existe en la clase
-            if (!method_exists($controller, $this->methodName)) {
-                // Maneja el error adecuadamente
-                return;
-            }
-
-            // Llama al método de manera dinámica
-            call_user_func_array([$controller, $this->methodName], $this->params);
-
-            $this->callControllerMethod();
-        } catch (\Exception $e) {
-            Log::channel('processes')->error('Job failed', [
-                'controller' => $this->controllerClass,
-                'method'     => $this->methodName,
-                'params'     => $this->params,
-                'error'      => $e->getMessage(),
-            ]);
+        // Asegúrate de que la clase del controlador exista y sea válida
+        if (!class_exists($this->controllerClass)) {
+            // Maneja el error adecuadamente
+            return;
         }
+
+        $controller = resolve($this->controllerClass);
+        Log::info('GeneralJob: 3');
+
+        // Verifica si el método existe en la clase
+        if (!method_exists($controller, $this->methodName)) {
+            // Maneja el error adecuadamente
+            return;
+        }
+
+        // Llama al método de manera dinámica
+        call_user_func_array([$controller, $this->methodName], $this->params);
     }
 }
