@@ -258,7 +258,7 @@ class StudentsController extends Controller
         $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
 
         CoreMailsController::sendMail(
-            $student->user->email,
+            $student->email,
             'Has aceptado los términos y condiciones | Bienvenido a tu curso',
             $content
         );
