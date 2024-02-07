@@ -20,6 +20,7 @@ class Lead extends Model
         'country_id',
         'city_id',
         'state_id',
+        'email',
         'document',
         'document_type_id',
         'user_id',
@@ -35,11 +36,13 @@ class Lead extends Model
     {
         return $this->hasMany(LeadObservation::class)->orderBy('created_at', 'desc');
     }
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function leadProject(){
+    public function leadProject()
+    {
         return $this->belongsTo(LeadProject::class, 'lead_project_id', 'id');
     }
 

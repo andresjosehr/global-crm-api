@@ -48,11 +48,11 @@ class StudentsController extends Controller
                     });
             })
             ->with('orders')
-            ->when($user->role_id != 1, function ($q) use ($user) {
-                return $q->whereHas('orders', function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                });
-            })
+            // ->when($user->role_id != 1, function ($q) use ($user) {
+            //     return $q->whereHas('orders', function ($q) use ($user) {
+            //         $q->where('user_id', $user->id);
+            //     });
+            // })
             ->orderByDesc('id')
             ->paginate($perPage);
 

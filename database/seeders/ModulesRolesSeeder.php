@@ -18,8 +18,8 @@ class ModulesRolesSeeder extends Seeder
     public function run()
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-		DB::table('modules_roles')->truncate();
-		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        DB::table('modules_roles')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $modules = Module::whereNotIn('name', ["Asignados"])->get();
 

@@ -16,9 +16,9 @@ class ModulesSeeder extends Seeder
     public function run()
     {
         // Truncate all tables
-		DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-		DB::table('modules')->truncate();
-		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::table('modules')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         DB::table('modules')->insert([
             // Sistema-v2
@@ -36,7 +36,7 @@ class ModulesSeeder extends Seeder
                 'path'        => 'ventas',
                 'type'        => 'collapsable',
             ]
-		]);
+        ]);
 
 
         DB::table('modules')->insert([
@@ -108,8 +108,6 @@ class ModulesSeeder extends Seeder
             ],
 
 
-		]);
-
-
+        ]);
     }
 }

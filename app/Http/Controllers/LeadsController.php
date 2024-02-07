@@ -249,6 +249,50 @@ class LeadsController extends Controller
         return ApiResponseController::response("Exito", 200, $lead);
     }
 
+    public function createLead(Request $request)
+    {
+        $user_id = null;
+
+        $user = $request->user();
+        if ($user->role_id == 1) {
+            $user_id = $request->user_id;
+        }
+
+        if ($user->role_id != 1) {
+            if ($request->status == 'Interesado') {
+                $user_id = $user->id;
+            }
+
+            if ($request->status == 'Matriculado') {
+                $user_id = $user->id;
+            }
+        }
+        $lead = Lead::create([
+            'name'             => $request->name,
+            'courses'          => $request->courses ? $request->courses : '',
+            'phone'            => $request->phone,
+            'status'           => $request->status,
+            'email'            => $request->email,
+            'origin'           => $request->origin,
+            'document'         => $request->document,
+            'user_id'          => $user_id,
+            'country_id'       => $request->country_id,
+            // 'city_id'          => $request->city_id,
+
+            'document_type_id' => $request->document_type_id,
+
+        ]);
+
+
+        if ($request->status == 'Matriculado') {
+            self::createStudentFromLead($request, $lead->id);
+        }
+
+        $lead = Lead::with('observations.user')->with('student')->find($lead->id);
+
+        return ApiResponseController::response("Exito", 200, $lead);
+    }
+
     public function saveObservation(Request $request, $leadId, $leadAssignamentId = null)
     {
         // Get current lead assignment
@@ -291,72 +335,63 @@ class LeadsController extends Controller
         $searchString = $request->input('searchString') ? $request->input('searchString') : '';
         $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
 
-            $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
-                return $query->where('user_id', $user->id)
-                    ->where('status', '<>', 'Archivado')
-                    ->where('status', '<>', 'Nuevo');
+        $leads = Lead::when($mode == 'potenciales', function ($q) use ($user) {
+            return $q->where('status', '<>', 'Matriculado')->where('user_id', $user->id)->where(function ($q2) {
+                return $q2->whereIn('status', ['Potencial', 'Interesado']);
+            });
+        })
+            ->when($mode == 'base-general', function ($q) use ($user) {
+                return $q;
             })
-                ->when($mode == 'potenciales', function ($q) use ($user) {
-                    return $q->where('user_id', $user->id)->where(function ($q2) {
-                        return $q2->where('status', 'Potencial')->orWhere('status', 'Interesado');
-                    });
-                })
-                ->when($mode == 'matriculados', function ($q) use ($user) {
-                    return $q->where('user_id', $user->id)
-                        ->where('status', 'Matriculado');
-                })
-                ->when($mode == 'base-general', function ($q) use ($user) {
-                    return $q;
-                })
-                ->when($searchString, function ($q) use ($searchString) {
-                    return $q->where(function ($q) use ($searchString) {
-                        return $q->where('name', 'LIKE', "%$searchString%")
-                            ->orWhere('courses', 'LIKE', "%$searchString%")
-                            ->orWhere('status', 'LIKE', "%$searchString%")
-                            ->orWhere('origin', 'LIKE', "%$searchString%")
-                            ->orWhere('phone', 'LIKE', "%$searchString%")
-                            ->orWhere('email', 'LIKE', "%$searchString%")
-                            ->orWhere('document', 'LIKE', "%$searchString%");
-                    });
-                })
-                ->when($request->project_id, function ($query) use ($request) {
+            ->when($user->role_id != 1, function ($q) use ($user, $request) {
+                return $q->where('user_id', $user->id);
+            })
+            ->when($user->role_id == 1, function ($q) use ($user, $request) {
+                $q->when($request->project_id, function ($query) use ($request) {
                     if ($request->project_id != 'Todos') {
                         $p = $request->project_id == 'Base' ? null : $request->project_id;
                         return $query->where('lead_project_id', $p);
                     }
-
-                    // Get all projects
                     $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
-                    // attach null to projects
-                    // $projects[] = null;
                     return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
-                })
-                ->when(!$request->project_id, function ($query) use ($request) {
-                    return $query->where('lead_project_id', "Base");
-                })
-                ->when($request->automatic_import === 'true', function ($query) use ($request) {
-                    return $query->where('channel_id', '<>', NULL);
-                })
-                ->when($request->numbers, function ($query) use ($request) {
-                    return $query->whereIn('phone', explode(',', $request->numbers));
-                })
-                ->with(['observations' => function ($query) {
-                    return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-                }])->with('user', 'leadProject', 'saleActivities.user')
-                ->orderBy('id', 'DESC')
-                ->paginate($perPage);
-
-            $leads->getCollection()->transform(function ($leadAssignment) {
-                // Añadimos el accesorio al modelo
-                $leadAssignment->saleActivities->each(function ($saleActivity) {
-                    $saleActivity->append('duration');
-                    return $saleActivity;
                 });
-                return $leadAssignment;
+            })
+
+            ->when(!$request->project_id, function ($query) use ($request) {
+                return $query->where('lead_project_id', "Base");
+            })
+            ->when($request->automatic_import === 'true', function ($query) use ($request) {
+                return $query->where('channel_id', '<>', NULL);
+            })
+            ->when($request->numbers, function ($query) use ($request) {
+                return $query->whereIn('phone', explode(',', $request->numbers));
+            })
+            ->when($searchString, function ($q) use ($searchString) {
+                return $q->where(function ($q) use ($searchString) {
+                    return $q->where('name', 'LIKE', "%$searchString%")
+                        ->orWhere('courses', 'LIKE', "%$searchString%")
+                        ->orWhere('status', 'LIKE', "%$searchString%")
+                        ->orWhere('origin', 'LIKE', "%$searchString%")
+                        ->orWhere('phone', 'LIKE', "%$searchString%")
+                        ->orWhere('email', 'LIKE', "%$searchString%")
+                        ->orWhere('document', 'LIKE', "%$searchString%");
+                });
+            })
+            ->with(['observations' => function ($query) {
+                return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+            }])->with('user', 'leadProject', 'saleActivities.user')
+            ->orderBy('id', 'DESC')
+            ->paginate($perPage);
+
+        $leads->getCollection()->transform(function ($leadAssignment) {
+            // Añadimos el accesorio al modelo
+            $leadAssignment->saleActivities->each(function ($saleActivity) {
+                $saleActivity->append('duration');
+                return $saleActivity;
             });
-            return ApiResponseController::response("Exito", 200, $leads);
-
-
+            return $leadAssignment;
+        });
+        return ApiResponseController::response("Exito", 200, $leads);
     }
 
 
@@ -831,7 +866,7 @@ class LeadsController extends Controller
         return ApiResponseController::response("Exito", 200, $data);
     }
 
-    public function createStudentFromLead(Request $request, $lead_id, $lead_assignment_id)
+    public function createStudentFromLead(Request $request, $lead_id, $lead_assignment_id = null)
     {
         $userId = auth()->user()->id;
         $student             = new Student();
@@ -871,16 +906,19 @@ class LeadsController extends Controller
             'user_id'          => $userId,
         ]);
 
-        $leadAssignament = LeadAssignment::where('id', $lead_assignment_id)
-            ->with('lead.user')
-            ->with(['lead.saleActivities' => function ($query) {
-                return $query->with('user')->orderBy('id', 'DESC');
-            }])
-            ->with(['saleActivities.user' => function ($query) {
-                return $query->orderBy('id', 'DESC');
-            }])
-            ->with('lead.student')
-            ->first();
+        if ($lead_assignment_id) {
+
+            $leadAssignament = LeadAssignment::where('id', $lead_assignment_id)
+                ->with('lead.user')
+                ->with(['lead.saleActivities' => function ($query) {
+                    return $query->with('user')->orderBy('id', 'DESC');
+                }])
+                ->with(['saleActivities.user' => function ($query) {
+                    return $query->orderBy('id', 'DESC');
+                }])
+                ->with('lead.student')
+                ->first();
+        }
 
 
 
