@@ -17,6 +17,7 @@ use DateInterval;
 use DatePeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LeadsController extends Controller
 {
@@ -180,7 +181,7 @@ class LeadsController extends Controller
             ->when(in_array(null, $projects), function ($query) {
                 return $query->orWhereNull('lead_project_id');
             })
-            ->whereNotIn('id', $assignedLeadsIds)
+            // ->whereNotIn('id', $assignedLeadsIds)
             ->where('status', 'Nuevo')
             ->orderBy('created_at', 'DESC') // Ordenar por fecha de creación, no por ID
             ->first();
