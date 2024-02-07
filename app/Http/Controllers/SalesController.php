@@ -54,7 +54,8 @@ class SalesController extends Controller
 
 
 
-    public function getZadarmaInfo(Request $request){
+    static public function getZadarmaInfo(Request $request)
+    {
 
         $user = $request->user();
 
@@ -68,6 +69,6 @@ class SalesController extends Controller
             'key'        => $sip->key,
             'zadarma_id' => $user->zadarma_id,
         ];
-        return ApiResponseController::response('Consulta Exitosa', 200, $data);
+        return $data;
     }
 }

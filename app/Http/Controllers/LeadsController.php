@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\CallActivity;
+use App\Models\Country;
+use App\Models\DocumentType;
 use App\Models\Lead;
 use App\Models\LeadAssignment;
 use App\Models\LeadObservation;
@@ -40,7 +42,15 @@ class LeadsController extends Controller
             ->with('lead.student')
             ->first();
 
-        return ApiResponseController::response("Exito", 200, $leadAssignament);
+        return ApiResponseController::response("Exito", 200, [
+            'leadAssignament'  => $leadAssignament,
+            'nextScheduleCall' => self::getNextScheduleCall($request),
+            'lastCallActivity' => self::getLastCallActivity($request, true),
+            'countries'        => Country::all(),
+            'documentTypes'    => DocumentType::all(),
+            'zadarmaInfo'   => SalesController::getZadarmaInfo($request),
+
+        ]);
     }
 
     public function getNextLead(Request $request)
@@ -53,7 +63,10 @@ class LeadsController extends Controller
 
         $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.saleActivities.user', 'lead.user', 'saleActivities.user')->first();
 
-        return ApiResponseController::response("Exito", 200, $leadAssignament);
+        return ApiResponseController::response("Exito", 200, [
+            'leadAssignament' => $leadAssignament,
+            'nextScheduleCall' => self::getNextScheduleCall($request)
+        ]);
     }
 
     public function getPreviousLead(Request $request)
@@ -70,7 +83,10 @@ class LeadsController extends Controller
         // $lead = Lead::with('observations.user')->find($lead->id);
         $leadAssignament = $user->leadAssignments()->latest('order')->where('active', true)->with('lead.saleActivities.user', 'lead.user', 'saleActivities.user')->first();
 
-        return ApiResponseController::response("Exito", 200, $leadAssignament);
+        return ApiResponseController::response("Exito", 200, [
+            'leadAssignament' => $leadAssignament,
+            'nextScheduleCall' => self::getNextScheduleCall($request)
+        ]);
     }
 
     public function assignNextLead(User $user)
@@ -139,6 +155,7 @@ class LeadsController extends Controller
     private function findNextLeadId($user)
     {
 
+        $start = microtime(true);
 
         // Obtener la ronda actual de asignaciones
         $round = LeadAssignment::max('round') ?? 1;
@@ -173,6 +190,10 @@ class LeadsController extends Controller
             $round++;
             $nextLead = $this->startNewRound($projects);
         }
+
+        $end = microtime(true);
+
+        Log::info('Tiempo de ejecución: ' . ($end - $start));
 
         // Devolver el ID del próximo lead a asignar, la ronda y el ID del proyecto
         return [
@@ -478,7 +499,7 @@ class LeadsController extends Controller
             }])
             ->first();
 
-        return ApiResponseController::response("Exito", 200, $lead);
+        return $lead;
     }
 
 
