@@ -247,7 +247,7 @@ class LeadsController extends Controller
         }
         $lead = Lead::where('id', $id)->update([
             'name'             => $request->name,
-            'courses'          => $request->courses,
+            'courses'          => $request->courses ?? '',
             'phone'            => $request->phone,
             'status'           => $request->status,
             'email'            => $request->email,
@@ -313,6 +313,26 @@ class LeadsController extends Controller
 
         ]);
 
+        $prevLeadAssignment = LeadAssignment::with('lead')->where('user_id', $user->id)->where('active', 1)->first();
+
+        $nextAssignment = LeadAssignment::create([
+            'lead_id'     => $lead->id,
+            'round'       => $prevLeadAssignment->round,
+            'order'       => $prevLeadAssignment->order + 1,
+            'active'      => true,                                            // El lead se marca como activo por defecto
+            'project_id'  => $prevLeadAssignment->lead->lead_assignment_id,
+            'user_id'     => $user->id,
+            'assigned_at' => now(),
+        ]);
+
+
+        $nextAssignment->lead()->associate($lead);
+
+        $prevLeadAssignment->update(['active' => false]);
+
+        $nextAssignment = LeadAssignment::where('user_id', $user->id)
+            ->where('active', 1)->with('lead', 'lead.user', 'saleActivities.user')->first();
+
 
         if ($request->status == 'Matriculado') {
             self::createStudentFromLead($request, $lead->id);
@@ -320,7 +340,7 @@ class LeadsController extends Controller
 
         $lead = Lead::with('observations.user')->with('student')->find($lead->id);
 
-        return ApiResponseController::response("Exito", 200, $lead);
+        return ApiResponseController::response("Exito", 200, $nextAssignment);
     }
 
     public function saveObservation(Request $request, $leadId, $leadAssignamentId = null)
@@ -924,7 +944,7 @@ class LeadsController extends Controller
         // Save lead
         $lead = Lead::where('id', $lead_id)->update([
             'name'             => $request->name,
-            'courses'          => $request->courses,
+            'courses'          => $request->courses ?? '',
             'phone'            => $request->phone,
             'status'           => $request->status,
             'email'            => $request->email,

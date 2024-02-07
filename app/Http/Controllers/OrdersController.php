@@ -377,13 +377,28 @@ class OrdersController extends Controller
      */
     public function destroy($id)
     {
-        if (!$order = Order::find($id)) {
+
+        $order = Order::with('orderCourses')->where('id', $id)->first();
+        if (!$order) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
 
-        // Delete courses and dues
-        $order->courses()->delete();
+        $user = request()->user();
+        if ($user->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 403);
+        }
+
+        foreach ($order->orderCourses as $orderCourse) {
+            $orderCourse->certificationTests()->delete();
+            $orderCourse->freezings()->delete();
+            $orderCourse->extensions()->delete();
+            $orderCourse->sapInstalations()->delete();
+            $orderCourse->dateHistory()->delete();
+        }
+
+        $order->orderCourses()->delete();
         $order->dues()->delete();
+        $order->invoice()->delete();
 
         $order->delete();
 
