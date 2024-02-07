@@ -181,10 +181,18 @@ class LeadsController extends Controller
             ->when(in_array(null, $projects), function ($query) {
                 return $query->orWhereNull('lead_project_id');
             })
-            // ->whereNotIn('id', $assignedLeadsIds)
+            // ->whereHas('leadAssignments', function ($query) use ($round) {
+            //     return $query->where('round', $round)->where('lead_id', 'leads.id', false);
+            // })
             ->where('status', 'Nuevo')
             ->orderBy('created_at', 'DESC') // Ordenar por fecha de creación, no por ID
-            ->first();
+            ->limit(2000)
+            ->get();
+
+        // Excluir los leads ya asignados al usuario
+        $nextLead = $nextLead->filter(function ($lead) use ($assignedLeadsIds) {
+            return !$assignedLeadsIds->contains($lead->id);
+        })->first();
 
         // Si no hay leads nuevos, iniciar una nueva ronda
         if (!$nextLead) {
