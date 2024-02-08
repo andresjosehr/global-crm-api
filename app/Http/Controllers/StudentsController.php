@@ -286,44 +286,44 @@ class StudentsController extends Controller
     public function dipatchNotification($order, $student)
     {
 
-        $mailTemplate = [
-            'Contado' => 'terms-contado',
-            'Cuotas'  => 'terms-cuotas'
-        ];
+        // $mailTemplate = [
+        //     'Contado' => 'terms-contado',
+        //     'Cuotas'  => 'terms-cuotas'
+        // ];
 
-        $pdfFileName  = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
-        $urlTerm      = env('APP_URL');
-        $urlTerm     .= '/storage/terminos-aceptados/' . $pdfFileName;
+        // $pdfFileName  = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+        // $urlTerm      = env('APP_URL');
+        // $urlTerm     .= '/storage/terminos-aceptados/' . $pdfFileName;
 
-        $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
+        // $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
 
-        CoreMailsController::sendMail(
-            'finanzas@globaltecnologiasacademy.com',
-            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
+        // CoreMailsController::sendMail(
+        //     'finanzas@globaltecnologiasacademy.com',
+        //     'Has aceptado los términos y condiciones | Bienvenido a tu curso',
+        //     $content
+        // );
 
-        $student = Student::where('id', $order->student->id)->with('users')->first();
+        // $student = Student::where('id', $order->student->id)->with('users')->first();
 
-        CoreMailsController::sendMail(
-            $student->email,
-            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
-        $noti = new NotificationController();
-        $noti = $noti->store([
-            'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
-            'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
-            'icon'       => 'check_circle_outline',
-            'url'        => '#',
-            'user_id'    => $student->users[0]->id,
-            'use_router' => false,
-            'custom_data' => [
-                'type'     => 'terms_confirmed_by_student',
-                'student'  => $student,
-                'order_id' => $order->id
-            ]
-        ]);
+        // CoreMailsController::sendMail(
+        //     $student->email,
+        //     'Has aceptado los términos y condiciones | Bienvenido a tu curso',
+        //     $content
+        // );
+        // $noti = new NotificationController();
+        // $noti = $noti->store([
+        //     'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
+        //     'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria',
+        //     'icon'       => 'check_circle_outline',
+        //     'url'        => '#',
+        //     'user_id'    => $student->users[0]->id,
+        //     'use_router' => false,
+        //     'custom_data' => [
+        //         'type'     => 'terms_confirmed_by_student',
+        //         'student'  => $student,
+        //         'order_id' => $order->id
+        //     ]
+        // ]);
 
         $processesController = new ProcessesController();
         $processesController->updateSellsExcel($order->id);
