@@ -57,6 +57,14 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
+                'name'        => 'Perfil',
+                'description' => '',
+                'icon'        => 'heroicons_outline:user-circle',
+                'path'        => 'perfil',
+                'type'        => 'basic',
+                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
+            ],
+            [
                 'name'        => 'Mi base',
                 'description' => '',
                 'icon'        => 'heroicons_outline:list-bullet',
