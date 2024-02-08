@@ -44,10 +44,10 @@ class StudentsController extends Controller
                     $q->where('status', 'Matriculado');
                 })
                     ->when($user->role_id != 1, function ($q) use ($user) {
-                        $q->where('user_id', $user->id)->with('lead');
+                        $q->where('user_id', $user->id);
                     });
             })
-            ->with('orders')
+            ->with('orders', 'lead')
             // ->when($user->role_id != 1, function ($q) use ($user) {
             //     return $q->whereHas('orders', function ($q) use ($user) {
             //         $q->where('user_id', $user->id);
@@ -176,9 +176,29 @@ class StudentsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        //
+        $user = $request->user();
+        if ($user->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 401);
+        }
+
+        $student = Student::where('id', $id)->with('orders')->first();
+
+        if (!$student) {
+            return ApiResponseController::response('Estudiante no encontrado', 404);
+        }
+
+        $orderController = new OrdersController();
+        foreach ($student->orders as $order) {
+            $orderController->destroy($order->id);
+        }
+
+        DB::table('user_student')->where('student_id', $id)->delete();
+
+        $student->delete();
+
+        return ApiResponseController::response('Estudiante eliminado con éxito', 200);
     }
 
 
