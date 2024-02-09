@@ -15,6 +15,7 @@
         "laravel/telescope": "^4.17",
         "laravel/tinker": "^2.7",
         "pusher/pusher-php-server": "^7.2",
+        "resend/resend-php": "^0.11.0",
         "spatie/laravel-backup": "^8.2",
         "tomfordrumm/jwt-auth": "dev-develop",
         "zadarma/user-api-v1": "^1.1"

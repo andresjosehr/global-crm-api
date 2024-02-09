@@ -17,6 +17,7 @@ use App\Models\Order;
 use App\Models\OrderCourse;
 use App\Models\SapInstalation;
 use Illuminate\Support\Facades\Log;
+use Resend;
 
 class TestController extends Controller
 {
@@ -28,11 +29,13 @@ class TestController extends Controller
     public function index()
     {
 
-        return Order::first();
+        $resend = Resend::client('re_GBdGJBY3_9ZY4WqZPPAXczdVy1Ln6Zcof');
 
-        $freezing = Freezing::with('orderCourse.course', 'orderCourse.sap_instalations', 'orderCourse.order.currency', 'orderCourse.order.orderCourses')->first();
-
-
-        return view('mails.unfreezing_new', compact('freezing'));
+        $resend->emails->send([
+            'from' => 'Coordinacion Academica <coordinacionacademica@globaltecnoacademy.com>',
+            'to' => ['andresjosehr@gmail.com'],
+            'subject' => 'hello world',
+            'html' => '<strong>it works!</strong>',
+        ]);
     }
 }
