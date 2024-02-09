@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use DatePeriod;
-use DateInterval;
 use Carbon\Carbon;
 use App\Models\Country;
 use App\Models\DocumentType;
@@ -11,7 +9,6 @@ use App\Models\Lead;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\Student;
-use App\Models\CallActivity;
 use App\Models\SaleActivity;
 use Illuminate\Http\Request;
 use App\Models\LeadAssignment;
