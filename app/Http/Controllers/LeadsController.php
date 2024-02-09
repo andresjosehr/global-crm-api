@@ -1106,7 +1106,6 @@ class LeadsController extends Controller
 
     public function getCallsAndSalesPerWeek(Request $request)
     {
-
         // Obtener el usuario asociado al request
         $user = $request->user();
 
@@ -1117,13 +1116,10 @@ class LeadsController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
 
-        // Si se proporcionan los parámetros start y end, usarlos para filtrar los registros de LeadAssignment
-
         // Obtener todos los registros de LeadAssignment del usuario de la semana actual
         $assignments = LeadAssignment::where('user_id', $user->id)
             ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->get();
-
 
         // Llenar los días de la semana con los datos de los registros dentro del rango de fechas
         foreach ($assignments as $assignment) {
@@ -1132,12 +1128,12 @@ class LeadsController extends Controller
             $dayOfWeek = $date->dayOfWeek;
 
             // Si la fecha ya existe en el array, aumentar el contador de llamadas
-            if (isset($callsPerDay[$date->toDateString()])) {
-                $callsPerDay[$date->toDateString()]['calls']++;
+            if (isset($callsPerDay[$date->toDateTimeString()])) {
+                $callsPerDay[$date->toDateTimeString()]['calls']++;
             } else {
                 // Si la fecha no existe, agregarla al array con el contador de llamadas a 1
-                $callsPerDay[$date->toDateString()] = [
-                    'date' => $date->toDateString(),
+                $callsPerDay[$date->toDateTimeString()] = [
+                    'date' => $date->toDateTimeString(),
                     'calls' => 1,
                 ];
             }
@@ -1146,9 +1142,9 @@ class LeadsController extends Controller
         // Llenar los días de la semana que no tienen registros con 0 llamadas
         for ($i = 0; $i < 7; $i++) {
             $date = $startOfWeek->copy()->addDays($i);
-            if (!isset($callsPerDay[$date->toDateString()])) {
-                $callsPerDay[$date->toDateString()] = [
-                    'date' => $date->toDateString(),
+            if (!isset($callsPerDay[$date->toDateTimeString()])) {
+                $callsPerDay[$date->toDateTimeString()] = [
+                    'date' => $date->toDateTimeString(),
                     'calls' => 0,
                 ];
             }
@@ -1160,15 +1156,16 @@ class LeadsController extends Controller
         // Convertir el array asociativo en un array numérico
         $callsPerDay = array_values($callsPerDay);
 
+        // Obtener las ventas y llamadas para la semana
         if ($request->has(['start', 'end'])) {
             $start = $request->input('start');
             $end = $request->input('end');
-
-            $salesAndCalls =  $this->getSalesAndCalls($user, $start, $end);
+            $salesAndCalls = $this->getSalesAndCalls($user, $start, $end);
         } else {
-            $salesAndCalls =  $this->getSalesAndCalls($user, $startOfWeek, $endOfWeek);
+            $salesAndCalls = $this->getSalesAndCalls($user, $startOfWeek, $endOfWeek);
         }
 
+        // Crear el array de datos de respuesta
         $data = [
             'callsPerDay' => $callsPerDay,
             'salesAndCalls' => $salesAndCalls
