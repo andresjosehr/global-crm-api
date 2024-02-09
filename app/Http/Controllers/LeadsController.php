@@ -16,6 +16,7 @@ use App\Models\LeadObservation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Carbon\CarbonPeriod;
 
 class LeadsController extends Controller
 {
@@ -383,36 +384,22 @@ class LeadsController extends Controller
         $searchString = $request->input('searchString') ? $request->input('searchString') : '';
         $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
 
-        $leads = Lead::when($mode == 'potenciales', function ($q) use ($user) {
-            return $q->where('status', '<>', 'Matriculado')->where('user_id', $user->id)->where(function ($q2) {
-                return $q2->whereIn('status', ['Potencial', 'Interesado']);
-            });
+        $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
+            return $query->where('user_id', $user->id)
+                ->where('status', '<>', 'Archivado')
+                ->where('status', '<>', 'Nuevo');
         })
-            ->when($mode == 'base-general', function ($q) use ($user) {
-                return $q;
-            })
-            ->when($user->role_id != 1, function ($q) use ($user, $request) {
-                return $q->where('user_id', $user->id);
-            })
-            ->when($user->role_id == 1, function ($q) use ($user, $request) {
-                $q->when($request->project_id, function ($query) use ($request) {
-                    if ($request->project_id != 'Todos') {
-                        $p = $request->project_id == 'Base' ? null : $request->project_id;
-                        return $query->where('lead_project_id', $p);
-                    }
-                    $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
-                    return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
+            ->when($mode == 'potenciales', function ($q) use ($user) {
+                return $q->where('user_id', $user->id)->where(function ($q2) {
+                    return $q2->where('status', 'Potencial')->orWhere('status', 'Interesado');
                 });
             })
-
-            ->when(!$request->project_id, function ($query) use ($request) {
-                return $query->where('lead_project_id', "Base");
+            ->when($mode == 'matriculados', function ($q) use ($user) {
+                return $q->where('user_id', $user->id)
+                    ->where('status', 'Matriculado');
             })
-            ->when($request->automatic_import === 'true', function ($query) use ($request) {
-                return $query->where('channel_id', '<>', NULL);
-            })
-            ->when($request->numbers, function ($query) use ($request) {
-                return $query->whereIn('phone', explode(',', $request->numbers));
+            ->when($mode == 'base-general', function ($q) use ($user) {
+                return $q;
             })
             ->when($searchString, function ($q) use ($searchString) {
                 return $q->where(function ($q) use ($searchString) {
@@ -424,6 +411,27 @@ class LeadsController extends Controller
                         ->orWhere('email', 'LIKE', "%$searchString%")
                         ->orWhere('document', 'LIKE', "%$searchString%");
                 });
+            })
+            ->when($request->project_id, function ($query) use ($request) {
+                if ($request->project_id != 'Todos') {
+                    $p = $request->project_id == 'Base' ? null : $request->project_id;
+                    return $query->where('lead_project_id', $p);
+                }
+
+                // Get all projects
+                $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
+                // attach null to projects
+                // $projects[] = null;
+                return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
+            })
+            ->when(!$request->project_id, function ($query) use ($request) {
+                return $query->where('lead_project_id', "Base");
+            })
+            ->when($request->automatic_import === 'true', function ($query) use ($request) {
+                return $query->where('channel_id', '<>', NULL);
+            })
+            ->when($request->numbers, function ($query) use ($request) {
+                return $query->whereIn('phone', explode(',', $request->numbers));
             })
             ->with(['observations' => function ($query) {
                 return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
@@ -853,7 +861,11 @@ class LeadsController extends Controller
 
     public function getMainStats(Request $request)
     {
-        $user = $request->user();
+        if ($request->user_id) {
+            $user = User::find($request->user_id);
+        } else {
+            $user = $request->user();
+        }
         $start = Carbon::now()->startOfDay();
         $end = Carbon::now()->endOfDay();
         if ($request->start) {
@@ -941,7 +953,8 @@ class LeadsController extends Controller
             'categoriesSales' =>  $categoriesStats,
             'salesStats' => $salesStats,
             'minutesStats' => $minutesStats,
-            'callsStats' => $callStats
+            'callsStats' => $callStats,
+            'user_id' => $user->id
         ];
 
 
@@ -951,13 +964,12 @@ class LeadsController extends Controller
 
     public function getSalesCategoriesStats($user)
     {
-
         return DB::table('orders')
             ->selectRaw('
             COUNT(orders.id) AS total_orders,
-            CAST(SUM(CASE WHEN order_courses_count = 1 THEN 1 ELSE 0 END) AS UNSIGNED) AS plus_sales,
-            CAST(SUM(CASE WHEN order_courses_count = 2 THEN 1 ELSE 0 END) AS UNSIGNED) AS premium_sales,
-            CAST(SUM(CASE WHEN order_courses_count = 5 THEN 1 ELSE 0 END) AS UNSIGNED) AS platinum_sales
+            CAST(COALESCE(SUM(CASE WHEN order_courses_count = 1 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS plus_sales,
+            CAST(COALESCE(SUM(CASE WHEN order_courses_count = 2 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS premium_sales,
+            CAST(COALESCE(SUM(CASE WHEN order_courses_count = 5 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS platinum_sales
         ')
             ->leftJoin(DB::raw('(SELECT order_id, COUNT(*) AS order_courses_count FROM order_courses GROUP BY order_id) AS oc_counts'), 'orders.id', '=', 'oc_counts.order_id')
             ->whereYear('orders.created_at', Carbon::now()->year)
@@ -965,6 +977,8 @@ class LeadsController extends Controller
             ->where('orders.created_by', $user->id)
             ->first();
     }
+
+
 
     public function getSalesStats($user)
     {
@@ -1106,78 +1120,67 @@ class LeadsController extends Controller
 
     public function getCallsAndSalesPerWeek(Request $request)
     {
-        // Obtener el usuario asociado al request
+
+        $days = ["Monday" => "Lunes", "Tuesday" => "Martes", "Wednesday" => "Miércoles", "Thursday" => "Jueves", "Friday" => "Viernes", "Saturday" => "Sábado", "Sunday" => "Domingo"];
         $user = $request->user();
 
-        // Inicializar un array para contar las llamadas por día de la semana
-        $callsPerDay = [];
+        $lastweek = Carbon::now()->subWeek();
+        $callsPerDay = LeadAssignment::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
+            ->where('user_id', $user->id)
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->whereBetween('created_at', [$request->start, $request->end])
+            ->get()->toArray();
 
-        // Obtener el inicio y el final de la semana actual
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
+        $sellsPerDay = Order::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
+            ->where('created_by', $user->id)
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->whereBetween('created_at', [$request->start, $request->end])
+            ->get()->toArray();
 
-        // Obtener todos los registros de LeadAssignment del usuario de la semana actual
-        $assignments = LeadAssignment::where('user_id', $user->id)
-            ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
-            ->get();
+        // Days between the start and end date
+        $daysBetween = CarbonPeriod::create($request->start, $request->end);
+        $daysBetween = count(iterator_to_array($daysBetween));
 
-        // Llenar los días de la semana con los datos de los registros dentro del rango de fechas
-        foreach ($assignments as $assignment) {
-            // Obtener la fecha y el día de la semana del registro
-            $date = Carbon::parse($assignment->created_at);
-            $dayOfWeek = $date->dayOfWeek;
-
-            // Si la fecha ya existe en el array, aumentar el contador de llamadas
-            if (isset($callsPerDay[$date->toDateTimeString()])) {
-                $callsPerDay[$date->toDateTimeString()]['calls']++;
-            } else {
-                // Si la fecha no existe, agregarla al array con el contador de llamadas a 1
-                $callsPerDay[$date->toDateTimeString()] = [
-                    'date' => $date->toDateTimeString(),
-                    'calls' => 1,
-                ];
+        $date = $lastweek->copy()->addDay();
+        for ($i = 0; $i < $daysBetween; $i++) {
+            if (!in_array($date->toDateString(), array_column($callsPerDay, 'date'))) {
+                $callsPerDay[] = ['date' => $date->toDateString(), 'value' => 0];
             }
-        }
 
-        // Llenar los días de la semana que no tienen registros con 0 llamadas
-        for ($i = 0; $i < 7; $i++) {
-            $date = $startOfWeek->copy()->addDays($i);
-            if (!isset($callsPerDay[$date->toDateTimeString()])) {
-                $callsPerDay[$date->toDateTimeString()] = [
-                    'date' => $date->toDateTimeString(),
-                    'calls' => 0,
-                ];
+            if (!in_array($date->toDateString(), array_column($sellsPerDay, 'date'))) {
+                $sellsPerDay[] = ['date' => $date->toDateString(), 'value' => 0];
             }
+
+            // Attach the name of the day in spanish
+            $callsPerDay[array_search($date->toDateString(), array_column($callsPerDay, 'date'))]['day'] = $days[$date->format('l')];
+            $date->addDay();
         }
 
-        // Ordenar el array por fecha
-        ksort($callsPerDay);
+        usort($callsPerDay, function ($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        });
 
-        // Convertir el array asociativo en un array numérico
-        $callsPerDay = array_values($callsPerDay);
+        usort($sellsPerDay, function ($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        });
 
-        // Obtener las ventas y llamadas para la semana
-        if ($request->has(['start', 'end'])) {
-            $start = $request->input('start');
-            $end = $request->input('end');
-            $salesAndCalls = $this->getSalesAndCalls($user, $start, $end);
-        } else {
-            $salesAndCalls = $this->getSalesAndCalls($user, $startOfWeek, $endOfWeek);
-        }
 
         // Crear el array de datos de respuesta
         $data = [
             'callsPerDay' => $callsPerDay,
-            'salesAndCalls' => $salesAndCalls
+            'sellsPerDay' => $sellsPerDay,
         ];
 
-        return ApiResponseController::response("Exito", 200, $data);
+        // Retornar la respuesta en formato JSON
+        return ApiResponseController::response("Éxito", 200, $data);
     }
+
 
     public function getSalesAndCalls($user, $start, $end)
     {
-        // Inicializar un array para almacenar los datos de ventas y llamadas por día
-        $salesAndCallsPerDay = [];
+        // Inicializar arrays para almacenar los datos de ventas y llamadas por día
+        $salesPerDay = [];
+        $callsPerDay = [];
 
         // Obtener el rango de fechas según los parámetros proporcionados o la semana actual
         if ($start && $end) {
@@ -1188,50 +1191,74 @@ class LeadsController extends Controller
             $endDate = Carbon::now()->endOfWeek();
         }
 
-        // Obtener los registros de LeadAssignment del usuario dentro del rango de fechas
-        $assignments = LeadAssignment::where('user_id', $user->id)
+        // Obtener los registros de llamadas del usuario dentro del rango de fechas
+        $calls = LeadAssignment::where('user_id', $user->id)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->get();
 
-        // Iterar sobre los registros y llenar el array con los datos de ventas y llamadas por día
-        foreach ($assignments as $assignment) {
-            // Obtener la fecha del registro
-            $date = Carbon::parse($assignment->created_at)->toDateString();
-
-            // Si la fecha ya existe en el array, aumentar el contador de llamadas
-            if (isset($salesAndCallsPerDay[$date])) {
-                $salesAndCallsPerDay[$date]['calls']++;
-            } else {
-                // Si la fecha no existe, agregarla al array con el contador de llamadas a 1
-                $salesAndCallsPerDay[$date] = [
-                    'date' => $date,
-                    'calls' => 1,
-                ];
+        // Iterar sobre los registros de llamadas y llenar el array con los datos por día
+        foreach ($calls as $call) {
+            $date = Carbon::parse($call->created_at)->toDateString();
+            if (!isset($callsPerDay[$date])) {
+                $callsPerDay[$date] = 0;
             }
+            $callsPerDay[$date]++;
         }
 
-        // Llenar los días que no tienen registros con 0 llamadas
+        // Obtener los registros de ventas del usuario dentro del rango de fechas desde la tabla orders
+        $sales = Order::where('created_by', $user->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        // Iterar sobre los registros de ventas y llenar el array con los datos por día
+        foreach ($sales as $sale) {
+            $date = Carbon::parse($sale->created_at)->toDateString();
+            if (!isset($salesPerDay[$date])) {
+                $salesPerDay[$date] = 0;
+            }
+            $salesPerDay[$date]++;
+        }
+
+        // Completar las fechas faltantes con 0 llamadas y 0 ventas
         $currentDate = $startDate;
         while ($currentDate <= $endDate) {
             $dateString = $currentDate->toDateString();
-            if (!isset($salesAndCallsPerDay[$dateString])) {
-                // Si no hay registros para este día, agregarlo al array con 0 llamadas
-                $salesAndCallsPerDay[$dateString] = [
-                    'date' => $dateString,
-                    'calls' => 0,
-                ];
+            if (!isset($callsPerDay[$dateString])) {
+                $callsPerDay[$dateString] = 0;
+            }
+            if (!isset($salesPerDay[$dateString])) {
+                $salesPerDay[$dateString] = 0;
             }
             $currentDate->addDay();
         }
 
-        // Ordenar el array por fecha
-        ksort($salesAndCallsPerDay);
+        // Preparar los datos en el formato deseado
+        $formattedCalls = [];
+        $formattedSales = [];
+        foreach ($callsPerDay as $date => $count) {
+            $formattedCalls[] = ['x' => $date, 'y' => $count];
+        }
+        foreach ($salesPerDay as $date => $count) {
+            $formattedSales[] = ['x' => $date, 'y' => $count];
+        }
 
-        // Convertir el array asociativo en un array numérico
-        $salesAndCallsPerDay = array_values($salesAndCallsPerDay);
+        // Ordenar los arrays por fecha
+        usort($formattedCalls, function ($a, $b) {
+            return strtotime($a['x']) - strtotime($b['x']);
+        });
+        usort($formattedSales, function ($a, $b) {
+            return strtotime($a['x']) - strtotime($b['x']);
+        });
 
-        return $salesAndCallsPerDay;
+        return [
+            'calls' => $formattedCalls,
+            'sales' => $formattedSales,
+        ];
     }
+
+
+
+
 
 
 
