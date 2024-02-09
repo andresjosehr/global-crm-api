@@ -16,6 +16,7 @@ use App\Models\LeadAssignment;
 use App\Models\LeadObservation;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Carbon\CarbonPeriod;
 
 class LeadsController extends Controller
 {
@@ -288,72 +289,70 @@ class LeadsController extends Controller
         $searchString = $request->input('searchString') ? $request->input('searchString') : '';
         $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
 
-            $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
-                return $query->where('user_id', $user->id)
-                    ->where('status', '<>', 'Archivado')
-                    ->where('status', '<>', 'Nuevo');
-            })
-                ->when($mode == 'potenciales', function ($q) use ($user) {
-                    return $q->where('user_id', $user->id)->where(function ($q2) {
-                        return $q2->where('status', 'Potencial')->orWhere('status', 'Interesado');
-                    });
-                })
-                ->when($mode == 'matriculados', function ($q) use ($user) {
-                    return $q->where('user_id', $user->id)
-                        ->where('status', 'Matriculado');
-                })
-                ->when($mode == 'base-general', function ($q) use ($user) {
-                    return $q;
-                })
-                ->when($searchString, function ($q) use ($searchString) {
-                    return $q->where(function ($q) use ($searchString) {
-                        return $q->where('name', 'LIKE', "%$searchString%")
-                            ->orWhere('courses', 'LIKE', "%$searchString%")
-                            ->orWhere('status', 'LIKE', "%$searchString%")
-                            ->orWhere('origin', 'LIKE', "%$searchString%")
-                            ->orWhere('phone', 'LIKE', "%$searchString%")
-                            ->orWhere('email', 'LIKE', "%$searchString%")
-                            ->orWhere('document', 'LIKE', "%$searchString%");
-                    });
-                })
-                ->when($request->project_id, function ($query) use ($request) {
-                    if ($request->project_id != 'Todos') {
-                        $p = $request->project_id == 'Base' ? null : $request->project_id;
-                        return $query->where('lead_project_id', $p);
-                    }
-
-                    // Get all projects
-                    $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
-                    // attach null to projects
-                    // $projects[] = null;
-                    return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
-                })
-                ->when(!$request->project_id, function ($query) use ($request) {
-                    return $query->where('lead_project_id', "Base");
-                })
-                ->when($request->automatic_import === 'true', function ($query) use ($request) {
-                    return $query->where('channel_id', '<>', NULL);
-                })
-                ->when($request->numbers, function ($query) use ($request) {
-                    return $query->whereIn('phone', explode(',', $request->numbers));
-                })
-                ->with(['observations' => function ($query) {
-                    return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
-                }])->with('user', 'leadProject', 'saleActivities.user')
-                ->orderBy('id', 'DESC')
-                ->paginate($perPage);
-
-            $leads->getCollection()->transform(function ($leadAssignment) {
-                // Añadimos el accesorio al modelo
-                $leadAssignment->saleActivities->each(function ($saleActivity) {
-                    $saleActivity->append('duration');
-                    return $saleActivity;
+        $leads = Lead::when($mode == 'potenciales', function ($query) use ($user) {
+            return $query->where('user_id', $user->id)
+                ->where('status', '<>', 'Archivado')
+                ->where('status', '<>', 'Nuevo');
+        })
+            ->when($mode == 'potenciales', function ($q) use ($user) {
+                return $q->where('user_id', $user->id)->where(function ($q2) {
+                    return $q2->where('status', 'Potencial')->orWhere('status', 'Interesado');
                 });
-                return $leadAssignment;
+            })
+            ->when($mode == 'matriculados', function ($q) use ($user) {
+                return $q->where('user_id', $user->id)
+                    ->where('status', 'Matriculado');
+            })
+            ->when($mode == 'base-general', function ($q) use ($user) {
+                return $q;
+            })
+            ->when($searchString, function ($q) use ($searchString) {
+                return $q->where(function ($q) use ($searchString) {
+                    return $q->where('name', 'LIKE', "%$searchString%")
+                        ->orWhere('courses', 'LIKE', "%$searchString%")
+                        ->orWhere('status', 'LIKE', "%$searchString%")
+                        ->orWhere('origin', 'LIKE', "%$searchString%")
+                        ->orWhere('phone', 'LIKE', "%$searchString%")
+                        ->orWhere('email', 'LIKE', "%$searchString%")
+                        ->orWhere('document', 'LIKE', "%$searchString%");
+                });
+            })
+            ->when($request->project_id, function ($query) use ($request) {
+                if ($request->project_id != 'Todos') {
+                    $p = $request->project_id == 'Base' ? null : $request->project_id;
+                    return $query->where('lead_project_id', $p);
+                }
+
+                // Get all projects
+                $projects = $request->user()->projects_pivot->pluck('lead_project_id')->toArray();
+                // attach null to projects
+                // $projects[] = null;
+                return $query->whereIn('lead_project_id', $projects)->orWhereNull('lead_project_id');
+            })
+            ->when(!$request->project_id, function ($query) use ($request) {
+                return $query->where('lead_project_id', "Base");
+            })
+            ->when($request->automatic_import === 'true', function ($query) use ($request) {
+                return $query->where('channel_id', '<>', NULL);
+            })
+            ->when($request->numbers, function ($query) use ($request) {
+                return $query->whereIn('phone', explode(',', $request->numbers));
+            })
+            ->with(['observations' => function ($query) {
+                return $query->where('schedule_call_datetime', '<>', NULL)->orderBy('schedule_call_datetime', 'DESC');
+            }])->with('user', 'leadProject', 'saleActivities.user')
+            ->orderBy('id', 'DESC')
+            ->paginate($perPage);
+
+        $leads->getCollection()->transform(function ($leadAssignment) {
+            // Añadimos el accesorio al modelo
+            $leadAssignment->saleActivities->each(function ($saleActivity) {
+                $saleActivity->append('duration');
+                return $saleActivity;
             });
-            return ApiResponseController::response("Exito", 200, $leads);
-
-
+            return $leadAssignment;
+        });
+        return ApiResponseController::response("Exito", 200, $leads);
     }
 
 
@@ -761,21 +760,21 @@ class LeadsController extends Controller
 
 
 
-public function getMainStats(Request $request)
-{
-    if($request->user_id){
-        $user = User::find($request->user_id);
-    }else{
-        $user = $request->user();
-    }
-    $start = Carbon::now()->startOfDay();
-    $end = Carbon::now()->endOfDay();
-    if ($request->start) {
-        $start = Carbon::parse($request->input('start'));
-        $end = Carbon::parse($request->input('end'))->endOfDay();
-    }
+    public function getMainStats(Request $request)
+    {
+        if ($request->user_id) {
+            $user = User::find($request->user_id);
+        } else {
+            $user = $request->user();
+        }
+        $start = Carbon::now()->startOfDay();
+        $end = Carbon::now()->endOfDay();
+        if ($request->start) {
+            $start = Carbon::parse($request->input('start'));
+            $end = Carbon::parse($request->input('end'))->endOfDay();
+        }
 
-     $activities = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
+        $activities = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
             return $query->where('user_id', $request->user()->id);
         })
             ->when($user->role_id, function ($query) use ($request) {
@@ -796,48 +795,48 @@ public function getMainStats(Request $request)
             $totalSeconds += $_end->diffInSeconds($_start);
         }
 
-      $hours = $totalSeconds / 3600;
-      $hours = number_format($hours, 2, '.', '');
+        $hours = $totalSeconds / 3600;
+        $hours = number_format($hours, 2, '.', '');
         // Convert to float
-      $hours = floatval($hours);
+        $hours = floatval($hours);
 
 
 
-    $leadCounts = LeadAssignment::when($user->role_id != 1, function ($query) use ($request) {
-        return $query->where('user_id', $request->user()->id);
-    })
-        ->when($user->role_id == 1, function ($query) use ($request) {
-            $query->when($request->user_id, function ($query) use ($request) {
-                return $query->where('user_id', $request->user_id);
-            });
+        $leadCounts = LeadAssignment::when($user->role_id != 1, function ($query) use ($request) {
+            return $query->where('user_id', $request->user()->id);
         })
-        ->whereBetween('assigned_at', [$start, $end])
-        ->count();
+            ->when($user->role_id == 1, function ($query) use ($request) {
+                $query->when($request->user_id, function ($query) use ($request) {
+                    return $query->where('user_id', $request->user_id);
+                });
+            })
+            ->whereBetween('assigned_at', [$start, $end])
+            ->count();
 
-    $callsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
-        return $query->where('user_id', $request->user()->id);
-    })
-        ->when($user->role_id, function ($query) use ($request) {
-            $query->when($request->user_id, function ($query) use ($request) {
-                return $query->where('user_id', $request->user_id);
-            });
+        $callsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
+            return $query->where('user_id', $request->user()->id);
         })
-        ->where('type', 'Llamada')
-        ->whereBetween('created_at', [$start, $end])
-        ->count();
+            ->when($user->role_id, function ($query) use ($request) {
+                $query->when($request->user_id, function ($query) use ($request) {
+                    return $query->where('user_id', $request->user_id);
+                });
+            })
+            ->where('type', 'Llamada')
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
 
-    $answeredCallsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
-        return $query->where('user_id', $request->user()->id);
-    })
-        ->when($user->role_id, function ($query) use ($request) {
-            $query->when($request->user_id, function ($query) use ($request) {
-                return $query->where('user_id', $request->user_id);
-            });
+        $answeredCallsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
+            return $query->where('user_id', $request->user()->id);
         })
-        ->where('type', 'Llamada')
-        ->where('answered', 1) // Filtrar solo las llamadas contestadas
-        ->whereBetween('created_at', [$start, $end])
-        ->count();
+            ->when($user->role_id, function ($query) use ($request) {
+                $query->when($request->user_id, function ($query) use ($request) {
+                    return $query->where('user_id', $request->user_id);
+                });
+            })
+            ->where('type', 'Llamada')
+            ->where('answered', 1) // Filtrar solo las llamadas contestadas
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
 
         $callStats = $this->getCallStats($user);
 
@@ -847,331 +846,316 @@ public function getMainStats(Request $request)
 
         $categoriesStats = $this->getSalesCategoriesStats($user);
 
-    $data = [
-        'hoursInCall' => $hours,
-        'leadCounts' => $leadCounts,
-        'callsCount' => $callsCount,
-        'answeredCallsCount' => $answeredCallsCount,
-        'categoriesSales' =>  $categoriesStats,
-        'salesStats' => $salesStats,
-        'minutesStats' => $minutesStats,
-        'callsStats' => $callStats,
-        'user_id' => $user->id
-    ];
+        $data = [
+            'hoursInCall' => $hours,
+            'leadCounts' => $leadCounts,
+            'callsCount' => $callsCount,
+            'answeredCallsCount' => $answeredCallsCount,
+            'categoriesSales' =>  $categoriesStats,
+            'salesStats' => $salesStats,
+            'minutesStats' => $minutesStats,
+            'callsStats' => $callStats,
+            'user_id' => $user->id
+        ];
 
 
 
-    return ApiResponseController::response("Exito", 200, $data);
-}
+        return ApiResponseController::response("Exito", 200, $data);
+    }
 
-public function getSalesCategoriesStats($user)
-{
-    return DB::table('orders')
-        ->selectRaw('
+    public function getSalesCategoriesStats($user)
+    {
+        return DB::table('orders')
+            ->selectRaw('
             COUNT(orders.id) AS total_orders,
             CAST(COALESCE(SUM(CASE WHEN order_courses_count = 1 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS plus_sales,
             CAST(COALESCE(SUM(CASE WHEN order_courses_count = 2 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS premium_sales,
             CAST(COALESCE(SUM(CASE WHEN order_courses_count = 5 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS platinum_sales
         ')
-        ->leftJoin(DB::raw('(SELECT order_id, COUNT(*) AS order_courses_count FROM order_courses GROUP BY order_id) AS oc_counts'), 'orders.id', '=', 'oc_counts.order_id')
-        ->whereYear('orders.created_at', Carbon::now()->year)
-        ->whereMonth('orders.created_at', Carbon::now()->month)
-        ->where('orders.created_by', $user->id)
-        ->first();
-}
-
-
-
-public function getSalesStats($user)
-{
-    // Ventas en el mes actual
-    $totalSalesThisMonth = Order::where('created_by', $user->id)
-        ->whereMonth('created_at', Carbon::now()->month)
-        ->whereYear('created_at', Carbon::now()->year)
-        ->count();
-
-    // Mes con mayor venta y cantidad de ventas mensuales
-    $monthlySales = Order::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total_sales')
-        ->where('created_by', $user->id)
-        ->groupBy('year', 'month')
-        ->orderByDesc('total_sales')
-        ->first();
-
-    $bestMonth = null;
-    $bestMonthSales = 0;
-    if ($monthlySales) {
-        $bestMonth = Carbon::create($monthlySales->year, $monthlySales->month)->format('F');
-        $bestMonthSales = $monthlySales->total_sales;
+            ->leftJoin(DB::raw('(SELECT order_id, COUNT(*) AS order_courses_count FROM order_courses GROUP BY order_id) AS oc_counts'), 'orders.id', '=', 'oc_counts.order_id')
+            ->whereYear('orders.created_at', Carbon::now()->year)
+            ->whereMonth('orders.created_at', Carbon::now()->month)
+            ->where('orders.created_by', $user->id)
+            ->first();
     }
 
-     $totalMonthlySales = Order::where('created_by', $user->id)
-        ->selectRaw('COUNT(*) as total_sales')
-        ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
-        ->pluck('total_sales')
-        ->sum();
 
-    // Media de ventas mensuales
-    $averageMonthlySales = $totalMonthlySales / Carbon::now()->month;
 
-    $initialObjective = 40;
-    $maxObjective = 60;
-    $objectiveCalls = $initialObjective;
+    public function getSalesStats($user)
+    {
+        // Ventas en el mes actual
+        $totalSalesThisMonth = Order::where('created_by', $user->id)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
 
-// Verificar si se ha alcanzado el objetivo actual y no hemos alcanzado el máximo
-    if ($totalSalesThisMonth >= $objectiveCalls && $objectiveCalls < $maxObjective) {
-    // Incrementar el objetivo para el próximo nivel, pero asegúrate de no pasar del máximo
-    $objectiveCalls += 10;
-    if ($objectiveCalls > $maxObjective) {
-        $objectiveCalls = $maxObjective;
+        // Mes con mayor venta y cantidad de ventas mensuales
+        $monthlySales = Order::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total_sales')
+            ->where('created_by', $user->id)
+            ->groupBy('year', 'month')
+            ->orderByDesc('total_sales')
+            ->first();
+
+        $bestMonth = null;
+        $bestMonthSales = 0;
+        if ($monthlySales) {
+            $bestMonth = Carbon::create($monthlySales->year, $monthlySales->month)->format('F');
+            $bestMonthSales = $monthlySales->total_sales;
+        }
+
+        $totalMonthlySales = Order::where('created_by', $user->id)
+            ->selectRaw('COUNT(*) as total_sales')
+            ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
+            ->pluck('total_sales')
+            ->sum();
+
+        // Media de ventas mensuales
+        $averageMonthlySales = $totalMonthlySales / Carbon::now()->month;
+
+        $initialObjective = 40;
+        $maxObjective = 60;
+        $objectiveCalls = $initialObjective;
+
+        // Verificar si se ha alcanzado el objetivo actual y no hemos alcanzado el máximo
+        if ($totalSalesThisMonth >= $objectiveCalls && $objectiveCalls < $maxObjective) {
+            // Incrementar el objetivo para el próximo nivel, pero asegúrate de no pasar del máximo
+            $objectiveCalls += 10;
+            if ($objectiveCalls > $maxObjective) {
+                $objectiveCalls = $maxObjective;
+            }
+        }
+
+        return [
+            'objetiveCalls' => $objectiveCalls,
+            'totalSalesThisMonth' => $totalSalesThisMonth,
+            'bestMonth' => $bestMonth,
+            'bestMonthSales' => $bestMonthSales,
+            'averageMonthlySales' => (float) number_format($averageMonthlySales, 2, '.', ''),
+        ];
     }
-}
-
-    return [
-        'objetiveCalls' => $objectiveCalls,
-        'totalSalesThisMonth' => $totalSalesThisMonth,
-        'bestMonth' => $bestMonth,
-        'bestMonthSales' => $bestMonthSales,
-        'averageMonthlySales' => (float) number_format($averageMonthlySales, 2, '.', ''),
-    ];
-}
 
 
-public function minutesStats($user, $start, $end)
-{
-    $totalMinutesToday = SaleActivity::where('user_id', $user->id)
-        ->where('type', 'Llamada')
-        ->whereDate('created_at', Carbon::today())
-        ->sum(DB::raw('TIME_TO_SEC(TIMEDIFF(end, start)) / 60'));
+    public function minutesStats($user, $start, $end)
+    {
+        $totalMinutesToday = SaleActivity::where('user_id', $user->id)
+            ->where('type', 'Llamada')
+            ->whereDate('created_at', Carbon::today())
+            ->sum(DB::raw('TIME_TO_SEC(TIMEDIFF(end, start)) / 60'));
 
-    $firstDayLastMonth = Carbon::now()->subMonth()->startOfMonth();
-    $lastDayLastMonth = Carbon::now()->subMonth()->endOfMonth();
-    $maxMinutesLastMonth = SaleActivity::selectRaw('MAX(total_minutes) as max_minutes')
-        ->from(function ($query) use ($user, $firstDayLastMonth, $lastDayLastMonth) {
-            $query->selectRaw('SUM(TIME_TO_SEC(TIMEDIFF(end, start)) / 60) as total_minutes')
-                ->from('sales_activities')
-                ->where('user_id', $user->id)
-                ->where('type', 'Llamada')
-                ->whereBetween('created_at', [$firstDayLastMonth, $lastDayLastMonth])
-                ->groupBy(DB::raw('DATE(created_at)'));
-        }, 'sub')
-        ->get()
-        ->max('max_minutes');
+        $firstDayLastMonth = Carbon::now()->subMonth()->startOfMonth();
+        $lastDayLastMonth = Carbon::now()->subMonth()->endOfMonth();
+        $maxMinutesLastMonth = SaleActivity::selectRaw('MAX(total_minutes) as max_minutes')
+            ->from(function ($query) use ($user, $firstDayLastMonth, $lastDayLastMonth) {
+                $query->selectRaw('SUM(TIME_TO_SEC(TIMEDIFF(end, start)) / 60) as total_minutes')
+                    ->from('sales_activities')
+                    ->where('user_id', $user->id)
+                    ->where('type', 'Llamada')
+                    ->whereBetween('created_at', [$firstDayLastMonth, $lastDayLastMonth])
+                    ->groupBy(DB::raw('DATE(created_at)'));
+            }, 'sub')
+            ->get()
+            ->max('max_minutes');
 
-    $averageMinutesPerDayLastMonth = SaleActivity::selectRaw('SUM(TIME_TO_SEC(TIMEDIFF(end, start)) / 60) / COUNT(DISTINCT DATE(created_at)) as average_minutes')
-        ->where('user_id', $user->id)
-        ->where('type', 'Llamada')
-        ->whereBetween('created_at', [$firstDayLastMonth, $lastDayLastMonth])
-        ->first()->average_minutes ?? 0;
+        $averageMinutesPerDayLastMonth = SaleActivity::selectRaw('SUM(TIME_TO_SEC(TIMEDIFF(end, start)) / 60) / COUNT(DISTINCT DATE(created_at)) as average_minutes')
+            ->where('user_id', $user->id)
+            ->where('type', 'Llamada')
+            ->whereBetween('created_at', [$firstDayLastMonth, $lastDayLastMonth])
+            ->first()->average_minutes ?? 0;
 
-    return [
-        'minutesToday' => (float) number_format($totalMinutesToday, 2, '.', ''),
-        'maxMinutesLastMonth' => (float) number_format($maxMinutesLastMonth, 2, '.', ''),
-        'averageMinutesPerDayLastMonth' => (float) number_format($averageMinutesPerDayLastMonth, 2, '.', ''),
-    ];
-}
-
-
-public function getCallStats($user)
-{
-    $now = Carbon::now();
-
-    // Obtener llamadas del día de hoy
-    $totalCallsToday = LeadAssignment::where('user_id', $user->id)
-        ->whereDate('created_at', $now)
-        ->count();
-
-    // Obtener llamadas para el mes actual
-    $totalCallsThisMonth = LeadAssignment::where('user_id', $user->id)
-        ->whereMonth('created_at', $now->month)
-        ->whereYear('created_at', $now->year)
-        ->count();
-
-    // Obtener llamadas para el mes anterior
-    $totalCallsLastMonth = LeadAssignment::where('user_id', $user->id)
-        ->whereMonth('created_at', $now->subMonth()->month)
-        ->whereYear('created_at', $now->year)
-        ->count();
-
-    // Obtener llamadas para el año actual
-    $totalCallsThisYear = LeadAssignment::where('user_id', $user->id)
-        ->whereYear('created_at', $now->year)
-        ->count();
-
-    // Calcular promedio de llamadas diarias en el mes actual
-    $daysInMonth = date('t'); // Obtener el número de días en el mes actual
-
-    $averageCallsPerDayThisMonth = $totalCallsThisMonth / $daysInMonth;
-
-    // Calcular promedio de llamadas mensuales
-    $averageCallsThisMonth = $totalCallsThisYear / Carbon::now()->month;
+        return [
+            'minutesToday' => (float) number_format($totalMinutesToday, 2, '.', ''),
+            'maxMinutesLastMonth' => (float) number_format($maxMinutesLastMonth, 2, '.', ''),
+            'averageMinutesPerDayLastMonth' => (float) number_format($averageMinutesPerDayLastMonth, 2, '.', ''),
+        ];
+    }
 
 
-    // Calcular promedio de llamadas anuales
-    $averageCallsThisYear = $totalCallsThisYear / Carbon::now()->year;
+    public function getCallStats($user)
+    {
+        $now = Carbon::now();
 
-    return [
-    'totalCallsToday' => $totalCallsToday,
-    'totalCallsThisMonth' => $totalCallsThisMonth,
-    'totalCallsLastMonth' => $totalCallsLastMonth,
-    'totalCallsThisYear' => $totalCallsThisYear,
-    'averageCallsPerDayThisMonth' => (float) number_format($averageCallsPerDayThisMonth, 2, '.', ''),
-    'averageCallsThisMonth' =>(float) number_format($averageCallsThisMonth, 2, '.', ''),
-    'averageCallsThisYear' => (float) number_format($averageCallsThisYear, 2, '.', ''),
-    ];
+        // Obtener llamadas del día de hoy
+        $totalCallsToday = LeadAssignment::where('user_id', $user->id)
+            ->whereDate('created_at', $now)
+            ->count();
 
+        // Obtener llamadas para el mes actual
+        $totalCallsThisMonth = LeadAssignment::where('user_id', $user->id)
+            ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->count();
+
+        // Obtener llamadas para el mes anterior
+        $totalCallsLastMonth = LeadAssignment::where('user_id', $user->id)
+            ->whereMonth('created_at', $now->subMonth()->month)
+            ->whereYear('created_at', $now->year)
+            ->count();
+
+        // Obtener llamadas para el año actual
+        $totalCallsThisYear = LeadAssignment::where('user_id', $user->id)
+            ->whereYear('created_at', $now->year)
+            ->count();
+
+        // Calcular promedio de llamadas diarias en el mes actual
+        $daysInMonth = date('t'); // Obtener el número de días en el mes actual
+
+        $averageCallsPerDayThisMonth = $totalCallsThisMonth / $daysInMonth;
+
+        // Calcular promedio de llamadas mensuales
+        $averageCallsThisMonth = $totalCallsThisYear / Carbon::now()->month;
+
+
+        // Calcular promedio de llamadas anuales
+        $averageCallsThisYear = $totalCallsThisYear / Carbon::now()->year;
+
+        return [
+            'totalCallsToday' => $totalCallsToday,
+            'totalCallsThisMonth' => $totalCallsThisMonth,
+            'totalCallsLastMonth' => $totalCallsLastMonth,
+            'totalCallsThisYear' => $totalCallsThisYear,
+            'averageCallsPerDayThisMonth' => (float) number_format($averageCallsPerDayThisMonth, 2, '.', ''),
+            'averageCallsThisMonth' => (float) number_format($averageCallsThisMonth, 2, '.', ''),
+            'averageCallsThisYear' => (float) number_format($averageCallsThisYear, 2, '.', ''),
+        ];
     }
 
     public function getCallsAndSalesPerWeek(Request $request)
-{
-    // Obtener el usuario asociado al request
-    $user = $request->user();
+    {
 
-    // Inicializar un array para contar las llamadas por día de la semana
-    $callsPerDay = [];
+        $days = ["Monday" => "Lunes", "Tuesday" => "Martes", "Wednesday" => "Miércoles", "Thursday" => "Jueves", "Friday" => "Viernes", "Saturday" => "Sábado", "Sunday" => "Domingo"];
+        $user = $request->user();
 
-    // Obtener el inicio y el final de la semana actual
-    $startOfWeek = Carbon::now()->startOfWeek();
-    $endOfWeek = Carbon::now()->endOfWeek();
+        $lastweek = Carbon::now()->subWeek();
+        $callsPerDay = LeadAssignment::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
+            ->where('user_id', $user->id)
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->whereBetween('created_at', [$request->start, $request->end])
+            ->get()->toArray();
 
-    // Obtener todos los registros de LeadAssignment del usuario de la semana actual
-    $assignments = LeadAssignment::where('user_id', $user->id)
-        ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
-        ->get();
+        $sellsPerDay = Order::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
+            ->where('created_by', $user->id)
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->whereBetween('created_at', [$request->start, $request->end])
+            ->get()->toArray();
 
-    // Llenar los días de la semana con los datos de los registros dentro del rango de fechas
-    foreach ($assignments as $assignment) {
-        // Obtener la fecha y el día de la semana del registro
-        $date = Carbon::parse($assignment->created_at);
-        $dayOfWeek = $date->dayOfWeek;
+        // Days between the start and end date
+        $daysBetween = CarbonPeriod::create($request->start, $request->end);
+        $daysBetween = count(iterator_to_array($daysBetween));
 
-        // Si la fecha ya existe en el array, aumentar el contador de llamadas
-        if (isset($callsPerDay[$date->toDateTimeString()])) {
-            $callsPerDay[$date->toDateTimeString()]['calls']++;
+        $date = $lastweek->copy()->addDay();
+        for ($i = 0; $i < $daysBetween; $i++) {
+            if (!in_array($date->toDateString(), array_column($callsPerDay, 'date'))) {
+                $callsPerDay[] = ['date' => $date->toDateString(), 'value' => 0];
+            }
+
+            if (!in_array($date->toDateString(), array_column($sellsPerDay, 'date'))) {
+                $sellsPerDay[] = ['date' => $date->toDateString(), 'value' => 0];
+            }
+
+            // Attach the name of the day in spanish
+            $callsPerDay[array_search($date->toDateString(), array_column($callsPerDay, 'date'))]['day'] = $days[$date->format('l')];
+            $date->addDay();
+        }
+
+        usort($callsPerDay, function ($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        });
+
+        usort($sellsPerDay, function ($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        });
+
+
+        // Crear el array de datos de respuesta
+        $data = [
+            'callsPerDay' => $callsPerDay,
+            'sellsPerDay' => $sellsPerDay,
+        ];
+
+        // Retornar la respuesta en formato JSON
+        return ApiResponseController::response("Éxito", 200, $data);
+    }
+
+
+    public function getSalesAndCalls($user, $start, $end)
+    {
+        // Inicializar arrays para almacenar los datos de ventas y llamadas por día
+        $salesPerDay = [];
+        $callsPerDay = [];
+
+        // Obtener el rango de fechas según los parámetros proporcionados o la semana actual
+        if ($start && $end) {
+            $startDate = Carbon::parse($start)->startOfDay();
+            $endDate = Carbon::parse($end)->endOfDay();
         } else {
-            // Si la fecha no existe, agregarla al array con el contador de llamadas a 1
-            $callsPerDay[$date->toDateTimeString()] = [
-                'x' => $date->toDateTimeString(),
-                'y' => 1,
-            ];
+            $startDate = Carbon::now()->startOfWeek();
+            $endDate = Carbon::now()->endOfWeek();
         }
-    }
 
-    // Llenar los días de la semana que no tienen registros con 0 llamadas
-    for ($i = 0; $i < 7; $i++) {
-        $date = $startOfWeek->copy()->addDays($i);
-        if (!isset($callsPerDay[$date->toDateTimeString()])) {
-            $callsPerDay[$date->toDateTimeString()] = [
-                'x' => $date->toDateTimeString(),
-                'y' => 0,
-            ];
+        // Obtener los registros de llamadas del usuario dentro del rango de fechas
+        $calls = LeadAssignment::where('user_id', $user->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        // Iterar sobre los registros de llamadas y llenar el array con los datos por día
+        foreach ($calls as $call) {
+            $date = Carbon::parse($call->created_at)->toDateString();
+            if (!isset($callsPerDay[$date])) {
+                $callsPerDay[$date] = 0;
+            }
+            $callsPerDay[$date]++;
         }
-    }
 
-    // Ordenar el array por fecha
-    ksort($callsPerDay);
+        // Obtener los registros de ventas del usuario dentro del rango de fechas desde la tabla orders
+        $sales = Order::where('created_by', $user->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
 
-    // Convertir el array asociativo en un array numérico
-    $callsPerDay = array_values($callsPerDay);
-
-    // Obtener las ventas y llamadas para la semana
-    if ($request->has(['start', 'end'])) {
-        $start = $request->input('start');
-        $end = $request->input('end');
-        $salesAndCalls = $this->getSalesAndCalls($user, $start, $end);
-    } else {
-        $salesAndCalls = $this->getSalesAndCalls($user, $startOfWeek, $endOfWeek);
-    }
-
-    // Crear el array de datos de respuesta
-    $data = [
-        'callsPerDay' => $callsPerDay,
-        'salesAndCalls' => $salesAndCalls
-    ];
-
-    // Retornar la respuesta en formato JSON
-    return ApiResponseController::response("Éxito", 200, $data);
-}
-
-
- public function getSalesAndCalls($user, $start, $end)
-{
-    // Inicializar arrays para almacenar los datos de ventas y llamadas por día
-    $salesPerDay = [];
-    $callsPerDay = [];
-
-    // Obtener el rango de fechas según los parámetros proporcionados o la semana actual
-    if ($start && $end) {
-        $startDate = Carbon::parse($start)->startOfDay();
-        $endDate = Carbon::parse($end)->endOfDay();
-    } else {
-        $startDate = Carbon::now()->startOfWeek();
-        $endDate = Carbon::now()->endOfWeek();
-    }
-
-    // Obtener los registros de llamadas del usuario dentro del rango de fechas
-    $calls = LeadAssignment::where('user_id', $user->id)
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->get();
-
-    // Iterar sobre los registros de llamadas y llenar el array con los datos por día
-    foreach ($calls as $call) {
-        $date = Carbon::parse($call->created_at)->toDateString();
-        if (!isset($callsPerDay[$date])) {
-            $callsPerDay[$date] = 0;
+        // Iterar sobre los registros de ventas y llenar el array con los datos por día
+        foreach ($sales as $sale) {
+            $date = Carbon::parse($sale->created_at)->toDateString();
+            if (!isset($salesPerDay[$date])) {
+                $salesPerDay[$date] = 0;
+            }
+            $salesPerDay[$date]++;
         }
-        $callsPerDay[$date]++;
-    }
 
-    // Obtener los registros de ventas del usuario dentro del rango de fechas desde la tabla orders
-    $sales = Order::where('created_by', $user->id)
-        ->whereBetween('created_at', [$startDate, $endDate])
-        ->get();
-
-    // Iterar sobre los registros de ventas y llenar el array con los datos por día
-    foreach ($sales as $sale) {
-        $date = Carbon::parse($sale->created_at)->toDateString();
-        if (!isset($salesPerDay[$date])) {
-            $salesPerDay[$date] = 0;
+        // Completar las fechas faltantes con 0 llamadas y 0 ventas
+        $currentDate = $startDate;
+        while ($currentDate <= $endDate) {
+            $dateString = $currentDate->toDateString();
+            if (!isset($callsPerDay[$dateString])) {
+                $callsPerDay[$dateString] = 0;
+            }
+            if (!isset($salesPerDay[$dateString])) {
+                $salesPerDay[$dateString] = 0;
+            }
+            $currentDate->addDay();
         }
-        $salesPerDay[$date]++;
-    }
 
-    // Completar las fechas faltantes con 0 llamadas y 0 ventas
-    $currentDate = $startDate;
-    while ($currentDate <= $endDate) {
-        $dateString = $currentDate->toDateString();
-        if (!isset($callsPerDay[$dateString])) {
-            $callsPerDay[$dateString] = 0;
+        // Preparar los datos en el formato deseado
+        $formattedCalls = [];
+        $formattedSales = [];
+        foreach ($callsPerDay as $date => $count) {
+            $formattedCalls[] = ['x' => $date, 'y' => $count];
         }
-        if (!isset($salesPerDay[$dateString])) {
-            $salesPerDay[$dateString] = 0;
+        foreach ($salesPerDay as $date => $count) {
+            $formattedSales[] = ['x' => $date, 'y' => $count];
         }
-        $currentDate->addDay();
-    }
 
-    // Preparar los datos en el formato deseado
-    $formattedCalls = [];
-    $formattedSales = [];
-    foreach ($callsPerDay as $date => $count) {
-        $formattedCalls[] = ['x' => $date, 'y' => $count];
-    }
-    foreach ($salesPerDay as $date => $count) {
-        $formattedSales[] = ['x' => $date, 'y' => $count];
-    }
+        // Ordenar los arrays por fecha
+        usort($formattedCalls, function ($a, $b) {
+            return strtotime($a['x']) - strtotime($b['x']);
+        });
+        usort($formattedSales, function ($a, $b) {
+            return strtotime($a['x']) - strtotime($b['x']);
+        });
 
-    // Ordenar los arrays por fecha
-    usort($formattedCalls, function($a, $b) {
-        return strtotime($a['x']) - strtotime($b['x']);
-    });
-    usort($formattedSales, function($a, $b) {
-        return strtotime($a['x']) - strtotime($b['x']);
-    });
-
-    return [
-        'calls' => $formattedCalls,
-        'sales' => $formattedSales,
-    ];
-}
+        return [
+            'calls' => $formattedCalls,
+            'sales' => $formattedSales,
+        ];
+    }
 
 
 
