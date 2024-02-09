@@ -1015,77 +1015,77 @@ public function getCallStats($user)
 
     }
 
-    public function getCallsAndSalesPerWeek (Request $request){
-
+    public function getCallsAndSalesPerWeek(Request $request)
+{
     // Obtener el usuario asociado al request
-        $user = $request->user();
+    $user = $request->user();
 
-        // Inicializar un array para contar las llamadas por día de la semana
-        $callsPerDay = [];
+    // Inicializar un array para contar las llamadas por día de la semana
+    $callsPerDay = [];
 
-        // Obtener el inicio y el final de la semana actual
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
+    // Obtener el inicio y el final de la semana actual
+    $startOfWeek = Carbon::now()->startOfWeek();
+    $endOfWeek = Carbon::now()->endOfWeek();
 
-        // Si se proporcionan los parámetros start y end, usarlos para filtrar los registros de LeadAssignment
+    // Obtener todos los registros de LeadAssignment del usuario de la semana actual
+    $assignments = LeadAssignment::where('user_id', $user->id)
+        ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+        ->get();
 
-            // Obtener todos los registros de LeadAssignment del usuario de la semana actual
-        $assignments = LeadAssignment::where('user_id', $user->id)
-                ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
-                ->get();
+    // Llenar los días de la semana con los datos de los registros dentro del rango de fechas
+    foreach ($assignments as $assignment) {
+        // Obtener la fecha y el día de la semana del registro
+        $date = Carbon::parse($assignment->created_at);
+        $dayOfWeek = $date->dayOfWeek;
 
-
-        // Llenar los días de la semana con los datos de los registros dentro del rango de fechas
-        foreach ($assignments as $assignment) {
-            // Obtener la fecha y el día de la semana del registro
-            $date = Carbon::parse($assignment->created_at);
-            $dayOfWeek = $date->dayOfWeek;
-
-            // Si la fecha ya existe en el array, aumentar el contador de llamadas
-            if (isset($callsPerDay[$date->toDateString()])) {
-                $callsPerDay[$date->toDateString()]['calls']++;
-            } else {
-                // Si la fecha no existe, agregarla al array con el contador de llamadas a 1
-                $callsPerDay[$date->toDateString()] = [
-                    'date' => $date->toDateString(),
-                    'calls' => 1,
-                ];
-            }
+        // Si la fecha ya existe en el array, aumentar el contador de llamadas
+        if (isset($callsPerDay[$date->toDateTimeString()])) {
+            $callsPerDay[$date->toDateTimeString()]['calls']++;
+        } else {
+            // Si la fecha no existe, agregarla al array con el contador de llamadas a 1
+            $callsPerDay[$date->toDateTimeString()] = [
+                'date' => $date->toDateTimeString(),
+                'calls' => 1,
+            ];
         }
-
-        // Llenar los días de la semana que no tienen registros con 0 llamadas
-        for ($i = 0; $i < 7; $i++) {
-            $date = $startOfWeek->copy()->addDays($i);
-            if (!isset($callsPerDay[$date->toDateString()])) {
-                $callsPerDay[$date->toDateString()] = [
-                    'date' => $date->toDateString(),
-                    'calls' => 0,
-                ];
-            }
-        }
-
-        // Ordenar el array por fecha
-        ksort($callsPerDay);
-
-        // Convertir el array asociativo en un array numérico
-        $callsPerDay = array_values($callsPerDay);
-
-        if ($request->has(['start', 'end'])) {
-            $start = $request->input('start');
-            $end = $request->input('end');
-
-           $salesAndCalls =  $this->getSalesAndCalls($user,$start,$end);
-        }else{
-           $salesAndCalls =  $this->getSalesAndCalls($user,$startOfWeek,$endOfWeek);
-        }
-
-        $data = [
-            'callsPerDay' => $callsPerDay,
-            'salesAndCalls' => $salesAndCalls
-        ];
-
-        return ApiResponseController::response("Exito", 200, $data);
     }
+
+    // Llenar los días de la semana que no tienen registros con 0 llamadas
+    for ($i = 0; $i < 7; $i++) {
+        $date = $startOfWeek->copy()->addDays($i);
+        if (!isset($callsPerDay[$date->toDateTimeString()])) {
+            $callsPerDay[$date->toDateTimeString()] = [
+                'date' => $date->toDateTimeString(),
+                'calls' => 0,
+            ];
+        }
+    }
+
+    // Ordenar el array por fecha
+    ksort($callsPerDay);
+
+    // Convertir el array asociativo en un array numérico
+    $callsPerDay = array_values($callsPerDay);
+
+    // Obtener las ventas y llamadas para la semana
+    if ($request->has(['start', 'end'])) {
+        $start = $request->input('start');
+        $end = $request->input('end');
+        $salesAndCalls = $this->getSalesAndCalls($user, $start, $end);
+    } else {
+        $salesAndCalls = $this->getSalesAndCalls($user, $startOfWeek, $endOfWeek);
+    }
+
+    // Crear el array de datos de respuesta
+    $data = [
+        'callsPerDay' => $callsPerDay,
+        'salesAndCalls' => $salesAndCalls
+    ];
+
+    // Retornar la respuesta en formato JSON
+    return ApiResponseController::response("Éxito", 200, $data);
+}
+
 
     public function getSalesAndCalls($user, $start,$end )
 {
