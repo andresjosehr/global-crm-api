@@ -1051,7 +1051,7 @@ class PricesSeeder extends Seeder
             [
                 'description' => 'Dos cursos (Precio normal - PLAN PREMIUM)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 135,
+                'amount' => 125,
                 'months' => 6,
                 'mode' => 'contado'
             ],
@@ -1069,6 +1069,8 @@ class PricesSeeder extends Seeder
                 'months' => 6,
                 'mode' => 'contado'
             ],
+
+
 
             // Tres cursos
             [
