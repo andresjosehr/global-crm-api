@@ -1124,24 +1124,30 @@ class LeadsController extends Controller
         $days = ["Monday" => "Lunes", "Tuesday" => "Martes", "Wednesday" => "Miércoles", "Thursday" => "Jueves", "Friday" => "Viernes", "Saturday" => "Sábado", "Sunday" => "Domingo"];
         $user = $request->user();
 
+        if ($user->role_id == 1) {
+            $user = User::find($request->user_id);
+        }
+
         $lastweek = Carbon::now()->subWeek();
         $callsPerDay = LeadAssignment::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
             ->where('user_id', $user->id)
             ->groupBy(DB::raw('DATE(created_at)'))
-            ->whereBetween('created_at', [$request->start, $request->end])
+            ->whereBetween('created_at', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
             ->get()->toArray();
 
         $sellsPerDay = Order::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
             ->where('created_by', $user->id)
             ->groupBy(DB::raw('DATE(created_at)'))
-            ->whereBetween('created_at', [$request->start, $request->end])
+            ->whereBetween('created_at', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
             ->get()->toArray();
+
+
 
         // Days between the start and end date
         $daysBetween = CarbonPeriod::create($request->start, $request->end);
         $daysBetween = count(iterator_to_array($daysBetween));
 
-        $date = $lastweek->copy()->addDay();
+        $date = Carbon::parse($request->start);
         for ($i = 0; $i < $daysBetween; $i++) {
             if (!in_array($date->toDateString(), array_column($callsPerDay, 'date'))) {
                 $callsPerDay[] = ['date' => $date->toDateString(), 'value' => 0];
