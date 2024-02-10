@@ -337,31 +337,31 @@ class OrdersController extends Controller
             $this->syncRelation($order->dues(), $request->dues);
 
 
-            $invoice = Invoice::where('order_id', $order->id)->first();
+            // $invoice = Invoice::where('order_id', $order->id)->first();
 
-            if ($request->invoice['tax_situation_proof_changed']) {
-                $file = $request->invoice['tax_situation_proof'];
-                $file = str_replace('data:application/pdf;base64,', '', $file);
-                $file = str_replace(' ', '+', $file);
-                $date = date('Y-m-d-H-i-s');
-                $fileName = explode('.', $request->invoice['tax_situation_proof_name'])[0] . '_' . $date . '.pdf';
-                \File::put(storage_path() . '/app/public/invoices/' . $fileName, base64_decode($file));
-                $invoice->tax_situation_proof = $fileName;
-            }
+            // if ($request->invoice['tax_situation_proof_changed']) {
+            //     $file = $request->invoice['tax_situation_proof'];
+            //     $file = str_replace('data:application/pdf;base64,', '', $file);
+            //     $file = str_replace(' ', '+', $file);
+            //     $date = date('Y-m-d-H-i-s');
+            //     $fileName = explode('.', $request->invoice['tax_situation_proof_name'])[0] . '_' . $date . '.pdf';
+            //     \File::put(storage_path() . '/app/public/invoices/' . $fileName, base64_decode($file));
+            //     $invoice->tax_situation_proof = $fileName;
+            // }
 
-            $invoice->requested     = $request->invoice['requested'];
-            $invoice->ruc           = $request->invoice['ruc'];
-            $invoice->business_name = $request->invoice['business_name'];
-            $invoice->email         = $request->invoice['email'];
-            $invoice->tax_situation = $request->invoice['tax_situation'];
-            $invoice->tax_regime    = $request->invoice['tax_regime'];
-            $invoice->address       = $request->invoice['address'];
-            $invoice->postal_code   = $request->invoice['postal_code'];
-            $invoice->cellphone     = $request->invoice['cellphone'];
-            $invoice->cfdi_use      = $request->invoice['cfdi_use'];
-            $invoice->type          = $request->invoice['type'];
+            // $invoice->requested     = $request->invoice['requested'];
+            // $invoice->ruc           = $request->invoice['ruc'];
+            // $invoice->business_name = $request->invoice['business_name'];
+            // $invoice->email         = $request->invoice['email'];
+            // $invoice->tax_situation = $request->invoice['tax_situation'];
+            // $invoice->tax_regime    = $request->invoice['tax_regime'];
+            // $invoice->address       = $request->invoice['address'];
+            // $invoice->postal_code   = $request->invoice['postal_code'];
+            // $invoice->cellphone     = $request->invoice['cellphone'];
+            // $invoice->cfdi_use      = $request->invoice['cfdi_use'];
+            // $invoice->type          = $request->invoice['type'];
 
-            $invoice->save();
+            // $invoice->save();
 
 
             return ApiResponseController::response('Orden actualizada exitosamente', 200, $order);
