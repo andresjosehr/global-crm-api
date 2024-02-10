@@ -203,31 +203,31 @@ class OrdersController extends Controller
         }
 
 
-        $invoice = new Invoice();
-        if ($request->invoice['tax_situation_proof_changed']) {
-            // Convert base64 to pdf
-            $file = $request->invoice['tax_situation_proof'];
-            $file = str_replace('data:application/pdf;base64,', '', $file);
-            $file = str_replace(' ', '+', $file);
-            $fileName = 'tax_situation_proof_' . $order->id . '.pdf';
-            \File::put(storage_path() . '/app/public/invoices/' . $fileName, base64_decode($file));
-            $invoice->tax_situation_proof = $fileName;
-        }
+        // $invoice = new Invoice();
+        // if ($request->invoice['tax_situation_proof_changed']) {
+        //     // Convert base64 to pdf
+        //     $file = $request->invoice['tax_situation_proof'];
+        //     $file = str_replace('data:application/pdf;base64,', '', $file);
+        //     $file = str_replace(' ', '+', $file);
+        //     $fileName = 'tax_situation_proof_' . $order->id . '.pdf';
+        //     \File::put(storage_path() . '/app/public/invoices/' . $fileName, base64_decode($file));
+        //     $invoice->tax_situation_proof = $fileName;
+        // }
 
-        $invoice->requested     = $request->invoice['requested'];
-        $invoice->ruc           = $request->invoice['ruc'];
-        $invoice->business_name = $request->invoice['business_name'];
-        $invoice->email         = $request->invoice['email'];
-        $invoice->tax_situation = $request->invoice['tax_situation'];
-        $invoice->tax_regime    = $request->invoice['tax_regime'];
-        $invoice->address       = $request->invoice['address'];
-        $invoice->postal_code   = $request->invoice['postal_code'];
-        $invoice->cellphone     = $request->invoice['cellphone'];
-        $invoice->cfdi_use      = $request->invoice['cfdi_use'];
-        $invoice->type          = $request->invoice['type'];
-        $invoice->order_id      = $order->id;
+        // $invoice->requested     = $request->invoice['requested'];
+        // $invoice->ruc           = $request->invoice['ruc'];
+        // $invoice->business_name = $request->invoice['business_name'];
+        // $invoice->email         = $request->invoice['email'];
+        // $invoice->tax_situation = $request->invoice['tax_situation'];
+        // $invoice->tax_regime    = $request->invoice['tax_regime'];
+        // $invoice->address       = $request->invoice['address'];
+        // $invoice->postal_code   = $request->invoice['postal_code'];
+        // $invoice->cellphone     = $request->invoice['cellphone'];
+        // $invoice->cfdi_use      = $request->invoice['cfdi_use'];
+        // $invoice->type          = $request->invoice['type'];
+        // $invoice->order_id      = $order->id;
 
-        $invoice->save();
+        // $invoice->save();
 
 
         // Get id
@@ -399,7 +399,7 @@ class OrdersController extends Controller
 
         $order->orderCourses()->delete();
         $order->dues()->delete();
-        $order->invoice()->delete();
+        // $order->invoice()->delete();
 
         $order->delete();
 
