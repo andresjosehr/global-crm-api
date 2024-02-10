@@ -725,11 +725,11 @@ class LeadsController extends Controller
             return ApiResponseController::response("Exito", 200, []);
         }
 
-        if (count(explode('.', $request->events[0]['channel'])) == 0) {
+        if (count(explode('-', $request->events[0]['channel'])) == 0) {
             return ApiResponseController::response("Exito", 200, []);
         }
 
-        $user_id = explode('.', $request->events[0]['channel'])[1];
+        $user_id = explode('-', $request->events[0]['channel'])[1];
 
         $callActivity = SaleActivity::where('user_id', $user_id)
             ->where('end', null)

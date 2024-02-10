@@ -70,7 +70,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::get('get-sells-users', 'App\Http\Controllers\UsersController@getSellsUsers');
         Route::post('update-sales-activity', 'App\Http\Controllers\LeadsController@updateSalesActivity');
         Route::get('last-call-activity', 'App\Http\Controllers\LeadsController@getLastCallActivity');
-        Route::post('create-student-from-lead/{id}/{lead_assignment_id}', 'App\Http\Controllers\LeadsController@createStudentFromLead');
+        Route::post('create-student-from-lead/{id}/{lead_assignment_id?}', 'App\Http\Controllers\LeadsController@createStudentFromLead');
 
 
         Route::get('get-next-schedule-call', 'App\Http\Controllers\LeadsController@getNextScheduleCall');
