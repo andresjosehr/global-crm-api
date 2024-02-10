@@ -1310,6 +1310,7 @@ class LeadsController extends Controller
             'user_id'          => $userId,
         ]);
 
+        $leadAssignament = null;
         if ($lead_assignment_id) {
 
             $leadAssignament = LeadAssignment::where('id', $lead_assignment_id)

@@ -283,9 +283,12 @@ class ProcessesController extends Controller
 
     public function updateSellsExcel($order_id)
     {
+        $sheet_id = env('APP_ENV') == 'production'? '1U5mbiPnRfpOnD336Sio-3n2X6J_xQs0E3Pspme6eiUc' : '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs';
+        $tab_id = env('APP_ENV') == 'production'? '301252804' : '1438941447';
+
         $google_sheet = new GoogleSheetController();
 
-        $spreadsheetId = '1U5mbiPnRfpOnD336Sio-3n2X6J_xQs0E3Pspme6eiUc';
+        $spreadsheetId = $sheet_id;
         $range = 'FEBRERO 24!A1:AH';
 
         // 1. Obtener los datos existentes para encontrar la primera fila vacía
@@ -331,7 +334,6 @@ class ProcessesController extends Controller
             'phone'        => 'E',
             'email'        => 'F',
             'start'        => 'AB',
-            // 'license'      => 'AC',
             'user'         => 'AD',
             'observations' => 'AG'
         ];
@@ -412,7 +414,7 @@ class ProcessesController extends Controller
         $dataToUpdate = array_map(function ($item) use ($emptyRow, $spreadsheetId) {
             $item['sheet_id'] = $spreadsheetId;
             $item['course_row_number'] = $emptyRow;
-            $item['tab_id'] = '301252804';
+            $item['tab_id'] = $tab_id$tab_id;
             return $item;
         }, $dataToUpdate);
         // return $dataToUpdate;
