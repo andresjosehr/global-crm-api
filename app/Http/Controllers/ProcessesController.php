@@ -283,8 +283,8 @@ class ProcessesController extends Controller
 
     public function updateSellsExcel($order_id)
     {
-        $sheet_id = env('APP_ENV') == 'production'? '1U5mbiPnRfpOnD336Sio-3n2X6J_xQs0E3Pspme6eiUc' : '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs';
-        $tab_id = env('APP_ENV') == 'production'? '301252804' : '1438941447';
+        $sheet_id = env('APP_ENV') == 'production' ? '1U5mbiPnRfpOnD336Sio-3n2X6J_xQs0E3Pspme6eiUc' : '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs';
+        $tab_id = env('APP_ENV') == 'production' ? '301252804' : '1438941447';
 
         $google_sheet = new GoogleSheetController();
 
@@ -411,10 +411,10 @@ class ProcessesController extends Controller
         // 'tab_id'            => '1992733426',
         // Add all this properties to the array
 
-        $dataToUpdate = array_map(function ($item) use ($emptyRow, $spreadsheetId) {
+        $dataToUpdate = array_map(function ($item) use ($emptyRow, $spreadsheetId, $tab_id) {
             $item['sheet_id'] = $spreadsheetId;
             $item['course_row_number'] = $emptyRow;
-            $item['tab_id'] = $tab_id$tab_id;
+            $item['tab_id'] = $tab_id;
             return $item;
         }, $dataToUpdate);
         // return $dataToUpdate;

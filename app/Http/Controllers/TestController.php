@@ -29,13 +29,7 @@ class TestController extends Controller
     public function index()
     {
 
-        $resend = Resend::client('re_GBdGJBY3_9ZY4WqZPPAXczdVy1Ln6Zcof');
-
-        $resend->emails->send([
-            'from' => 'Coordinacion Academica <coordinacionacademica@globaltecnoacademy.com>',
-            'to' => ['andresjosehr@gmail.com'],
-            'subject' => 'hello world',
-            'html' => '<strong>it works!</strong>',
-        ]);
+        $processesController = new ProcessesController();
+        $processesController->updateSellsExcel(1);
     }
 }
