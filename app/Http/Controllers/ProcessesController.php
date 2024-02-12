@@ -140,7 +140,6 @@ class ProcessesController extends Controller
         $student = $excelController->formatCourses([$student]);
         $student = $excelController->formatProgress($student);
 
-        Log::debug("[ANDRESJOSEHR - STUDIANTE: ]", [$student]);
 
         $unfreezingTexts = new UnfreezingText();
         $studentsWithText = $unfreezingTexts->handle($student);
@@ -177,7 +176,6 @@ class ProcessesController extends Controller
         $polrasShowMessageFormatFlag = false; // si muestra el mensaje o el json
 
         $studentJson = $request->data;
-        Log::debug("%s::%s - Data desde Google Sheets", [$studentJson]);
         $aProcessDates = [];
         // echo "<hr>";
         // var_dump($student);
@@ -206,7 +204,6 @@ class ProcessesController extends Controller
             $excelController->fixCourses($data);
         endif;
 
-        Log::info(json_encode($data));
 
         // return $data;
 
@@ -270,7 +267,6 @@ class ProcessesController extends Controller
             $message = "No se encontró mensaje para el estudiante";
         endif;
 
-        Log::debug("%s::%s - Mensaje retornado", [$message]);
 
         if ($polrasShowMessageFormatFlag == true) :
             return sprintf("<pre>%s</pre>", $message);
@@ -342,7 +338,6 @@ class ProcessesController extends Controller
             $dataToUpdate[] = ['column' => $col, 'value' => $order->student[$key] . ''];
         }
         $cCount = count($order->orderCourses->where('type', 'paid')->toArray());
-        Log::debug('Cursos: ' . count($order->orderCourses->where('type', 'paid')->toArray()));
         if ($cCount > 1 && $cCount < 5) {
             $dataToUpdate[] = ['column' => 'AC', 'value' => $order->student['license'], 'note' => '3 Meses para cada curso SAP'];
         } else {
@@ -385,7 +380,6 @@ class ProcessesController extends Controller
             $dataToUpdate[] = ['column' => 'D', 'value' => $order->student['courses']];
         }
 
-        LOG::debug($cert);
 
 
 

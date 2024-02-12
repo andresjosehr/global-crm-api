@@ -94,7 +94,6 @@ class StudentMessageService
             // si la fecha de fin no esta contemplada en los días de adelanto, o hay una fecha mas temprana ya cargada, sigue procesando el siguiente curso
             $tmpEndCourseDaysAhead = $this->__calculateDayDifference($processDate, Carbon::parse($course['end']));
             // var_dump($tmpEndCourseDaysAhead);
-            Log::debug('StudentMessageService::' . __FUNCTION__ . ': $tmpEndCourseDaysAhead: ' . $tmpEndCourseDaysAhead);
             if (in_array($tmpEndCourseDaysAhead, $validDaysAhead) == false || $tmpEndCourseDaysAhead > $endCourseDaysAhead) {
                 continue;
             }
@@ -132,9 +131,9 @@ class StudentMessageService
             endif;
         endif;
 
-        Log::debug('StudentMessageService::' . __FUNCTION__ . ': $sapCourses', $coursesToNotify);
-        Log::debug('StudentMessageService::' . __FUNCTION__ . ': $certificationPendingAttemptsFlag: ' . $certificationPendingAttemptsFlag);
-        Log::debug('StudentMessageService::' . __FUNCTION__ . ': $noFreeCertificationAttemptsFlag: ' . $noFreeCertificationAttemptsFlag);
+        // Log::debug('StudentMessageService::' . __FUNCTION__ . ': $sapCourses', $coursesToNotify);
+        // Log::debug('StudentMessageService::' . __FUNCTION__ . ': $certificationPendingAttemptsFlag: ' . $certificationPendingAttemptsFlag);
+        // Log::debug('StudentMessageService::' . __FUNCTION__ . ': $noFreeCertificationAttemptsFlag: ' . $noFreeCertificationAttemptsFlag);
 
 
         // Flags para Cursos SAP del pasado que aprobó, reprobó, abandonó o no culminó
@@ -146,7 +145,7 @@ class StudentMessageService
 
         // Flags para los cursos de obsequio
         $freeCoursesStatuses = self::__getFreeCoursesStatuses($studentData['courses']);
-        Log::debug('StudentMessageService::' . __FUNCTION__ . ': $freeCoursesStatuses', $freeCoursesStatuses);
+        // Log::debug('StudentMessageService::' . __FUNCTION__ . ': $freeCoursesStatuses', $freeCoursesStatuses);
         foreach ($otherSapCourses as $course) :
             if (in_array($course['course_status'], $irregularCourseStatuses)) { // OJO el estado a verificar es del curso SAP, no del curso de obsequio
                 $showFreeCoursesFlag = true;
@@ -276,7 +275,7 @@ class StudentMessageService
             $endCourseDaysAhead,
             self::__getTemplateFileNamePartForFlags($certificationPendingAttemptsFlag, $noFreeCertificationAttemptsFlag)
         );
-        Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
+        // Log::debug(sprintf('%s::%s: Template %s: ', __CLASS__, __FUNCTION__, $templateFilename));
 
         $s = [
             'student_name' =>  $this->__studentData['NOMBRE'],
@@ -1512,9 +1511,9 @@ class StudentMessageService
             // flag para cursos sin intentos gratis
             $course['noFreeAttempts'] = (($course['isExcelCourse'] == false) && stripos($tmpCertifaction_test_original, 'sin intentos gratis') !== false);
             // flag de cantidad de intentos pendientes
-            if($course['hasPendingAttempts'] == true) :
+            if ($course['hasPendingAttempts'] == true) :
                 $course['pendingAttemptsCount'] = $this->extractPendingAttempts($course["certifaction_test_original"]);
-            else:
+            else :
                 $course['pendingAttemptsCount'] = 0;
             endif;
             // si el curso no tiene fecha de fin, sigue procesando el siguiente curso
@@ -1558,10 +1557,10 @@ class StudentMessageService
                         $course['noFreeAttempts'] = ($course['noFreeAttempts'] || $course[$level]['noFreeAttempts']);
 
                         // cantidad de intentos pendientes
-                        if($course['hasPendingAttempts'] == true) :
+                        if ($course['hasPendingAttempts'] == true) :
                             $course[$level]['pendingAttemptsCount'] = $this->extractPendingAttempts($course[$level]['certifaction_test_original']);
-                        else:
-                            $course[$level]['pendingAttemptsCount'] =0;
+                        else :
+                            $course[$level]['pendingAttemptsCount'] = 0;
                         endif;
 
                     endif;

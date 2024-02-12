@@ -196,7 +196,6 @@ class FreezingsController extends Controller
 
         $finish_date = Carbon::parse($finish_date);
         foreach ($nextCourses as $order_course) {
-            Log::info('Fecha final: ' . $finish_date);
             $newStartDate = Carbon::parse($finish_date)->addDays(1);
             $newEndDate = Carbon::parse($newStartDate)->addMonths(3);
             $finish_date = $newEndDate;
@@ -209,7 +208,6 @@ class FreezingsController extends Controller
             ]);
         }
 
-        Log::info('Se movieron los cursos hacia adelante');
 
         return true;
     }

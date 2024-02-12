@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 use Exception;
@@ -91,15 +92,12 @@ class GoogleSheetController extends Controller
                         // Si es un número
                         $cellData->setUserEnteredValue(new Google_Service_Sheets_ExtendedValue(['numberValue' => $update['value']]));
                     } elseif (strtotime($update['value']) !== false) {
-                        // Si es una fecha (podrías necesitar ajustar esto según tu formato de fecha)
                         $cellData->setUserEnteredValue(new Google_Service_Sheets_ExtendedValue(['stringValue' => $update['value']]));
                     } else {
                         // Tratar como texto por defecto
                         $cellData->setUserEnteredValue(new Google_Service_Sheets_ExtendedValue(['stringValue' => $update['value']]));
                     }
 
-                    // Establecer el valor de la celda
-                    // $cellData->setUserEnteredValue(new Google_Service_Sheets_ExtendedValue(['stringValue' => $update['value']]));
 
                     // Verificar si hay una nota para agregar y agregarla si existe
                     if (isset($update['note'])) {
@@ -179,8 +177,6 @@ class GoogleSheetController extends Controller
 
     public function updateGoogleSheet($requests)
     {
-        Log::info('Updating Google Sheet');
-        Log::info($requests);
         $responses = [];
         foreach ($requests as $sheet_id => $updates) {
 

@@ -2,22 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Mails\CoreMailsController;
-use App\Models\Student;
 use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Processes\StudentsExcelController;
-use App\Jobs\GeneralJob;
-use App\Models\DatesHistory;
-use App\Models\Freezing;
-use App\Models\OderDateHistory;
-use App\Models\Order;
-use App\Models\OrderCourse;
-use App\Models\SapInstalation;
-use Illuminate\Support\Facades\Log;
-use Resend;
+use Zadarma_API\Api;
 
 class TestController extends Controller
 {
@@ -29,7 +15,38 @@ class TestController extends Controller
     public function index()
     {
 
-        $processesController = new ProcessesController();
-        $processesController->updateSellsExcel(1);
+        $user = User::where('email', 'marieereu1520@gmail.com')->first();
+
+        $key    = env('ZADARMA_KEY');
+        $secret = env('ZADARMA_SECRET');
+
+        $api = new Api($key, $secret);
+        $sip = $api->getWebrtcKey($user->zadarma_id);
+        // $sip->key
+
+
+        $statistics = $api->getStatistics(
+            '2023-02-01 00:00:00',
+            '2023-02-09 23:59:59',
+            null,
+            '721',
+        );
+
+
+        return response()->json($statistics);
+
+
+
+        // public function getStatistics(
+        //     $start = null,
+        //     $end = null,
+        //     $sip = null,
+        //     $costOnly = null,
+        //     $type = null,
+        //     $skip = null,
+        //     $limit = null
+        // )
+
+        // return $data;
     }
 }

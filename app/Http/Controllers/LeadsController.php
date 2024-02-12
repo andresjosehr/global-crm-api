@@ -201,7 +201,6 @@ class LeadsController extends Controller
 
         $end = microtime(true);
 
-        Log::info('Tiempo de ejecución: ' . ($end - $start));
 
         // Devolver el ID del próximo lead a asignar, la ronda y el ID del proyecto
         return [

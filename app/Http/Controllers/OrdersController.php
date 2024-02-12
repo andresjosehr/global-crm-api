@@ -269,8 +269,6 @@ class OrdersController extends Controller
 
             $message = CoreMailsController::sendMail($order->student->email, $subject, $content, $scheduleTime);
 
-            Log::info('Este es el mensaje:');
-            Log::info(['EPAA' => $message]);
             OrderCourse::where('id', $orderCourse->id)->update(['welcome_mail_id' => $message->id]);
         }
     }

@@ -44,7 +44,6 @@ class GeneralJob implements ShouldQueue
         }
 
         $controller = resolve($this->controllerClass);
-        Log::info('GeneralJob: 3');
 
         // Verifica si el método existe en la clase
         if (!method_exists($controller, $this->methodName)) {
