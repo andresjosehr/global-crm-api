@@ -85,13 +85,13 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::prefix('activity')->group(function () {
 
             Route::get('get-leads-assignments', 'App\Http\Controllers\LeadsController@getLeadsAssignments');
-            Route::get('get-assignments-by-hour', 'App\Http\Controllers\LeadsController@getAssignmentsByHour');
+            Route::get('get-assignments-by-hour', 'App\Http\Controllers\ReportsController@getAssignmentsByHour');
 
             Route::get('get-calls', 'App\Http\Controllers\LeadsController@getCalls');
-            Route::get('get-calls-by-hour', 'App\Http\Controllers\LeadsController@getCallsByHour');
+            Route::get('get-calls-by-hour', 'App\Http\Controllers\ReportsController@getCallsByHour');
 
-            Route::get('get-main-stats', 'App\Http\Controllers\LeadsController@getMainStats');
-            Route::get('get-calls-and-sales-per-week', 'App\Http\Controllers\LeadsController@getCallsAndSalesPerWeek');
+            Route::get('get-main-stats', 'App\Http\Controllers\ReportsController@getMainStats');
+            Route::get('get-calls-and-sales-per-week', 'App\Http\Controllers\ReportsController@getCallsAndSalesPerWeek');
         });
     });
 
