@@ -48,7 +48,10 @@ class LeadsController extends Controller
             'lastCallActivity' => self::getLastCallActivity($request, true),
             'countries'        => Country::all(),
             'documentTypes'    => DocumentType::all(),
-            'zadarmaInfo'   => SalesController::getZadarmaInfo($request),
+            'zadarmaInfo'   => [
+                'key'        => $user->zadarma_widget_key,
+                'zadarma_id' => $user->zadarma_id,
+            ]
 
         ]);
     }

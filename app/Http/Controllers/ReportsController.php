@@ -10,6 +10,7 @@ use App\Models\LeadAssignment;
 use App\Models\SaleActivity;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
+use App\Models\ZadarmaStatistic;
 use Carbon\CarbonPeriod;
 
 class ReportsController extends Controller
@@ -168,6 +169,7 @@ class ReportsController extends Controller
         } else {
             $user = $request->user();
         }
+
         $start = Carbon::now()->startOfDay();
         $end = Carbon::now()->endOfDay();
         if ($request->start) {
@@ -248,15 +250,15 @@ class ReportsController extends Controller
         $categoriesStats = $this->getSalesCategoriesStats($user);
 
         $data = [
-            'hoursInCall' => $hours,
-            'leadCounts' => $leadCounts,
-            'callsCount' => $callsCount,
+            'hoursInCall'        => $hours,
+            'leadCounts'         => $leadCounts,
+            'callsCount'         => $callsCount,
             'answeredCallsCount' => $answeredCallsCount,
-            'categoriesSales' =>  $categoriesStats,
-            'salesStats' => $salesStats,
-            'minutesStats' => $minutesStats,
-            'callsStats' => $callStats,
-            'user_id' => $user->id
+            'categoriesSales'    => $categoriesStats,
+            'salesStats'         => $salesStats,
+            'minutesStats'       => $minutesStats,
+            'callsStats'         => $callStats,
+            'user_id'            => $user->id
         ];
 
 
@@ -338,30 +340,17 @@ class ReportsController extends Controller
 
     public function minutesStats($user, $start, $end)
     {
-        $totalMinutesToday = SaleActivity::where('user_id', $user->id)
-            ->where('type', 'Llamada')
-            ->whereDate('created_at', Carbon::today())
-            ->sum(DB::raw('TIME_TO_SEC(TIMEDIFF(end, start)) / 60'));
+        $totalMinutesToday = ZadarmaStatistic::where('extension', $user->zadarma_id)
+            ->where(DB::raw('DATE(callstart)'), Carbon::now()->format('Y-m-d'))
+            ->sum('billseconds');
 
-        $firstDayLastMonth = Carbon::now()->subMonth()->startOfMonth();
-        $lastDayLastMonth = Carbon::now()->subMonth()->endOfMonth();
-        $maxMinutesLastMonth = SaleActivity::selectRaw('MAX(total_minutes) as max_minutes')
-            ->from(function ($query) use ($user, $firstDayLastMonth, $lastDayLastMonth) {
-                $query->selectRaw('SUM(TIME_TO_SEC(TIMEDIFF(end, start)) / 60) as total_minutes')
-                    ->from('sales_activities')
-                    ->where('user_id', $user->id)
-                    ->where('type', 'Llamada')
-                    ->whereBetween('created_at', [$firstDayLastMonth, $lastDayLastMonth])
-                    ->groupBy(DB::raw('DATE(created_at)'));
-            }, 'sub')
-            ->get()
-            ->max('max_minutes');
+        $maxMinutesLastMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
+            ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])
+            ->sum('billseconds');
 
-        $averageMinutesPerDayLastMonth = SaleActivity::selectRaw('SUM(TIME_TO_SEC(TIMEDIFF(end, start)) / 60) / COUNT(DISTINCT DATE(created_at)) as average_minutes')
-            ->where('user_id', $user->id)
-            ->where('type', 'Llamada')
-            ->whereBetween('created_at', [$firstDayLastMonth, $lastDayLastMonth])
-            ->first()->average_minutes ?? 0;
+        $averageMinutesPerDayLastMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
+            ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])
+            ->selectRaw('AVG(billseconds) as average')->first()->average;
 
         return [
             'minutesToday' => (float) number_format($totalMinutesToday, 2, '.', ''),
@@ -563,5 +552,4 @@ class ReportsController extends Controller
             'sales' => $formattedSales,
         ];
     }
-
 }
