@@ -773,7 +773,7 @@ class PricesSeeder extends Seeder
             [
                 'description' => 'Tres cursos (Descuento final)',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 3600,
+                'amount' => 3500,
                 'months' => 9,
                 'mode' => 'contado'
             ],

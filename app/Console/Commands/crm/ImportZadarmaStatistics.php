@@ -69,9 +69,9 @@ class ImportZadarmaStatistics extends Command
 
                 // Log::info('Seconds: ' . $seconds);
                 // if seconds are less than 21 seconds, sleep for the remaining time
-                if ($seconds < 21) {
+                if ($seconds < 23) {
                     // Log::info('Sleeping for: ' . (21 - $seconds));
-                    sleep(21 - $seconds);
+                    sleep(23 - $seconds);
                 }
 
                 // $records = $this->saveStatistics($statistics->stats);
