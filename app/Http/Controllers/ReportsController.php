@@ -165,10 +165,11 @@ class ReportsController extends Controller
 
     public function getMainStats(Request $request)
     {
-        if ($request->user_id) {
-            $user = User::find($request->user_id);
-        } else {
-            $user = $request->user();
+
+        $user = $request->user();
+
+        if ($user->role_id == 1) {
+            $user = $request->user_id ? User::find($request->user_id) : $user;
         }
 
         $start = Carbon::now()->startOfDay();
@@ -178,14 +179,7 @@ class ReportsController extends Controller
             $end = Carbon::parse($request->input('end'))->endOfDay();
         }
 
-        $activities = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
-            return $query->where('user_id', $request->user()->id);
-        })
-            ->when($user->role_id, function ($query) use ($request) {
-                $query->when($request->user_id, function ($query) use ($request) {
-                    return $query->where('user_id', $request->user_id);
-                });
-            })
+        $activities = SaleActivity::where('user_id', $user->id)
             ->where('type', 'Llamada')
             ->whereBetween('created_at', [$start, $end])
             ->get();
@@ -206,37 +200,16 @@ class ReportsController extends Controller
 
 
 
-        $leadCounts = LeadAssignment::when($user->role_id != 1, function ($query) use ($request) {
-            return $query->where('user_id', $request->user()->id);
-        })
-            ->when($user->role_id == 1, function ($query) use ($request) {
-                $query->when($request->user_id, function ($query) use ($request) {
-                    return $query->where('user_id', $request->user_id);
-                });
-            })
+        $leadCounts = LeadAssignment::where('user_id', $user->id)
             ->whereBetween('assigned_at', [$start, $end])
             ->count();
 
-        $callsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
-            return $query->where('user_id', $request->user()->id);
-        })
-            ->when($user->role_id, function ($query) use ($request) {
-                $query->when($request->user_id, function ($query) use ($request) {
-                    return $query->where('user_id', $request->user_id);
-                });
-            })
+        $callsCount = SaleActivity::where('user_id', $user->id)
             ->where('type', 'Llamada')
             ->whereBetween('created_at', [$start, $end])
             ->count();
 
-        $answeredCallsCount = SaleActivity::when($user->role_id != 1, function ($query) use ($request) {
-            return $query->where('user_id', $request->user()->id);
-        })
-            ->when($user->role_id, function ($query) use ($request) {
-                $query->when($request->user_id, function ($query) use ($request) {
-                    return $query->where('user_id', $request->user_id);
-                });
-            })
+        $answeredCallsCount = SaleActivity::where('user_id', $user->id)
             ->where('type', 'Llamada')
             ->where('answered', 1) // Filtrar solo las llamadas contestadas
             ->whereBetween('created_at', [$start, $end])
