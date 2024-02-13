@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Order;
 use App\Models\ZadarmaStatistic;
 use Carbon\CarbonPeriod;
+use Zadarma_API\Api;
 
 class ReportsController extends Controller
 {
@@ -268,18 +269,22 @@ class ReportsController extends Controller
 
     public function getSalesCategoriesStats($user)
     {
-        return DB::table('orders')
-            ->selectRaw('
-            COUNT(orders.id) AS total_orders,
-            CAST(COALESCE(SUM(CASE WHEN order_courses_count = 1 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS plus_sales,
-            CAST(COALESCE(SUM(CASE WHEN order_courses_count = 2 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS premium_sales,
-            CAST(COALESCE(SUM(CASE WHEN order_courses_count = 5 THEN 1 ELSE 0 END), 0) AS UNSIGNED) AS platinum_sales
-        ')
-            ->leftJoin(DB::raw('(SELECT order_id, COUNT(*) AS order_courses_count FROM order_courses GROUP BY order_id) AS oc_counts'), 'orders.id', '=', 'oc_counts.order_id')
-            ->whereYear('orders.created_at', Carbon::now()->year)
-            ->whereMonth('orders.created_at', Carbon::now()->month)
-            ->where('orders.created_by', $user->id)
-            ->first();
+        $sales = Order::withCount(['orderCourses' => function ($query) {
+            $query->where('type', 'paid');
+        }])
+            ->whereYear('created_at', Carbon::now()->year)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->where('created_by', $user->id)
+            ->get();
+
+
+        return [
+            'orders' => $sales,
+            'plus_sales' => $sales->where('order_courses_count', 1)->count(),
+            'premium_sales' => $sales->where('order_courses_count', 2)->count(),
+            'platinum_sales' => $sales->where('order_courses_count', 5)->count(),
+
+        ];
     }
 
 
@@ -342,20 +347,21 @@ class ReportsController extends Controller
     {
         $totalMinutesToday = ZadarmaStatistic::where('extension', $user->zadarma_id)
             ->where(DB::raw('DATE(callstart)'), Carbon::now()->format('Y-m-d'))
-            ->sum('billseconds');
+            ->sum('billseconds') / 60;
 
-        $maxMinutesLastMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
-            ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])
-            ->sum('billseconds');
+        $minutesCurrentMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
+            ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+            ->sum('billseconds') / 60;
 
-        $averageMinutesPerDayLastMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
-            ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()])
-            ->selectRaw('AVG(billseconds) as average')->first()->average;
+        $averageMinutesCurrentMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
+            ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+            ->where('billseconds', '>', 0)
+            ->selectRaw('AVG(billseconds) as average')->first()->average / 60;
 
         return [
             'minutesToday' => (float) number_format($totalMinutesToday, 2, '.', ''),
-            'maxMinutesLastMonth' => (float) number_format($maxMinutesLastMonth, 2, '.', ''),
-            'averageMinutesPerDayLastMonth' => (float) number_format($averageMinutesPerDayLastMonth, 2, '.', ''),
+            'minutesCurrentMonth' => (float) number_format($minutesCurrentMonth, 2, '.', ''),
+            'averageMinutesCurrentMonth' => (float) number_format($averageMinutesCurrentMonth, 2, '.', ''),
         ];
     }
 
@@ -365,47 +371,31 @@ class ReportsController extends Controller
         $now = Carbon::now();
 
         // Obtener llamadas del día de hoy
-        $totalCallsToday = LeadAssignment::where('user_id', $user->id)
-            ->whereDate('created_at', $now)
+        $totalCallsToday = ZadarmaStatistic::select('DISTINCT(to)')
+            ->where('extension', $user->zadarma_id)
+            ->whereDate('callstart', $now->format('Y-m-d'))
             ->count();
 
         // Obtener llamadas para el mes actual
-        $totalCallsThisMonth = LeadAssignment::where('user_id', $user->id)
-            ->whereMonth('created_at', $now->month)
-            ->whereYear('created_at', $now->year)
+        $totalCallsCurrentMonth = ZadarmaStatistic::select('DISTINCT(to)')
+            ->where('extension', $user->zadarma_id)
+            ->whereBetween('callstart', [$now->startOfMonth()->format('Y-m-d H:i:s'), $now->endOfMonth()->format('Y-m-d H:i:s')])
             ->count();
 
         // Obtener llamadas para el mes anterior
-        $totalCallsLastMonth = LeadAssignment::where('user_id', $user->id)
-            ->whereMonth('created_at', $now->subMonth()->month)
-            ->whereYear('created_at', $now->year)
-            ->count();
+        $averageCallsPerDayCurrentMonth = ZadarmaStatistic::selectRaw('DATE(callstart) as date, COUNT(DISTINCT(`to`)) as total')
+            ->where('extension', $user->zadarma_id)
+            ->whereBetween('callstart', [$now->startOfMonth()->format('Y-m-d H:i:s'), $now->endOfMonth()->format('Y-m-d H:i:s')])
+            ->groupBy('date')
+            ->get()->pluck('total');
 
-        // Obtener llamadas para el año actual
-        $totalCallsThisYear = LeadAssignment::where('user_id', $user->id)
-            ->whereYear('created_at', $now->year)
-            ->count();
+        $averageCallsPerDayCurrentMonth = $averageCallsPerDayCurrentMonth->sum() / $averageCallsPerDayCurrentMonth->count();
 
-        // Calcular promedio de llamadas diarias en el mes actual
-        $daysInMonth = date('t'); // Obtener el número de días en el mes actual
-
-        $averageCallsPerDayThisMonth = $totalCallsThisMonth / $daysInMonth;
-
-        // Calcular promedio de llamadas mensuales
-        $averageCallsThisMonth = $totalCallsThisYear / Carbon::now()->month;
-
-
-        // Calcular promedio de llamadas anuales
-        $averageCallsThisYear = $totalCallsThisYear / Carbon::now()->year;
 
         return [
-            'totalCallsToday' => $totalCallsToday,
-            'totalCallsThisMonth' => $totalCallsThisMonth,
-            'totalCallsLastMonth' => $totalCallsLastMonth,
-            'totalCallsThisYear' => $totalCallsThisYear,
-            'averageCallsPerDayThisMonth' => (float) number_format($averageCallsPerDayThisMonth, 2, '.', ''),
-            'averageCallsThisMonth' => (float) number_format($averageCallsThisMonth, 2, '.', ''),
-            'averageCallsThisYear' => (float) number_format($averageCallsThisYear, 2, '.', ''),
+            'totalCallsToday'                => $totalCallsToday,
+            'totalCallsCurrentMonth'         => $totalCallsCurrentMonth,
+            'averageCallsPerDayCurrentMonth' => (float) number_format($averageCallsPerDayCurrentMonth, 2, '.', ''),
         ];
     }
 
@@ -420,11 +410,17 @@ class ReportsController extends Controller
         }
 
         $lastweek = Carbon::now()->subWeek();
-        $callsPerDay = LeadAssignment::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
-            ->where('user_id', $user->id)
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->whereBetween('created_at', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
-            ->get()->toArray();
+        $callsPerDay = ZadarmaStatistic::select(
+            DB::raw('DATE(callstart) as date'),
+            DB::raw('COUNT(*) as value'),
+            // 'to' // Asegúrate de incluir la columna 'to' aquí
+        )
+            ->where('extension', $user->zadarma_id)
+            ->distinct('to') // Usa 'distinct' en la columna 'to'
+            ->groupBy(DB::raw('DATE(callstart)')) // Agrupa también por 'to'
+            ->whereBetween('callstart', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
+            ->get()
+            ->toArray();
 
         $sellsPerDay = Order::select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as value'))
             ->where('created_by', $user->id)

@@ -15,7 +15,7 @@ class SetZadarmawidgetKey extends Command
      *
      * @var string
      */
-    protected $signature = 'zadarman:set-widget-key';
+    protected $signature = 'zadarma:set-widget-key';
 
     /**
      * The console command description.
