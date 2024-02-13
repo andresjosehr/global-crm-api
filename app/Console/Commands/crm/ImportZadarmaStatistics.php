@@ -62,15 +62,15 @@ class ImportZadarmaStatistics extends Command
             $i = 1;
             while (true) {
 
-                Log::info('----------------------------------------------------------------');
+                // Log::info('----------------------------------------------------------------');
 
                 $seconds = abs(microtime(true) - $microtime);
                 $microtime = microtime(true);
 
-                Log::info('Seconds: ' . $seconds);
+                // Log::info('Seconds: ' . $seconds);
                 // if seconds are less than 21 seconds, sleep for the remaining time
                 if ($seconds < 21) {
-                    Log::info('Sleeping for: ' . (21 - $seconds));
+                    // Log::info('Sleeping for: ' . (21 - $seconds));
                     sleep(21 - $seconds);
                 }
 
@@ -101,12 +101,12 @@ class ImportZadarmaStatistics extends Command
 
 
                 $records = count($statistics->stats);
-                Log::info('Extension: ' . $extension . "($j/" . count($extensions) . ")");
-                Log::info('Skiped: ' . $skiping);
-                Log::info('Complete start date - Complete end date: ' . $start . ' - ' . $end);
-                Log::info('Cicle start date: ' . $statistics->stats[0]['callstart']);
-                Log::info('Cicle end date: ' . $statistics->stats[$records - 1]['callstart']);
-                Log::info('Now: ' . Carbon::now()->format('Y-m-d H:i:s'));
+                // Log::info('Extension: ' . $extension . "($j/" . count($extensions) . ")");
+                // Log::info('Skiped: ' . $skiping);
+                // Log::info('Complete start date - Complete end date: ' . $start . ' - ' . $end);
+                // Log::info('Cicle start date: ' . $statistics->stats[0]['callstart']);
+                // Log::info('Cicle end date: ' . $statistics->stats[$records - 1]['callstart']);
+                // Log::info('Now: ' . Carbon::now()->format('Y-m-d H:i:s'));
 
 
                 $skiping += 1000;
