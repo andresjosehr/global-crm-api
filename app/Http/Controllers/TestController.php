@@ -19,25 +19,14 @@ class TestController extends Controller
      */
     public function index()
     {
-        $microtime = 0;
-        // max_execution_time
-        ini_set('max_execution_time', -1);
-
-        $key    = env('ZADARMA_KEY');
-        $secret = env('ZADARMA_SECRET');
-
-        $api = new Api($key, $secret);
-
-        $extensions = User::selectRaw("DISTINCT(zadarma_id)")->where('zadarma_id', "IS NOT", NULL)
-            // ->where('zadarma_id', "328959-710")
-            ->groupBy('zadarma_id')->get()->pluck('zadarma_id')->toArray();
-
-        $start = Carbon::now()->startOfDay()->format('Y-m-d H:i:s');
-        $end = Carbon::now()->format('Y-m-d H:i:s');
-
-        $statistics = $api->getPbxStatistics($start, $end);
-
-        return [$statistics];
+        return ZadarmaStatistic::with('lead', 'user')
+            ->whereHas('user', function ($query) {
+                $query->where('id', 7);
+            })
+            ->whereHas('lead', function ($query) {
+                $query->where('id', 68794);
+            })
+            ->get();
     }
     public function importStatistics()
     {

@@ -563,7 +563,7 @@ class LeadsController extends Controller
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
-        $leadAssignament = LeadAssignment::with('user', 'lead', 'observations', 'saleActivities')
+        $leadAssignment = LeadAssignment::with('user', 'lead', 'observations')
             ->when($user->role_id != 1, function ($query) use ($request) {
                 return $query->where('user_id', $request->user()->id);
             })
@@ -579,17 +579,11 @@ class LeadsController extends Controller
             ->orderBy('assigned_at', 'DESC')
             ->paginate($perPage);
 
-        // attach duration to each sale activity
-        $leadAssignament->getCollection()->transform(function ($leadAssignment) {
-            // Añadimos el accesorio al modelo
-            $leadAssignment->saleActivities->each(function ($saleActivity) {
-                $saleActivity->append('duration');
-                return $saleActivity;
-            });
-            return $leadAssignment;
+        $leadAssignment->each(function ($leadAssignment) {
+            $leadAssignment->zadarmaStatistics = $leadAssignment->zadarmaStatistics()->get();
         });
 
-        return ApiResponseController::response("Exito", 200, $leadAssignament);
+        return ApiResponseController::response("Exito", 200, $leadAssignment);
     }
 
 

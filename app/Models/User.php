@@ -80,27 +80,27 @@ class User extends Authenticatable implements JWTSubject
 
 
     public function getModules()
-{
-    $modules = $this->role->modules;
+    {
+        $modules = $this->role->modules;
 
-    $parentModules = $modules->filter(function ($module) {
-        return is_null($module->parent_id);
-    });
+        $parentModules = $modules->filter(function ($module) {
+            return is_null($module->parent_id);
+        });
 
-    $childModules = $modules->filter(function ($module) {
-        return !is_null($module->parent_id);
-    });
+        $childModules = $modules->filter(function ($module) {
+            return !is_null($module->parent_id);
+        });
 
-    $organizedModules = $parentModules->map(function ($parentModule) use ($childModules) {
-        $parentModule->childs = $childModules->filter(function ($childModule) use ($parentModule) {
-            return $childModule->parent_id == $parentModule->id;
-        })->values();  // Reset array keys
+        $organizedModules = $parentModules->map(function ($parentModule) use ($childModules) {
+            $parentModule->childs = $childModules->filter(function ($childModule) use ($parentModule) {
+                return $childModule->parent_id == $parentModule->id;
+            })->values();  // Reset array keys
 
-        return $parentModule;
-    });
+            return $parentModule;
+        });
 
-    return $organizedModules;
-}
+        return $organizedModules;
+    }
 
 
     function sap_instalation()
@@ -294,7 +294,8 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(LeadProject::class, 'user_lead_projects', 'user_id', 'lead_project_id');
     }
 
-    public function projects_pivot(){
+    public function projects_pivot()
+    {
         return $this->hasMany(UserLeadProject::class);
     }
 
@@ -303,5 +304,8 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Student::class, 'user_student', 'user_id', 'student_id');
     }
 
-
+    public function zadarmaStatistics()
+    {
+        return $this->hasMany(ZadarmaStatistic::class, 'extension', 'extension');
+    }
 }

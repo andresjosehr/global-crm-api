@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class LeadAssignment extends Model
 {
@@ -48,5 +49,17 @@ class LeadAssignment extends Model
     public function saleActivities()
     {
         return $this->hasMany(SaleActivity::class);
+    }
+
+    // En LeadAssignment.php
+
+    public function zadarmaStatistics()
+    {
+        return ZadarmaStatistic::whereHas('user', function ($query) {
+            $query->where('id', $this->user_id);
+        })
+            ->whereHas('lead', function ($query) {
+                $query->where('id', $this->lead_id);
+            });
     }
 }

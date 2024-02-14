@@ -118,10 +118,11 @@ class ReportsController extends Controller
         $reporte = $asesores->map(function ($asesor) use ($start, $end) {
             $count = 0;
 
-            $calls = SaleActivity::where('user_id', $asesor->id)
-                ->where('type', 'Llamada')
-                ->whereBetween('created_at', [$start, $end])
-                ->selectRaw('DATE(created_at) as fecha, HOUR(created_at) as hora, COUNT(*) as value')
+            $calls = ZadarmaStatistic::whereHas('user', function ($query) use ($asesor) {
+                $query->where('id', $asesor->id);
+            })
+                ->whereBetween('callstart', [$start, $end])
+                ->selectRaw('DATE(callstart) as fecha, HOUR(callstart) as hora, COUNT(*) as value')
                 ->groupBy('fecha', 'hora')
                 ->get()
                 ->groupBy('fecha')
@@ -255,8 +256,7 @@ class ReportsController extends Controller
             'orders' => $sales,
             'plus_sales' => $sales->where('order_courses_count', 1)->count(),
             'premium_sales' => $sales->where('order_courses_count', 2)->count(),
-            'platinum_sales' => $sales->where('order_courses_count', 5)->count(),
-
+            'platinum_sales' => $sales->where('order_courses_count', 5)->count()
         ];
     }
 

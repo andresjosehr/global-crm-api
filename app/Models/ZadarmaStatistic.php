@@ -24,4 +24,14 @@ class ZadarmaStatistic extends Model
         'to',
         'extension',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'extension', 'zadarma_id');
+    }
+
+    public function lead()
+    {
+        return $this->belongsTo(Lead::class, 'destination', 'phone');
+    }
 }

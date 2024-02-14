@@ -55,4 +55,9 @@ class Lead extends Model
     {
         return $this->hasOne(Student::class);
     }
+
+    public function zadarmaStatistics()
+    {
+        return $this->hasMany(ZadarmaStatistic::class, 'destination', 'phone');
+    }
 }
