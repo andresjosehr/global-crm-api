@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 use App\Services\StudentMessageService;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessesController extends Controller
 {
@@ -422,5 +423,22 @@ class ProcessesController extends Controller
         $google_sheet->updateGoogleSheet($data);
 
         return "Exito";
+    }
+
+    public function getBkFiles()
+    {
+        // Get all files in the directory
+        $files = Storage::disk('Laravel')->allFiles();
+        $html = '';
+        foreach ($files as $file) {
+            $html .= '<a href="bk/' . $file . '">' . $file . '</a><br>';
+        }
+
+        return $html;
+    }
+
+    public function downloadBkFile($file)
+    {
+        return Storage::disk('Laravel')->download($file);
     }
 }

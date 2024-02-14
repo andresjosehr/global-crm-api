@@ -3,6 +3,9 @@
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -168,4 +171,10 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
 Route::prefix('processes')->group(function () {
     Route::post('import-leads-from-liveconnect', 'App\Http\Controllers\ProcessesController@importLeadsFromLiveconnect');
     Route::post('generate-message', 'App\Http\Controllers\ProcessesController@generateMessage');
+});
+
+
+Route::group(['middleware' => ['environment_access']], function () use ($basePathController) {
+    Route::get('bk', 'App\Http\Controllers\ProcessesController@getBkFiles');
+    Route::get('bk/{file}', 'App\Http\Controllers\ProcessesController@downloadBkFile');
 });
