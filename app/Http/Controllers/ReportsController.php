@@ -320,16 +320,16 @@ class ReportsController extends Controller
     {
         $totalMinutesToday = ZadarmaStatistic::where('extension', $user->zadarma_id)
             ->where(DB::raw('DATE(callstart)'), Carbon::now()->format('Y-m-d'))
-            ->sum('billseconds') / 60;
+            ->sum('seconds') / 60;
 
         $minutesCurrentMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
             ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
-            ->sum('billseconds') / 60;
+            ->sum('seconds') / 60;
 
         $averageMinutesCurrentMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
             ->whereBetween('callstart', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
-            ->where('billseconds', '>', 0)
-            ->selectRaw('AVG(billseconds) as average')->first()->average / 60;
+            ->where('seconds', '>', 0)
+            ->selectRaw('AVG(seconds) as average')->first()->average / 60;
 
         return [
             'minutesToday' => (float) number_format($totalMinutesToday, 2, '.', ''),
@@ -356,7 +356,7 @@ class ReportsController extends Controller
             ->count();
 
         // Obtener llamadas para el mes anterior
-        $averageCallsPerDayCurrentMonth = ZadarmaStatistic::selectRaw('DATE(callstart) as date, COUNT(DISTINCT(`to`)) as total')
+        $averageCallsPerDayCurrentMonth = ZadarmaStatistic::selectRaw('DATE(callstart) as date, COUNT(DISTINCT(`destination`)) as total')
             ->where('extension', $user->zadarma_id)
             ->whereBetween('callstart', [$now->startOfMonth()->format('Y-m-d H:i:s'), $now->endOfMonth()->format('Y-m-d H:i:s')])
             ->groupBy('date')

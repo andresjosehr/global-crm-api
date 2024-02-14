@@ -41,83 +41,59 @@ class ImportZadarmaStatistics extends Command
 
         $api = new Api($key, $secret);
 
-        $extensions = User::selectRaw("DISTINCT(zadarma_id)")->where('zadarma_id', "IS NOT", NULL)
-            // ->where('zadarma_id', "328959-710")
-            ->groupBy('zadarma_id')->get()->pluck('zadarma_id')->toArray();
+        $start = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
+        $end = Carbon::now()->format('Y-m-d H:i:s');
 
-        $j = 0;
-        foreach ($extensions as $extension) {
-            $skiping = 0;
-            $start = ZadarmaStatistic::where('extension', $extension)->orderBy('callstart', 'desc')->first();
+        $stats = ZadarmaStatistic::orderBy('callstart', 'desc')->first();
 
-            if (!$start) {
-                $start = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
-            } else {
-                $start = Carbon::parse($start->callstart)->format('Y-m-d H:i:s');
-            }
-            $end = Carbon::now()->format('Y-m-d H:i:s');
-
-            $newExtension = explode('-', $extension)[1];
-
-            $i = 1;
-            while (true) {
-
-                Log::info('----------------------------------------------------------------');
-
-                $seconds = abs(microtime(true) - $microtime);
-                $microtime = microtime(true);
-
-                Log::info('Seconds: ' . $seconds);
-                // if seconds are less than 21 seconds, sleep for the remaining time
-                if ($seconds < 31) {
-                    Log::info('Sleeping for: ' . (31 - $seconds));
-                    for ($k = 0; $k < (31 - $seconds); $k++) {
-                        Log::info('Sleeping: ' . $k);
-                        sleep(1);
-                    }
-                }
-
-                // $records = $this->saveStatistics($statistics->stats);
-                $statistics = $api->getStatistics($start, $end, null, $newExtension, null, null, $skiping);
-
-                if (count($statistics->stats) == 0) {
-                    break;
-                }
-
-
-                // Attatch the extension to the statistics
-                $k = 0;
-                // return $statistics->stats[0];
-                foreach ($statistics->stats as $stat) {
-                    $statistics->stats[$k]['extension'] = $extension;
-                    $statistics->stats[$k]['created_at'] = Carbon::now()->format('Y-m-d H:i:s');
-                    // remove id
-                    $statistics->stats[$k]['z_id'] = $stat['id'];
-
-                    unset($statistics->stats[$k]['id']);
-                    $k++;
-                }
-
-
-
-                ZadarmaStatistic::insert($statistics->stats);
-
-
-                $records = count($statistics->stats);
-                Log::info('Extension: ' . $extension . "($j/" . count($extensions) . ")");
-                Log::info('Skiped: ' . $skiping);
-                Log::info('Complete start date - Complete end date: ' . $start . ' - ' . $end);
-                Log::info('Cicle start date: ' . $statistics->stats[0]['callstart']);
-                Log::info('Cicle end date: ' . $statistics->stats[$records - 1]['callstart']);
-                Log::info('Now: ' . Carbon::now()->format('Y-m-d H:i:s'));
-
-
-                $skiping += 1000;
-
-                $i++;
-            }
-            $j++;
+        if ($stats) {
+            $start = Carbon::parse($stats->callstart)->addSeconds(1)->format('Y-m-d H:i:s');
         }
-        return Command::SUCCESS;
+
+        $extensions = User::selectRaw('RIGHT(zadarma_id, 3) as extension, zadarma_id')
+            ->where('zadarma_id', 'IS NOT', null)
+            ->get()->pluck('zadarma_id', 'extension')->toArray();
+
+        $skiping = 0;
+        while (true) {
+
+
+
+            // $records = $this->saveStatistics($statistics->stats);
+            $statistics = $api->getPbxStatistics($start, $end, true, null, $skiping);
+
+            if (count($statistics->stats) == 0) {
+                break;
+            }
+
+
+            // Attatch the extension to the statistics
+            $k = 0;
+            // return $statistics->stats[0];
+            foreach ($statistics->stats as $stat) {
+                $extension = $statistics->stats[$k]['clid'];
+                $extension = explode('(', $extension)[1];
+                $extension = explode(')', $extension)[0];
+
+                $statistics->stats[$k]['extension'] = isset($extensions[$extension]) ? $extensions[$extension] : $extension;
+                $statistics->stats[$k]['created_at'] = Carbon::now()->format('Y-m-d H:i:s');
+
+                unset($statistics->stats[$k]['id']);
+                $k++;
+            }
+
+
+
+            ZadarmaStatistic::insert($statistics->stats);
+
+
+            $records = count($statistics->stats);
+            Log::info('Skiped: ' . $skiping);
+            Log::info('Cicle start - end: ' . $statistics->stats[0]['callstart'] . ' - ' . $statistics->stats[$records - 1]['callstart']);
+            Log::info('Now: ' . Carbon::now()->format('Y-m-d H:i:s'));
+            Log::info('----------------------------------------------------------------');
+            $skiping += 1000;
+            sleep(30);
+        }
     }
 }
