@@ -56,6 +56,22 @@ class LeadsController extends Controller
         ]);
     }
 
+    public function getManageLeadOptions(Request $request)
+    {
+        $user = $request->user();
+        return ApiResponseController::response("Exito", 200, [
+            'nextScheduleCall' => self::getNextScheduleCall($request),
+            'lastCallActivity' => self::getLastCallActivity($request, true),
+            'countries'        => Country::all(),
+            'documentTypes'    => DocumentType::all(),
+            'zadarmaInfo'   => [
+                'key'        => $user->zadarma_widget_key,
+                'zadarma_id' => $user->zadarma_id,
+            ]
+
+        ]);
+    }
+
     public function getNextLead(Request $request)
     {
 

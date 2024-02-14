@@ -70,6 +70,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
         Route::get('get-previous-lead', 'App\Http\Controllers\LeadsController@getPreviousLead');
         Route::get('get-current-lead', 'App\Http\Controllers\LeadsController@getCurrentLead');
+        Route::get('get-manage-lead-options', 'App\Http\Controllers\LeadsController@getManageLeadOptions');
         Route::get('get-sells-users', 'App\Http\Controllers\UsersController@getSellsUsers');
         Route::post('update-sales-activity', 'App\Http\Controllers\LeadsController@updateSalesActivity');
         Route::get('last-call-activity', 'App\Http\Controllers\LeadsController@getLastCallActivity');
