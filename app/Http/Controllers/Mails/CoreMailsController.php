@@ -43,7 +43,12 @@ class CoreMailsController extends Controller
             unset($body['scheduleTime']);
         }
 
-        $token = ZohoToken::where('token', '<>', '')->first()->token;
+        $token = ZohoToken::where('type', 'production')->first()->token;
+
+        if (env('APP_ENV') != 'production') {
+            $token = ZohoToken::where('type', 'qa')->first()->token;
+        }
+
         $client = new GuzzleHttp\Client();
 
         $res = $client->request('POST', 'https://mail.zoho.com/api/accounts/6271576000000008002/messages', [
