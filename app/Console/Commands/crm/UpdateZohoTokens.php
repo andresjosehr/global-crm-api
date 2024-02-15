@@ -59,7 +59,6 @@ class UpdateZohoTokens extends Command
 
 
 
-
         $refreshToken = env('ZOHO_REFRESH_TOKEN');
         $client_id = env('ZOHO_CLIENT_ID');
         $client_secret = env('ZOHO_CLIENT_SECRET');
@@ -78,8 +77,6 @@ class UpdateZohoTokens extends Command
             'token' => $data->access_token,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
-
-
 
         return Command::SUCCESS;
     }
