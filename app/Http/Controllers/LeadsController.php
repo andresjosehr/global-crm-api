@@ -618,7 +618,7 @@ class LeadsController extends Controller
             } else {
 
                 $user_id = null;
-                if ($request->lead_status == 'Potencial') {
+                if ($request->lead_status == 'Potencial' || $request->lead_status == 'Interesado' || $request->lead_status == 'Matriculado') {
                     $user_id = $request->user()->id;
                 }
 
