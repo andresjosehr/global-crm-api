@@ -138,6 +138,18 @@ class OrdersController extends Controller
 
 
         foreach ($orderCourses as $orderCourse) {
+
+            $now = Carbon::now();
+            if ($now->between(Carbon::parse($orderCourse['start']), Carbon::parse($orderCourse['end']))) {
+                $orderCourse['classroom_status'] = 'Cursando';
+            }
+            if ($now->gt(Carbon::parse($orderCourse['end']))) {
+                $orderCourse['classroom_status'] = 'No culminado';
+            }
+            if ($now->lt(Carbon::parse($orderCourse['start']))) {
+                $orderCourse['classroom_status'] = 'Por habilitar';
+            }
+
             $oc = $order->orderCourses()->create($orderCourse);
             DatesHistory::create([
                 'order_course_id' => $oc->id,
