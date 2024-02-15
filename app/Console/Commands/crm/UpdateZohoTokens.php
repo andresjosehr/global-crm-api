@@ -51,7 +51,7 @@ class UpdateZohoTokens extends Command
 
         $data = json_decode($res->getBody());
 
-        ZohoToken::where('token', 'type', 'qa')->update([
+        ZohoToken::where('type', 'qa')->update([
             'token' => $data->access_token,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -73,7 +73,7 @@ class UpdateZohoTokens extends Command
 
         $data = json_decode($res->getBody());
 
-        ZohoToken::where('token', 'type', 'production')->update([
+        ZohoToken::where('type', 'production')->update([
             'token' => $data->access_token,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
