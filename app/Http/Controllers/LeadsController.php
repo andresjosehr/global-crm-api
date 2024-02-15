@@ -261,6 +261,10 @@ class LeadsController extends Controller
             if ($request->status == 'Matriculado') {
                 $user_id = $user->id;
             }
+
+            if ($request->status == 'Potencial') {
+                $user_id = $user->id;
+            }
         }
         $lead = Lead::where('id', $id)->update([
             'name'             => $request->name,
@@ -612,9 +616,16 @@ class LeadsController extends Controller
                     'user_id' => $request->user()->id,
                 ]);
             } else {
+
+                $user_id = null;
+                if ($request->lead_status == 'Potencial') {
+                    $user_id = $request->user()->id;
+                }
+
                 // Update lead status as "No interesado"
                 Lead::where('id', $request->lead_id)->update([
                     'status' => $request->lead_status,
+                    'user_id' => $user_id,
                 ]);
             }
 
