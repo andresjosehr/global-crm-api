@@ -20,7 +20,9 @@ class TestController extends Controller
      */
     public function index()
     {
-        return [CoreMailsController::sendMail('andresjosehr@gmail.com', 'Prueba', 'Prueba')];
+        CoreMailsController::sendMail('andresjosehr@gmail.com', 'Prueba', 'Prueba');
+
+        return "Exito";
     }
     public function importStatistics()
     {

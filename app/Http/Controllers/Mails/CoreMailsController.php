@@ -12,16 +12,13 @@ use Illuminate\Support\Facades\Log;
 
 class CoreMailsController extends Controller
 {
-    static public function sendMail(
-        $toAddress,
-        $subject,
-        $content,
-        $scheduleTime = null,
-    ) {
-
+    static public function sendMail($toAddress, $subject, $content, $scheduleTime = null) {
+        // Log::info('1');
         $token = ZohoToken::where('type', 'production')->first()->token;
         $fromAddress = 'coordinacionacademica@globaltecnologiasacademy.com';
         $accountId = '6271576000000008002';
+
+        Log::info('2');
 
         // Check if not in production
         if (env('APP_ENV') != 'production') {
@@ -31,7 +28,7 @@ class CoreMailsController extends Controller
             $fromAddress = 'areacomercial@globaltecnologiasacademy.com';
             $accountId = '153623000000008002';
         }
-
+        // Log::info('3');
 
         $body = [
             'fromAddress'  => $fromAddress,
@@ -45,6 +42,7 @@ class CoreMailsController extends Controller
             "scheduleTime" => $scheduleTime . " 00:10:00"
         ];
 
+        // Log::info('4');
         if ($scheduleTime == null) {
             unset($body['isSchedule']);
             unset($body['scheduleType']);
@@ -52,10 +50,12 @@ class CoreMailsController extends Controller
             unset($body['scheduleTime']);
         }
 
+        // Log::info('5');
 
 
+
+        
         $client = new GuzzleHttp\Client();
-
         $res = $client->request('POST', "https://mail.zoho.com/api/accounts/$accountId/messages", [
             'headers' => [
                 'Content-Type' => 'application/json',
@@ -64,12 +64,16 @@ class CoreMailsController extends Controller
             'body' => json_encode($body)
         ]);
 
+        // Log::info('6');
+
 
         if (env('APP_ENV') != 'production') {
             return (object)[
                 'messageId' => "XXXXXXXXX",
             ];
         }
+
+        // Log::info('7');
 
         $date = Carbon::now()->format('d-M-Y');
 
@@ -81,7 +85,11 @@ class CoreMailsController extends Controller
             'toDate'   => $date,
         ];
 
+        // Log::info('8');
+
         sleep(20);
+
+        // Log::info('9');
 
         $response = self::getMails($searchTerms);
         $mails = json_decode($response)->data;
@@ -91,6 +99,8 @@ class CoreMailsController extends Controller
                 return $a->sentDateInGMT < $b->sentDateInGMT;
             });
         }
+
+        // Log::info('10');
 
         $lastMail = $mails[0];
         return $lastMail;
