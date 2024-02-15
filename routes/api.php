@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Traking\SapInstalationsController;
+use App\Models\SapInstalation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
@@ -41,7 +43,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::get('notifications', 'App\Http\Controllers\NotificationController@index');
     Route::put('notifications/{id}', 'App\Http\Controllers\NotificationController@update');
 
-    Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
+
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
     Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
@@ -103,6 +105,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         Route::prefix('sap-instalations')->group(function () {
             Route::post('save-draft', 'App\Http\Controllers\Traking\SapInstalationsController@saveDraft');
             Route::put('update/{id}', 'App\Http\Controllers\Traking\SapInstalationsController@update');
+            Route::get('get-sap-instalation/{key}', [SapInstalationsController::class, 'getSapInstalation']);
         });
 
         Route::prefix('certification-tests')->group(function () {
@@ -131,6 +134,8 @@ Route::get('terms-info/{key}', 'App\Http\Controllers\StudentsController@getTerms
 Route::post('terms-pdf-template/{order_id}', 'App\Http\Controllers\StudentsController@saveTermsPdfTemplate');
 Route::get('download-terms-pdf-template/{order_id}', 'App\Http\Controllers\StudentsController@downloadTermsPdfTemplate');
 Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController@confirmTermsInfo');
+
+Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
 
 
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
@@ -179,3 +184,11 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
     Route::get('bk', 'App\Http\Controllers\ProcessesController@getBkFiles');
     Route::get('bk/{file}', 'App\Http\Controllers\ProcessesController@downloadBkFile');
 });
+
+Route::prefix('traking')->group(function () {
+    Route::prefix('sap-instalations')->group(function () {
+        Route::get('get-sap-instalation/{key}', [SapInstalationsController::class, 'getSapInstalation']);
+    });
+});
+
+Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');

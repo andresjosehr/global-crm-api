@@ -21,6 +21,7 @@ class SapInstalation extends Model
         "order_course_id",
         'previus_sap_instalation',
         "instalation_type",
+        "key",
         "price_id",
         "price",
         "sap_user",
@@ -35,7 +36,7 @@ class SapInstalation extends Model
 
     public function getTimeInsAttribute()
     {
-        if(!$this->start_datetime){
+        if (!$this->start_datetime) {
             return null;
         }
         return Carbon::parse($this->start_datetime)->format('H:i:s');
@@ -43,7 +44,7 @@ class SapInstalation extends Model
 
     public function getDateInsAttribute()
     {
-        if(!$this->start_datetime){
+        if (!$this->start_datetime) {
             return null;
         }
         return Carbon::parse($this->start_datetime)->format('Y-m-d');
@@ -58,5 +59,11 @@ class SapInstalation extends Model
     public function getPreviusSapInstalationAttribute($value)
     {
         return $value == 1 ? true : false;
+    }
+
+    // User through order
+    public function student()
+    {
+        return $this->hasOneThrough(Student::class, Order::class, 'id', 'id', 'order_id', 'student_id');
     }
 }

@@ -90,4 +90,14 @@ class Student extends Model
     {
         return $this->hasMany(SapInstalation::class);
     }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
 }

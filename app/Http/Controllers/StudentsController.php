@@ -47,7 +47,12 @@ class StudentsController extends Controller
                         $q->where('user_id', $user->id);
                     });
             })
-            ->with('orders', 'lead')
+            ->with(['orders' => function ($q) {
+                return $q->withCount(['orderCourses' => function ($query) {
+                    $query->where('type', 'paid');
+                }]);
+            }])
+            ->with('lead')
             // ->when($user->role_id != 1, function ($q) use ($user) {
             //     return $q->whereHas('orders', function ($q) use ($user) {
             //         $q->where('user_id', $user->id);
