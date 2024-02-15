@@ -19,13 +19,22 @@ class CoreMailsController extends Controller
         $scheduleTime = null,
     ) {
 
+        $token = ZohoToken::where('type', 'production')->first()->token;
+        $fromAddress = 'coordinacionacademica@globaltecnologiasacademy.com';
+        $accountId = '6271576000000008002';
+
         // Check if not in production
         if (env('APP_ENV') != 'production') {
-            $toAddress = env('MAIL_DEBUG');
+            $toAddress = 'areacomercial@globaltecnologiasacademy.com';
             $subject = "PRUEBA | $subject";
+            $token = ZohoToken::where('type', 'qa')->first()->token;
+            $fromAddress = 'areacomercial@globaltecnologiasacademy.com';
+            $accountId = '153623000000008002';
         }
+
+
         $body = [
-            'fromAddress'  => 'coordinacionacademica@globaltecnologiasacademy.com',
+            'fromAddress'  => $fromAddress,
             'toAddress'    => $toAddress,
             'subject'      => $subject,
             'content'      => $content,
@@ -43,21 +52,24 @@ class CoreMailsController extends Controller
             unset($body['scheduleTime']);
         }
 
-        $token = ZohoToken::where('type', 'production')->first()->token;
 
-        if (env('APP_ENV') != 'production') {
-            $token = ZohoToken::where('type', 'qa')->first()->token;
-        }
 
         $client = new GuzzleHttp\Client();
 
-        $res = $client->request('POST', 'https://mail.zoho.com/api/accounts/6271576000000008002/messages', [
+        $res = $client->request('POST', "https://mail.zoho.com/api/accounts/$accountId/messages", [
             'headers' => [
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Zoho-oauthtoken ' . $token
             ],
             'body' => json_encode($body)
         ]);
+
+
+        if (env('APP_ENV') != 'production') {
+            return (object)[
+                'messageId' => "XXXXXXXXX",
+            ];
+        }
 
         $date = Carbon::now()->format('d-M-Y');
 
