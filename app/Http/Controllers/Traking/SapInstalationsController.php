@@ -19,7 +19,6 @@ class SapInstalationsController extends Controller
         $sapInstalation = new SapInstalation();
         $sap = $request->all();
 
-
         $sap['key'] = md5(microtime());
         $sap['start_datetime'] = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
             Log::info($item->start . ' - ' . $carry);
@@ -34,6 +33,48 @@ class SapInstalationsController extends Controller
         return ApiResponseController::response('Sap instalation saved', 200, $sapInstalation);
     }
 
+    public function checkDraft($sap)
+    {
+        $fields = [
+            "restrictions",
+            "sap_user",
+            "screenshot",
+            "start_datetime",
+            "end_datetime",
+            "operating_system",
+            "pc_type",
+            "status",
+            "previus_sap_instalation",
+            // "instalation_type",
+
+
+        ];
+
+        if ($sap['pc_type'] === 'Personal') {
+            unset($fields[0]);
+        }
+
+        if ($sap['previus_sap_instalation'] === true) {
+            unset($fields[1]);
+            unset($fields[2]);
+        }
+
+        $allFieldsFilled = collect($fields)->reduce(function ($carry, $field) use ($sap) {
+            $filled = $carry && array_key_exists($field, $sap) && !is_null($sap[$field]);
+            Log::info($field . ' - ' . $sap[$field] . ' - ');
+            Log::info($filled ? 'true' : 'false');
+            return $filled;
+        }, true);
+
+        Log::info($allFieldsFilled ? 'true' : 'false');
+
+        if (!$allFieldsFilled) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     public function update(Request $request, $id)
     {
@@ -41,10 +82,19 @@ class SapInstalationsController extends Controller
 
         // return $request->time;
         $sap = $request->all();
+
+
+
+        // remove key
+        unset($sap['key']);
+
         $sap['start_datetime'] = Carbon::parse($sap['date'])->format('Y-m-d');
         $time = $request->time ? $request->time : '00:00:00';
         $sap['start_datetime'] = $sap['start_datetime'] . ' ' . $time;
         $sap['end_datetime'] = Carbon::parse($sap['start_datetime'])->addMinutes(30)->format('Y-m-d H:i:s');
+
+        $sap['draft'] = self::checkDraft($sap);
+
         $sapInstalation->fill($sap);
         $sapInstalation->save();
 

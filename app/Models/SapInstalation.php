@@ -13,8 +13,7 @@ class SapInstalation extends Model
     public $fillable = [
         "id",
         "order_id",
-        "start_datetime",
-        "end_datetime",
+        "restrictions",
         "operating_system",
         "pc_type",
         "status",

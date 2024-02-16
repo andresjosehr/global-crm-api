@@ -15,6 +15,15 @@ return new class extends Migration
     {
         Schema::table('sap_instalations', function (Blueprint $table) {
             $table->string('screenshot')->nullable()->after('previus_sap_instalation');
+            $table->string('restrictions')->nullable()->after('screenshot');
+
+            // drop column
+            $table->dropColumn('start_datetime');
+            $table->dropColumn('end_datetime');
+
+            // Drop foreign key
+            $table->dropForeign(['staff_id']);
+            $table->dropColumn('staff_id');
         });
     }
 
@@ -27,6 +36,10 @@ return new class extends Migration
     {
         Schema::table('sap_instalations', function (Blueprint $table) {
             $table->dropColumn('screenshot');
+            $table->dropColumn('restrictions');
+            $table->dateTime('start_datetime')->nullable()->after('order_id');
+            $table->dateTime('end_datetime')->nullable()->after('start_datetime');
+            $table->foreignId('staff_id')->nullable()->after('end_datetime')->constrained('users');
         });
     }
 };

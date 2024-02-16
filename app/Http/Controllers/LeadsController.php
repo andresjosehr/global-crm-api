@@ -630,12 +630,22 @@ class LeadsController extends Controller
             }
 
 
-            $callActivity->update([
+
+
+            $updateData = [
                 'end' => $end,
                 'answered' => $request->answered,
                 'observation' => $request->observation,
                 'schedule_call_datetime' => $schedule_call_datetime
-            ]);
+            ];
+
+            // if observationis not empty in database, does not update it
+            if ($callActivity->observation) {
+                unset($updateData['observation']);
+            }
+
+
+            $callActivity->update($updateData);
 
             $callActivity = SaleActivity::where('id', $callActivity->id)->with('user')->first();
 
