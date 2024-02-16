@@ -410,7 +410,11 @@ public function getCallStats($user,$start,$end)
             ->groupBy('date')
             ->get()->pluck('total');
 
-        $averageCallsPerDayCurrentMonth = $averageCallsPerDayCurrentMonth->sum() / $averageCallsPerDayCurrentMonth->count();
+        if ($averageCallsPerDayCurrentMonth->count() > 0) {
+            $averageCallsPerDayCurrentMonth = $averageCallsPerDayCurrentMonth->sum() / $averageCallsPerDayCurrentMonth->count();
+        } else {
+            $averageCallsPerDayCurrentMonth = 0;
+        }
     } else {
         // Consultas con filtro de usuario para roles distintos de 1
         // Obtener llamadas del día de hoy
@@ -432,7 +436,12 @@ public function getCallStats($user,$start,$end)
             ->groupBy('date')
             ->get()->pluck('total');
 
-        $averageCallsPerDayCurrentMonth = $averageCallsPerDayCurrentMonth->sum() / $averageCallsPerDayCurrentMonth->count();
+        if ($averageCallsPerDayCurrentMonth->count() > 0) {
+            $averageCallsPerDayCurrentMonth = $averageCallsPerDayCurrentMonth->sum() / $averageCallsPerDayCurrentMonth->count();
+        } else {
+            $averageCallsPerDayCurrentMonth = 0;
+        }
+
     }
 
     return [
