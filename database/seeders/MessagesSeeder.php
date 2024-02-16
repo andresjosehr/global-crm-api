@@ -158,15 +158,15 @@ class MessagesSeeder extends Seeder
 
                 {{GUIDE_LINK}}
 
-                Encontrará *{{NUMBER}}* enlaces, los cuales debe tener descargados antes de la hora agendada; de lo contrario, el personal técnico procederá a reagendar su instalación.
+                Dentro del pdf Encontrará *{{NUMBER}}* enlaces, los cuales debe tener descargados antes de la hora agendada; de lo contrario, el personal técnico procederá a reagendar su instalación.
 
-                La PRÓXIMA CITA QUE TENGO DISPONIBLE ES EN DOS DÍAS HÁBILES A PARTIR DE LAS 9AM. Y su licencia corre desde el día que enviamos los accesos.
+                Tenga en cuenta que su licencia corre desde el día que enviamos los accesos.
 
                 *El personal técnico se contactará por este medio, a la hora agendada.*
 
-                Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno.
+                Le recuerdo que este agendamiento esta reservado únicamente por y para usted, no pudiendo brindarle este horario a ningún otro alumno.
 
-                Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes (dentro de mi horario laboral) para poder reprogramarlo. Gracias por su comprensión.
+                Si tuviera algún inconveniente, por favor trate de notificar 30 minutos antes (dentro del horario laboral Lima/Perú) para poder reprogramarlo. Gracias por su comprensión.
 
                 *LE RECUERDO QUE LA GUÍA CONTIENE {{NUMBER}} ARCHIVOS PARA DESCARGAR: {{PROGRAMS}}*. El último puede demorar hasta 3h en descargarse, tomar previsiones."
 

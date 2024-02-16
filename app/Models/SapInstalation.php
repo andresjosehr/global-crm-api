@@ -30,6 +30,7 @@ class SapInstalation extends Model
         "payment_method_id",
         "sap_payment_date",
         "staff_id",
+        "screenshot",
         "draft",
         "observation",
     ];
@@ -65,5 +66,33 @@ class SapInstalation extends Model
     public function student()
     {
         return $this->hasOneThrough(Student::class, Order::class, 'id', 'id', 'order_id', 'student_id');
+    }
+
+
+    public function setScreenshotAttribute($screenshot)
+    {
+
+        $base64Types = [
+            'data:image/jpeg;base64' => 'jpeg',
+            'data:image/png;base64' => 'png',
+            'data:application/pdf;base64' => 'pdf',
+        ];
+
+
+        $firstPart = explode(',', $screenshot)[0];
+        if ($screenshot && isset($base64Types[$firstPart])) {
+
+            $extension = $base64Types[$firstPart];
+
+            $file = $screenshot;
+            $file = str_replace($firstPart . ',', '', $file);
+            $file = str_replace(' ', '+', $file);
+            $date = date('Y-m-d-H-i-s');
+            $newFileName = 'screenshot_' . Carbon::now()->format('Y-m-d-H-i-s') . '.' . $extension;
+            \File::put(storage_path() . '/app/public/sap/' . $newFileName, base64_decode($file));
+            $screenshot = $newFileName;
+        }
+
+        $this->attributes['screenshot'] = $screenshot;
     }
 }
