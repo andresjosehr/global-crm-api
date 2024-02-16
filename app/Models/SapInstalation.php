@@ -59,7 +59,15 @@ class SapInstalation extends Model
     // Accesor for terms_confirmed_by_student boolean
     public function getPreviusSapInstalationAttribute($value)
     {
-        return $value == 1 ? true : false;
+        if ($value === 1) {
+            return true;
+        }
+        if ($value === 0) {
+            return false;
+        }
+        if ($value === null) {
+            return null;
+        }
     }
 
     // User through order
