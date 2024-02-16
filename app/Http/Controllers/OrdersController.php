@@ -524,9 +524,9 @@ class OrdersController extends Controller
         $paymentMethods = PaymentMethod::all();
         $documentTypes  = DocumentType::all();
         $messages       = Message::all();
-        $user           = User::whereHas('role', function ($query) {
-            $query->where('name', 'Tecnico de instalación');
-        })->get()->append(['unavailableTimes', 'bussyTimes']);
+        // $user           = User::whereHas('role', function ($query) {
+        //     $query->where('name', 'Tecnico de instalación');
+        // })->get()->append(['unavailableTimes', 'bussyTimes']);
 
         $options = [
             'courses'        => $courses,
@@ -534,7 +534,7 @@ class OrdersController extends Controller
             'currencies'     => $currencies,
             'paymentMethods' => $paymentMethods,
             'documentTypes'  => $documentTypes,
-            'staff'          => $user,
+            // 'staff'          => $user,
             'messages'      => $messages
         ];
 

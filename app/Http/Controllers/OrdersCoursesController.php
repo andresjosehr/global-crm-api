@@ -79,13 +79,29 @@ class OrdersCoursesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        if(!$due = OrderCourse::find($id)){
+        $user = $request->user();
+
+        if ($user->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta accion', 403);
+        }
+
+
+        if (!$orderCourse = OrderCourse::find($id)) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
 
-        $due->delete();
+        $orderCourse->certificationTests()->delete();
+        $orderCourse->freezings()->delete();
+        $orderCourse->extensions()->delete();
+        foreach ($orderCourse->sapInstalations() as $sapInstalation) {
+            $sapInstalation->sapTries()->delete();
+        }
+        $orderCourse->sapInstalations()->delete();
+        $orderCourse->dateHistory()->delete();
+
+        $orderCourse->delete();
 
         return ApiResponseController::response('Registro eliminado con exito', 200);
     }

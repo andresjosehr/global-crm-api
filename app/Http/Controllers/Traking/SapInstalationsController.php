@@ -6,6 +6,7 @@ use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
 use App\Models\OrderCourse;
 use App\Models\SapInstalation;
+use App\Models\SapTry;
 use App\Models\StaffAvailabilitySlot;
 use App\Models\User;
 use Carbon\Carbon;
@@ -20,15 +21,22 @@ class SapInstalationsController extends Controller
         $sap = $request->all();
 
         $sap['key'] = md5(microtime());
-        $sap['start_datetime'] = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
-            Log::info($item->start . ' - ' . $carry);
-            return $item->start < $carry ? $item->start : $carry;
-        }, Carbon::now()->addDecade()->format('Y-m-d'));
-        $sap['staff_id'] = $this->findAvailableStaff($sap['start_datetime'])->id;
 
 
         $sapInstalation->fill($sap);
         $sapInstalation->save();
+
+
+        $try = new SapTry();
+        $try->start_datetime = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
+            Log::info($item->start . ' - ' . $carry);
+            return $item->start < $carry ? $item->start : $carry;
+        }, Carbon::now()->addDecade()->format('Y-m-d'));
+
+
+        $try->staff_id           = $this->findAvailableStaff($try->start_datetime)->id;
+        $try->sap_instalation_id = $sapInstalation->id;
+        $try->save();
 
         return ApiResponseController::response('Sap instalation saved', 200, $sapInstalation);
     }
@@ -147,9 +155,13 @@ class SapInstalationsController extends Controller
                 $startTime = Carbon::parse($slot->start_time);
                 $endTime = Carbon::parse($slot->end_time);
 
-                $instalations = SapInstalation::where('staff_id', $technician->id)
-                    ->whereDate('start_datetime', $date)
-                    ->get();
+                $instalations = SapTry::selectRaw('MAX(id) as id, sap_instalation_id')
+                    ->where('staff_id', $technician->id)
+                    ->groupBy('sap_instalation_id')
+                    ->pluck('id')
+                    ->toArray();
+
+                $instalations = SapTry::whereIn('id', $instalations)->whereDate('start_datetime', $date)->get();
 
                 $totalInstalationTime = 0;
                 foreach ($instalations as $instalation) {

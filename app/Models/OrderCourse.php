@@ -48,8 +48,8 @@ class OrderCourse extends Model
 
     public function sapInstalations()
     {
-        return $this->hasMany(SapInstalation::class)
-            ->select(['sap_instalations.*', DB::raw('TIME(sap_instalations.start_datetime) as time'), DB::raw('DATE(sap_instalations.start_datetime) as date')]);
+        return $this->hasMany(SapInstalation::class);
+        // ->select(['sap_instalations.*', DB::raw('TIME(sap_instalations.start_datetime) as time'), DB::raw('DATE(sap_instalations.start_datetime) as date')]);
     }
 
     public function dateHistory()

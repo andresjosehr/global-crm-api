@@ -13,7 +13,6 @@ class SapInstalation extends Model
     public $fillable = [
         "id",
         "order_id",
-        "restrictions",
         "operating_system",
         "pc_type",
         "status",
@@ -28,27 +27,11 @@ class SapInstalation extends Model
         'payment_enabled',
         "payment_method_id",
         "sap_payment_date",
-        "staff_id",
         "screenshot",
         "draft",
         "observation",
     ];
 
-    public function getTimeInsAttribute()
-    {
-        if (!$this->start_datetime) {
-            return null;
-        }
-        return Carbon::parse($this->start_datetime)->format('H:i:s');
-    }
-
-    public function getDateInsAttribute()
-    {
-        if (!$this->start_datetime) {
-            return null;
-        }
-        return Carbon::parse($this->start_datetime)->format('Y-m-d');
-    }
 
     public function getPaymentEnabledAttribute($value)
     {
@@ -101,5 +84,26 @@ class SapInstalation extends Model
         }
 
         $this->attributes['screenshot'] = $screenshot;
+    }
+
+    public function sapTries()
+    {
+        return $this->hasMany(SapTry::class, 'sap_instalation_id');
+    }
+
+    // add datetime attribute as property from last try
+    public function getStartDatetimeAttribute()
+    {
+        return $this->sapTries->last()->start_datetime;
+    }
+
+    public function getEndDatetimeAttribute()
+    {
+        return $this->sapTries->last()->end_datetime;
+    }
+
+    public function getStaffIdAttribute()
+    {
+        return $this->sapTries->last()->staff_id;
     }
 }
