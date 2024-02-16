@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -193,26 +194,29 @@ class User extends Authenticatable implements JWTSubject
     public function getBussyTimesForCalculateAttribute()
     {
         // Obtén las asignaciones de este usuario
-        $assignments = $this->hasMany(SapInstalation::class, 'staff_id')
+        $assignments = SapTry::where('staff_id', $this->id)
             ->select([
-                DB::raw('DATE(start_datetime) as date'),
-                DB::raw('TIME(start_datetime) as start_time'),
-                DB::raw('TIME(end_datetime) as end_time')
+                DB::raw('MAX(id) as id')
             ])
-            ->get()
-            ->groupBy('date');
+            ->groupBy('sap_instalation_id')
+            ->get()->pluck('id')->toArray();
 
-        // Formatea los resultados
-        $busyTimes = [];
-        foreach ($assignments as $date => $times) {
+        $assignments = SapTry::whereIn('id', $assignments)->get();
 
-            $busyTimes[$date] = $times->map(function ($block) {
-                return [
-                    'start_time' => $block->start_time,
-                    'end_time' => $block->end_time,
-                ];
-            })->values()->toArray();
-        }
+
+        $busyTimes = $assignments->reduce(function ($carry, $block) {
+            $date = Carbon::parse($block->start_datetime)->format('Y-m-d');
+            if (!isset($carry[$date])) {
+                $carry[$date] = [];
+            }
+            $start_time = Carbon::parse($block->start_datetime)->format('H:i:s');
+            $end_time = Carbon::parse($block->end_datetime)->format('H:i:s');
+            $carry[$date][] = [
+                'start_time' => $start_time,
+                'end_time' => $end_time,
+            ];
+            return $carry;
+        }, []);
 
         return $busyTimes;
     }
@@ -235,17 +239,24 @@ class User extends Authenticatable implements JWTSubject
             ];
         }
 
+
         // Obtener los tiempos ocupados y no disponibles para ese día
         $busyTimesForDay = data_get($this->append('bussyTimesForCalculate')->bussyTimesForCalculate, $date->format('Y-m-d'), []);
         $unavailableTimesForDay = data_get($this->unavailableTimes, $dayName, []);
 
-        // return $this->append('bussyTimes')->bussyTimes;
+
+        Log::info($this->append('bussyTimesForCalculate')->bussyTimesForCalculate);
 
         // Adicionar los tiempos ocupados enviados desde el frontend
         $additionalBusyTimes = data_get($datesBussy, $date->format('Y-m-d'), []);
 
         // Fusionar y contar las ocurrencias de cada intervalo de tiempo
         $mergedBusyTimes = array_merge(array_column($busyTimesForDay, 'start_time'), $additionalBusyTimes);
+
+        Log::info($mergedBusyTimes);
+
+
+
         $timeOccurrences = array_count_values($mergedBusyTimes);
 
         // Filtrar los intervalos de tiempo donde las ocurrencias son mayores o iguales a 2

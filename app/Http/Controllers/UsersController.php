@@ -11,16 +11,11 @@ use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
-    public function getAvailableTimes(Request $request, $id){
-        $user = User::where('id', $id)->first();
-
-        $availableTimes = $user->getAvailableTimesForDate($request->date, $request->datesBussy); // Reemplaza la fecha con la que deseas trabajar.
-
-        return ApiResponseController::response('Consulta Exitosa', 200, $availableTimes);
-    }
 
 
-    public function findAvailableStaff($date) {
+
+    public function findAvailableStaff($date)
+    {
         // 1. Obtener todos los técnicos
         $technicians = User::where('role_id', 5)->get();
 
@@ -31,8 +26,8 @@ class UsersController extends Controller
         foreach ($technicians as $technician) {
             // 2. Filtrar por Disponibilidad
             $availabilitySlots = StaffAvailabilitySlot::where('user_id', $technician->id)
-                                    ->where('day', strtolower(Carbon::parse($date)->format('l')))
-                                    ->get();
+                ->where('day', strtolower(Carbon::parse($date)->format('l')))
+                ->get();
 
 
             $totalAvailableTime = 0;
@@ -66,15 +61,17 @@ class UsersController extends Controller
         return ApiResponseController::response('Consulta Exitosa', 200, $availableTechnician);
     }
 
-    public function getSellsUsers() {
+    public function getSellsUsers()
+    {
         $users = User::where('role_id', 2)
-        ->where('active', 1)
-        ->get();
+            ->where('active', 1)
+            ->get();
 
         return ApiResponseController::response('Consulta Exitosa', 200, $users);
     }
 
-    public function toggleStatus(Request $request) {
+    public function toggleStatus(Request $request)
+    {
         $user = $request->user();
 
         $user->active_working = !$user->active_working;

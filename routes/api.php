@@ -191,4 +191,4 @@ Route::prefix('traking')->group(function () {
     });
 });
 
-Route::post('users/{id}/get-available-times', 'App\Http\Controllers\UsersController@getAvailableTimes');
+Route::post('users/{id}/get-available-times', 'App\Http\Controllers\Traking\SapInstalationsController@getAvailableTimes');

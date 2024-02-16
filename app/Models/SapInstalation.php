@@ -32,6 +32,12 @@ class SapInstalation extends Model
         "observation",
     ];
 
+    protected $appends = [
+        'start_datetime',
+        'end_datetime',
+        'staff_id',
+    ];
+
 
     public function getPaymentEnabledAttribute($value)
     {

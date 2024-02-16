@@ -29,20 +29,51 @@ class SapInstalationsController extends Controller
 
         $try = new SapTry();
         $try->start_datetime = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
-            Log::info($item->start . ' - ' . $carry);
+            // Log::info($item->start . ' - ' . $carry);
             return $item->start < $carry ? $item->start : $carry;
         }, Carbon::now()->addDecade()->format('Y-m-d'));
 
 
-        $try->staff_id           = $this->findAvailableStaff($try->start_datetime)->id;
+        $try->staff_id           = $this->findAvailableStaff(Carbon::parse($try->start_datetime)->parse('Y-m-d'))->id;
         $try->sap_instalation_id = $sapInstalation->id;
         $try->save();
 
         return ApiResponseController::response('Sap instalation saved', 200, $sapInstalation);
     }
 
+
+
+
+    public function update(Request $request, $id)
+    {
+        $sapInstalation = SapInstalation::find($id);
+
+        // return $request->time;
+        $sap = $request->all();
+        // remove key
+        unset($sap['key']);
+
+
+        $sap['draft'] = self::checkDraft($sap);
+
+        $sapInstalation->fill($sap);
+        $sapInstalation->save();
+
+        $try = SapTry::where('sap_instalation_id', $sapInstalation->id)->orderBy('id', 'desc')->first();
+        $try->start_datetime = Carbon::parse($sap['date'])->format('Y-m-d') . ' ' . $request->time;
+        $try->end_datetime = Carbon::parse($try->start_datetime)->addMinutes(30);
+
+
+        $try->staff_id           = $this->findAvailableStaff(Carbon::parse($sap['date'])->format('Y-m-d'))->id;
+        $try->sap_instalation_id = $sapInstalation->id;
+        $try->save();
+
+        return ApiResponseController::response('Sap instalation updated', 200, $sapInstalation);
+    }
+
     public function checkDraft($sap)
     {
+        return true;
         $fields = [
             "restrictions",
             "sap_user",
@@ -69,44 +100,16 @@ class SapInstalationsController extends Controller
 
         $allFieldsFilled = collect($fields)->reduce(function ($carry, $field) use ($sap) {
             $filled = $carry && array_key_exists($field, $sap) && !is_null($sap[$field]);
-            Log::info($field . ' - ' . $sap[$field] . ' - ');
-            Log::info($filled ? 'true' : 'false');
             return $filled;
         }, true);
 
-        Log::info($allFieldsFilled ? 'true' : 'false');
+        // Log::info($allFieldsFilled ? 'true' : 'false');
 
         if (!$allFieldsFilled) {
             return true;
         }
 
         return false;
-    }
-
-
-    public function update(Request $request, $id)
-    {
-        $sapInstalation = SapInstalation::find($id);
-
-        // return $request->time;
-        $sap = $request->all();
-
-
-
-        // remove key
-        unset($sap['key']);
-
-        $sap['start_datetime'] = Carbon::parse($sap['date'])->format('Y-m-d');
-        $time = $request->time ? $request->time : '00:00:00';
-        $sap['start_datetime'] = $sap['start_datetime'] . ' ' . $time;
-        $sap['end_datetime'] = Carbon::parse($sap['start_datetime'])->addMinutes(30)->format('Y-m-d H:i:s');
-
-        $sap['draft'] = self::checkDraft($sap);
-
-        $sapInstalation->fill($sap);
-        $sapInstalation->save();
-
-        return ApiResponseController::response('Sap instalation updated', 200, $sapInstalation);
     }
 
     // checkScheduleAccess
@@ -123,7 +126,9 @@ class SapInstalationsController extends Controller
 
     public function getSapInstalation(Request $request, $key)
     {
-        $sapInstalation = SapInstalation::where('key', $key)->with('student.city', 'student.state')->first();
+        $sapInstalation = SapInstalation::where('key', $key)
+            ->with('student.city', 'student.state')
+            ->first();
 
         if (!$sapInstalation) {
             return ApiResponseController::response('Unauthorized', 401);
@@ -173,6 +178,11 @@ class SapInstalationsController extends Controller
                 $totalAvailableTime += $endTime->diffInMinutes($startTime) - $totalInstalationTime;
             }
 
+            // Log::info([$technician->id => [
+            //     'totalAvailableTime' => $totalAvailableTime,
+            //     'maxAvailableTime' => $maxAvailableTime
+            // ]]);
+
             // 4. Seleccionar Técnico con Más Tiempo Disponible
             if ($totalAvailableTime > $maxAvailableTime) {
                 $maxAvailableTime = $totalAvailableTime;
@@ -181,5 +191,14 @@ class SapInstalationsController extends Controller
         }
 
         return $availableTechnician;
+    }
+
+    public function getAvailableTimes(Request $request, $id)
+    {
+        $user = User::where('id', $id)->first();
+
+        $availableTimes = $user->getAvailableTimesForDate($request->date, $request->datesBussy); // Reemplaza la fecha con la que deseas trabajar.
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $availableTimes);
     }
 }
