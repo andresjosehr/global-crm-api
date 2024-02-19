@@ -120,6 +120,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::get('options', [SapInstalationsController::class, 'getOptions']);
             Route::get('get-available-times/{date}', [SapInstalationsController::class, 'getAvailableTimes']);
             Route::get('sap-tries/{sap_id}', [SapInstalationsController::class, 'getSapTries']);
+            Route::get('sap-tries/{sap_id}', [SapInstalationsController::class, 'getSapTries']);
 
 
             Route::get('{id}', [SapInstalationsController::class, 'getSapInstalation']);
