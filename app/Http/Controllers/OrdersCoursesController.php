@@ -47,7 +47,12 @@ class OrdersCoursesController extends Controller
      */
     public function show($id)
     {
-        //
+        $orderCourse = OrderCourse::with('course', 'extensions', 'certificationTests', 'sapInstalations.staff', 'freezings', 'dateHistory')->find($id);
+        if (!$orderCourse) {
+            return ApiResponseController::response('No se encontro el registro', 204);
+        }
+
+        return ApiResponseController::response('Consulta exitosa', 200, $orderCourse);
     }
 
     /**

@@ -5,6 +5,17 @@
  */
 
 declare namespace App.Models {
+    export interface Assignment {
+        id: number;
+        user_id: number;
+        title: string | null;
+        description: string | null;
+        link: string | null;
+        resolved_at: string | null;
+        created_at: string | null;
+        updated_at: string | null;
+    }
+
     export interface Car {}
 
     export interface CertificationTest {
@@ -143,6 +154,7 @@ declare namespace App.Models {
         paid: boolean | null;
         payment_method_id: number | null;
         currency_id: number | null;
+        payment_receipt: string | null;
         position: number | null;
         created_at: string | null;
         updated_at: string | null;
@@ -191,6 +203,18 @@ declare namespace App.Models {
         order_course_id: number | null;
         remain_license: string | null;
         mail_status: string;
+        mail_id: string | null;
+        mail_status_unfreeze: string;
+        mail_unfreeze_id: string | null;
+        created_at: string | null;
+        updated_at: string | null;
+        order_course?: App.Models.OrderCourse | null;
+    }
+
+    export interface Holiday {
+        id: number;
+        name: string | null;
+        date: string;
         created_at: string | null;
         updated_at: string | null;
     }
@@ -239,9 +263,11 @@ declare namespace App.Models {
         lead_project?: App.Models.LeadProject | null;
         sale_activities?: Array<App.Models.SaleActivity> | null;
         student?: App.Models.Student | null;
+        zadarma_statistics?: Array<App.Models.ZadarmaStatistic> | null;
         lead_assignments_count?: number | null;
         observations_count?: number | null;
         sale_activities_count?: number | null;
+        zadarma_statistics_count?: number | null;
     }
 
     export interface LeadAssignment {
@@ -329,6 +355,7 @@ declare namespace App.Models {
         icon: string;
         url: string;
         read: boolean;
+        use_router: boolean;
         user_id: number;
         created_at: string | null;
         updated_at: string | null;
@@ -351,6 +378,7 @@ declare namespace App.Models {
         updated_by: number | null;
         key: string | null;
         terms_confirmed_by_student: boolean;
+        welcome_mail_id: string | null;
         observations: string | null;
         created_at: string | null;
         updated_at: string | null;
@@ -378,6 +406,7 @@ declare namespace App.Models {
         enabled: boolean;
         certification_status: boolean;
         observation: string | null;
+        welcome_mail_id: string | null;
         created_at: string | null;
         updated_at: string | null;
         course?: App.Models.Course | null;
@@ -429,6 +458,22 @@ declare namespace App.Models {
         courses_count?: number | null;
     }
 
+    export interface Process {
+        id: number;
+        name: string;
+        status: string;
+        data: Array<any> | any | null;
+        command: string;
+        related_entity: string;
+        related_entity_id: number;
+        datetime_to_execute: string | null;
+        finished_at: string | null;
+        failed_at: string | null;
+        failed_reason: string | null;
+        created_at: string | null;
+        updated_at: string | null;
+    }
+
     export interface Role {
         id: number;
         name: string;
@@ -462,9 +507,8 @@ declare namespace App.Models {
 
     export interface SapInstalation {
         id: number;
+        key: string | null;
         order_id: number | null;
-        start_datetime: string | null;
-        end_datetime: string | null;
         operating_system: string | null;
         sap_user: string | null;
         pc_type: string | null;
@@ -476,15 +520,23 @@ declare namespace App.Models {
         currency_id: number | null;
         payment_method_id: number | null;
         sap_payment_date: string | null;
-        staff_id: number | null;
         observation: string | null;
         previus_sap_instalation: boolean | null;
+        screenshot: string | null;
+        restrictions: string | null;
         payment_enabled: boolean;
         draft: boolean;
         created_at: string | null;
         updated_at: string | null;
-        readonly time_ins?: any;
-        readonly date_ins?: any;
+        student?: App.Models.Student | null;
+        sap_tries?: Array<App.Models.SapTry> | null;
+        order_course?: App.Models.OrderCourse | null;
+        sap_tries_count?: number | null;
+        readonly start_datetime?: any;
+        readonly end_datetime?: any;
+        readonly staff_id?: any;
+        readonly time?: any;
+        readonly date?: any;
     }
 
     export interface SapInstalationStatus {}
@@ -495,6 +547,19 @@ declare namespace App.Models {
         description: string | null;
         created_at: string | null;
         updated_at: string | null;
+    }
+
+    export interface SapTry {
+        id: number;
+        sap_instalation_id: number;
+        start_datetime: string | null;
+        end_datetime: string | null;
+        status: string | null;
+        staff_id: number | null;
+        schedule_at: string | null;
+        created_at: string | null;
+        updated_at: string | null;
+        sap_instalation?: App.Models.SapInstalation | null;
     }
 
     export interface Sheet {
@@ -560,9 +625,13 @@ declare namespace App.Models {
         lead?: App.Models.Lead | null;
         user?: App.Models.User | null;
         document_type?: App.Models.DocumentType | null;
+        sap_instalations?: Array<App.Models.SapInstalation> | null;
+        city?: App.Models.City | null;
+        state?: App.Models.State | null;
         orders_count?: number | null;
         wp_learnpress_user_items_count?: number | null;
         users_count?: number | null;
+        sap_instalations_count?: number | null;
     }
 
     export interface User {
@@ -580,6 +649,7 @@ declare namespace App.Models {
         created_at: string | null;
         updated_at: string | null;
         photo: string | null;
+        zadarma_widget_key: string | null;
         role?: App.Models.Role | null;
         sap_instalation?: Array<App.Models.SapInstalation> | null;
         availability_slots?: Array<App.Models.StaffAvailabilitySlot> | null;
@@ -587,12 +657,14 @@ declare namespace App.Models {
         projects?: Array<App.Models.LeadProject> | null;
         projects_pivot?: Array<App.Models.UserLeadProject> | null;
         students?: Array<App.Models.Student> | null;
+        zadarma_statistics?: Array<App.Models.ZadarmaStatistic> | null;
         sap_instalation_count?: number | null;
         availability_slots_count?: number | null;
         lead_assignments_count?: number | null;
         projects_count?: number | null;
         projects_pivot_count?: number | null;
         students_count?: number | null;
+        zadarma_statistics_count?: number | null;
         readonly unavailable_times?: any;
         readonly bussy_times?: any;
         readonly bussy_times_for_calculate?: any;
@@ -606,8 +678,27 @@ declare namespace App.Models {
         updated_at: string | null;
     }
 
+    export interface ZadarmaStatistic {
+        id: number;
+        pbx_call_id: string;
+        is_recorded: string;
+        seconds: number;
+        destination: string;
+        clid: string;
+        call_id: string;
+        disposition: string;
+        callstart: string;
+        sip: string;
+        extension: string;
+        created_at: string | null;
+        updated_at: string | null;
+        user?: App.Models.User | null;
+        lead?: App.Models.Lead | null;
+    }
+
     export interface ZohoToken {
         token: string | null;
+        type: string | null;
         updated_at: string | null;
     }
 

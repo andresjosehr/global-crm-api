@@ -21,7 +21,8 @@ class ModulesRolesSeeder extends Seeder
         DB::table('modules_roles')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        $modules = Module::whereNotIn('name', ["Asignados"])->get();
+        $modules = Module::whereNotIn('name', ["Asignados", "Asignaciones"])->get();
+        $roles = Role::all();
 
         // All modules to Administrador
         foreach ($modules as $module) {
@@ -31,17 +32,21 @@ class ModulesRolesSeeder extends Seeder
             ]);
         }
 
+        foreach ($roles as $role) {
+            DB::table('modules_roles')->insert([
+                'module_id' => self::module('Asignaciones'),
+                'role_id'   => $role->id,
+            ]);
+        }
+
+
         DB::table('modules_roles')->insert([
             [
                 'module_id' => self::module('Ventas'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
-                'module_id' => self::module('Gestion de prospectos'),
-                'role_id'   => self::role('Asesor de ventas'),
-            ],
-            [
-                'module_id' => self::module('Mi base'),
+                'module_id' => self::module('Base General'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
@@ -49,13 +54,45 @@ class ModulesRolesSeeder extends Seeder
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
-                'module_id' => self::module('Matriculados'),
+                'module_id' => self::module('Perfil'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
-                'module_id' => self::module('Perfil'),
+                'module_id' => self::module('Mi base'),
                 'role_id'   => self::role('Asesor de ventas'),
-            ]
+            ],
+
+
+
+            [
+                'module_id' => self::module('Nube de documentos'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
+
+            [
+                'module_id' => self::module('Gestion de prospectos'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
+
+            [
+                'module_id' => self::module('Equipo de asesores'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
+
+            [
+                'module_id' => self::module('Agenda activa'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
+
+            [
+                'module_id' => self::module('Matriculados'),
+                'role_id'   => self::role('Asesor de ventas'),
+            ],
+
+            [
+                'module_id' => self::module('Instalaciones SAP'),
+                'role_id'   => self::role('Tecnico de instalación'),
+            ],
 
         ]);
     }

@@ -98,9 +98,9 @@ class User extends Authenticatable implements JWTSubject
             })->values();  // Reset array keys
 
             return $parentModule;
-        });
+        })->toArray();
 
-        return $organizedModules;
+        return array_values($organizedModules);
     }
 
 

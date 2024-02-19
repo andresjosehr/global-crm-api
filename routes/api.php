@@ -1,6 +1,11 @@
 <?php
 
+use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrdersController;
+use App\Http\Controllers\OrdersCoursesController;
+use App\Http\Controllers\StudentsController;
+use App\Http\Controllers\Traking\CertificationTestsController;
 use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Models\SapInstalation;
 use Illuminate\Http\Request;
@@ -8,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use PhpParser\Node\Expr\Assign;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +45,9 @@ Route::post('sales/disconnect-call-activity', 'App\Http\Controllers\LeadsControl
 
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
 
+    Route::get('assignments', [AssignmentsController::class, 'index']);
+    Route::put('assignments/{id}', [AssignmentsController::class, 'update']);
+
     Route::get('make-session/{id}', 'App\Http\Controllers\AuthController@makeSession');
     Route::get('notifications', 'App\Http\Controllers\NotificationController@index');
     Route::put('notifications/{id}', 'App\Http\Controllers\NotificationController@update');
@@ -47,8 +56,9 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
     Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
-    Route::resource('students', 'App\Http\Controllers\StudentsController');
-    Route::resource('orders', 'App\Http\Controllers\OrdersController');
+    Route::resource('students', StudentsController::class);
+    Route::resource('orders', OrdersController::class);
+    Route::resource('order-courses', OrdersCoursesController::class);
     Route::get('student-orders/get-options', 'App\Http\Controllers\OrdersController@getOptions');
 
     Route::resource('dues', 'App\Http\Controllers\DuesController');
@@ -103,13 +113,20 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::prefix('traking')->group(function () {
         Route::prefix('sap-instalations')->group(function () {
-            Route::post('save-draft', 'App\Http\Controllers\Traking\SapInstalationsController@saveDraft');
-            Route::put('update/{id}', 'App\Http\Controllers\Traking\SapInstalationsController@update');
+            Route::get('list', [SapInstalationsController::class, 'getList']);
+            Route::post('save-draft', [SapInstalationsController::class, 'saveDraft']);
+            Route::put('update/{id}', [SapInstalationsController::class, 'update']);
             Route::get('get-sap-instalation/{key}', [SapInstalationsController::class, 'getSapInstalation']);
+            Route::get('options', [SapInstalationsController::class, 'getOptions']);
+            Route::get('get-available-times/{date}', [SapInstalationsController::class, 'getAvailableTimes']);
+            Route::get('sap-tries/{sap_id}', [SapInstalationsController::class, 'getSapTries']);
+
+
+            Route::get('{id}', [SapInstalationsController::class, 'getSapInstalation']);
         });
 
         Route::prefix('certification-tests')->group(function () {
-            Route::put('update', 'App\Http\Controllers\Traking\CertificationTestsController@update');
+            Route::put('update', [CertificationTestsController::class, 'update']);
         });
         Route::prefix('extensions')->group(function () {
             Route::post('save-draft', 'App\Http\Controllers\Traking\ExtensionsController@saveDraft');

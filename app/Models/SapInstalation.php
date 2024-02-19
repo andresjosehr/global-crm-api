@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class SapInstalation extends Model
 {
@@ -34,7 +35,11 @@ class SapInstalation extends Model
 
     protected $appends = [
         'start_datetime',
+        'start_datetime_target_timezone',
         'end_datetime',
+        'timezone',
+        'time',
+        'date',
         'staff_id',
     ];
 
@@ -89,6 +94,7 @@ class SapInstalation extends Model
             $screenshot = $newFileName;
         }
 
+
         $this->attributes['screenshot'] = $screenshot;
     }
 
@@ -103,6 +109,11 @@ class SapInstalation extends Model
         return $this->sapTries->last()->start_datetime;
     }
 
+    public function getStartDatetimeTargetTimezoneAttribute()
+    {
+        return $this->sapTries->last()->start_datetime_target_timezone;
+    }
+
     public function getEndDatetimeAttribute()
     {
         return $this->sapTries->last()->end_datetime;
@@ -111,5 +122,59 @@ class SapInstalation extends Model
     public function getStaffIdAttribute()
     {
         return $this->sapTries->last()->staff_id;
+    }
+
+    public function getTimeAttribute()
+    {
+        return Carbon::parse($this->sapTries->last()->start_datetime)->format('H:i') . ':00';
+    }
+
+    public function getDateAttribute()
+    {
+        return Carbon::parse($this->sapTries->last()->start_datetime)->format('Y-m-d');
+    }
+
+    public function getTimezoneAttribute()
+    {
+        return $this->sapTries->last()->timezone;
+    }
+
+    public function staff()
+    {
+        return $this->hasOne(User::class, 'id', 'staff_id');
+    }
+
+
+    public function orderCourse()
+    {
+        return $this->hasOne(OrderCourse::class, 'id', 'order_course_id');
+    }
+
+
+    public function setPaymentReceiptAttribute($payment_receipt)
+    {
+
+        $base64Types = [
+            'data:image/jpeg;base64' => 'jpeg',
+            'data:image/png;base64' => 'png',
+            'data:application/pdf;base64' => 'pdf',
+        ];
+
+
+        $firstPart = explode(',', $payment_receipt)[0];
+        if ($payment_receipt && isset($base64Types[$firstPart])) {
+
+            $extension = $base64Types[$firstPart];
+
+            $file = $payment_receipt;
+            $file = str_replace($firstPart . ',', '', $file);
+            $file = str_replace(' ', '+', $file);
+            $date = date('Y-m-d-H-i-s');
+            $newFileName = 'payment_receipt_' . Carbon::now()->format('Y-m-d-H-i-s') . '.' . $extension;
+            \File::put(storage_path() . '/app/public/dues/' . $newFileName, base64_decode($file));
+            $payment_receipt = $newFileName;
+        }
+
+        $this->attributes['payment_receipt'] = $payment_receipt;
     }
 }

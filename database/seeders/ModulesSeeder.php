@@ -116,6 +116,25 @@ class ModulesSeeder extends Seeder
             ],
 
 
+            [
+                'name'        => 'Instalaciones SAP',
+                'description' => '',
+                'icon'        => 'heroicons_outline:computer-desktop',
+                'path'        => 'instalaciones-sap',
+                'type'        => 'basic',
+                'parent_id'   => null
+            ],
+
+            [
+                'name'        => 'Asignaciones',
+                'description' => '',
+                'icon'        => 'heroicons_outline:bell-alert',
+                'path'        => 'asignaciones',
+                'type'        => 'basic',
+                'parent_id'   => null
+            ],
+
+
         ]);
     }
 }

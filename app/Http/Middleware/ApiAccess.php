@@ -25,11 +25,11 @@ class ApiAccess
         try {
             $user = JWTAuth::parseToken()->authenticate();
         } catch (\Exception $e) {
-            if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException){
+            if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
                 return ApiResponseController::response('Token invalido', 401);
-            }else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException){
+            } else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {
                 return ApiResponseController::response('Token expirado', 401);
-            }else{
+            } else {
                 return ApiResponseController::response('Token no encontrado', 401);
             }
         }
@@ -39,10 +39,10 @@ class ApiAccess
         $user = JWTAuth::parseToken()->authenticate();
 
         // if user have $active = false return error
-        if(!$user->active){
+        if (!$user->active) {
             return ApiResponseController::response('Usuario inactivo', 401);
         }
 
-	    return $next($request);
+        return $next($request);
     }
 }

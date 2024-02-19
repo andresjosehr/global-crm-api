@@ -29,9 +29,16 @@ class UpdateZohoTokens extends Command
     public function handle()
     {
 
+
+
+        // https://accounts.zoho.com/oauth/v2/auth?response_type=code&client_id=1000.3PZL6Y2ZKLYSDAR76MCJ3MOJDNB7QV&scope=ZohoMail.messages.ALL ZohoMail.accounts.ALL ZohoCalendar.event.ALL ZohoCalendar.calendar.ALL&redirect_uri=https://globaltecnologiasacademy.com&access_type=offline&prompt=consent
+        // https: //qa-api.mygisselle.com/?code=1000.5be62546926365fd2678ce2f50936e94.b70925a4e31bfe91764812145da90f7f&location=us&accounts-server=https%3A%2F%2Faccounts.zoho.com&
+
+
+
         $grant_type = 'refresh_token';
         $redirect_uri = 'https://qa-api.mygisselle.com';
-        $scope = 'ZohoMail.messages.ALL ZohoMail.accounts.ALL';
+        $scope = 'ZohoMail.messages.ALL ZohoMail.accounts.ALL ZohoCalendar.event.ALL ZohoCalendar.calendar.ALL';
 
 
         // Guzzle

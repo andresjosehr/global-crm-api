@@ -16,6 +16,8 @@ return new class extends Migration
         Schema::table('sap_instalations', function (Blueprint $table) {
             $table->string('screenshot')->nullable()->after('previus_sap_instalation');
             $table->string('restrictions')->nullable()->after('screenshot');
+            $table->string('payment_receipt')->nullable()->after('sap_payment_date');
+
 
             // drop column
             $table->dropColumn('start_datetime');
@@ -37,6 +39,8 @@ return new class extends Migration
         Schema::table('sap_instalations', function (Blueprint $table) {
             $table->dropColumn('screenshot');
             $table->dropColumn('restrictions');
+            $table->dropColumn('payment_receipt');
+
             $table->dateTime('start_datetime')->nullable()->after('order_id');
             $table->dateTime('end_datetime')->nullable()->after('start_datetime');
             $table->foreignId('staff_id')->nullable()->after('end_datetime')->constrained('users');

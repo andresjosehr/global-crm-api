@@ -12,13 +12,17 @@ use Illuminate\Support\Facades\Log;
 
 class CoreMailsController extends Controller
 {
-    static public function sendMail($toAddress, $subject, $content, $scheduleTime = null) {
+    static public function sendMail($toAddress, $subject, $content, $scheduleTime = null)
+    {
+
+
+
+
         // Log::info('1');
         $token = ZohoToken::where('type', 'production')->first()->token;
         $fromAddress = 'coordinacionacademica@globaltecnologiasacademy.com';
         $accountId = '6271576000000008002';
 
-        Log::info('2');
 
         // Check if not in production
         if (env('APP_ENV') != 'production') {
@@ -54,7 +58,7 @@ class CoreMailsController extends Controller
 
 
 
-        
+
         $client = new GuzzleHttp\Client();
         $res = $client->request('POST', "https://mail.zoho.com/api/accounts/$accountId/messages", [
             'headers' => [
@@ -122,9 +126,13 @@ class CoreMailsController extends Controller
         }
 
 
-        // return $par;
 
-        $token = ZohoToken::where('token', '<>', '')->first()->token;
+        $token = ZohoToken::where('type', 'production')->first()->token;
+
+        if (env('APP_ENV') != 'production') {
+            $token = ZohoToken::where('type', 'qa')->first()->token;
+        }
+
         $client = new GuzzleHttp\Client();
         $res = $client->request('GET', "https://mail.zoho.com/api/accounts/6271576000000008002/messages/search$par", [
             'headers' => [
@@ -139,7 +147,14 @@ class CoreMailsController extends Controller
     static public function getFolders()
     {
 
-        $token = ZohoToken::where('token', '<>', '')->first()->token;
+
+        $token = ZohoToken::where('type', 'production')->first()->token;
+
+        if (env('APP_ENV') != 'production') {
+            $token = ZohoToken::where('type', 'qa')->first()->token;
+        }
+
+
         $client = new GuzzleHttp\Client();
         $res = $client->request('GET', 'https://mail.zoho.com/api/accounts/6271576000000008002/folders', [
 

@@ -295,13 +295,13 @@ class OrdersController extends Controller
      */
     public function show($id)
     {
-        if (Order::where('id', $id)->exists()) {
-            $order = Order::with('orderCourses.course', 'dues', 'student', 'currency', 'price', 'certificationTests')->find($id);
-            $order = $order->attachCertificationTest($order->student_id);
-            return ApiResponseController::response('Consulta exitosa', 200, $order);
-        } else {
-            return ApiResponseController::response('La orden no existe', 404);
+
+        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses.sapInstalations.staff', 'orderCourses.freezings', 'orderCourses.dateHistory', 'currency', 'dues', 'user', 'invoice')->find($id);
+        if (!$order) {
+            return ApiResponseController::response('No se encontro el registro', 204);
         }
+
+        return ApiResponseController::response('Consulta exitosa', 200, $order);
     }
 
     /**

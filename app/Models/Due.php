@@ -59,4 +59,10 @@ class Due extends Model
 
         $this->attributes['payment_receipt'] = $payment_receipt;
     }
+
+    // Has currency through order
+    public function currency()
+    {
+        return $this->hasOneThrough(Currency::class, Order::class, 'id', 'id', 'order_id', 'currency_id');
+    }
 }
