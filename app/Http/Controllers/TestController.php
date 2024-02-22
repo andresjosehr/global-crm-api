@@ -28,20 +28,18 @@ class TestController extends Controller
     public function index()
     {
 
-        $noti = new NotificationController();
-        $noti = $noti->store([
-            'title'      => 'Titulo de prueba',
-            'body'       => 'Esta es una prueba',
-            'icon'       => 'check_circle_outline',
-            'url'        => '#',
-            'user_id'    => 6,
-            'use_router' => false,
-            'custom_data' => [
-                []
-            ]
-        ]);
+        $student = Student::where('id', 496)->with('users', 'orders')->first();
+        $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
 
-        return "Epa";
+        StudentsController::dipatchNotification($order, $student);
+
+        return ["Exito"];
+
+
+        return [
+            'order' => $order,
+            'student' => $student
+        ];
     }
     public function importStatistics()
     {
