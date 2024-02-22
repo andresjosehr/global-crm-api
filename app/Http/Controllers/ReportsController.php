@@ -492,8 +492,6 @@ class ReportsController extends Controller
         // created_at
 
         // Calls per hour
-        Log::info("Start: " . $request->start . ' 00:00:00');
-        Log::info("End: " . $request->end . ' 23:59:59');
         $callsPerHour = ZadarmaStatistic::select(
             DB::raw('CONCAT(MAX(DATE(callstart)), " ", MAX(HOUR(callstart)), ":00:00") AS datetime'),
             DB::raw('MAX(DATE(callstart)) as date'),
@@ -533,7 +531,6 @@ class ReportsController extends Controller
             $hours = range(8, 22);
             foreach ($hours as $hour) {
                 $datetime = $date->format('Y-m-d') . ' ' . str_pad($hour, 2, '0', STR_PAD_LEFT) . ':00:00';
-                Log::info($datetime);
                 if (!in_array($datetime, array_column($callsPerHour, 'datetime'))) {
                     $callsPerHour[] = ['datetime' => $datetime, 'date' => $date->toDateString(), 'hour' => $hour, 'value' => 0];
                 }
@@ -541,7 +538,6 @@ class ReportsController extends Controller
                     $minutesPerHour[] = ['datetime' => $datetime, 'date' => $date->toDateString(), 'hour' => $hour, 'value' => 0];
                 }
             }
-            Log::info('-------------------');
             $date->addDay();
         }
 

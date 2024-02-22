@@ -30,16 +30,19 @@ return new class extends Migration
             $table->foreign('price_id')->references('id')->on('prices');
 
 
-            $table->string('price')->nullable();
+            $table->integer('price_amount')->nullable();
 
             $table->bigInteger('currency_id')->unsigned()->nullable();
             $table->foreign('currency_id')->references('id')->on('currencies');
 
+
             $table->bigInteger('payment_method_id')->unsigned()->nullable();
             $table->foreign('payment_method_id')->references('id')->on('payment_methods');
-            $table->string('sap_payment_date')->nullable();
+            $table->date('payment_date')->nullable();
             $table->string('payment_receipt')->nullable();
             $table->boolean('payment_enabled')->default(false);
+            $table->datetime('payment_verified_at')->nullable();
+            $table->bigInteger('payment_verified_by')->unsigned()->nullable();
 
             $table->timestamps();
         });

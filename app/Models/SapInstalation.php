@@ -12,7 +12,6 @@ class SapInstalation extends Model
     use HasFactory;
 
     public $fillable = [
-        "id",
         "order_id",
         "operating_system",
         "pc_type",
@@ -22,13 +21,14 @@ class SapInstalation extends Model
         "instalation_type",
         "key",
         "price_id",
-        "price",
+        "price_amount",
         "sap_user",
         "currency_id",
         'payment_enabled',
         "payment_method_id",
-        "sap_payment_date",
+        "payment_date",
         "screenshot",
+        'payment_receipt',
         "draft",
         "observation",
     ];
@@ -41,6 +41,15 @@ class SapInstalation extends Model
         'time',
         'date',
         'staff_id',
+        'last_try_status',
+    ];
+
+    public $payment_fields = [
+        'price_id',
+        'currency_id',
+        'payment_receipt',
+        'payment_method_id',
+        'payment_date',
     ];
 
 
@@ -144,11 +153,23 @@ class SapInstalation extends Model
         return $this->hasOne(User::class, 'id', 'staff_id');
     }
 
+    public function getLastTryStatusAttribute()
+    {
+        return $this->sapTries->last()->status;
+    }
+
 
     public function orderCourse()
     {
         return $this->hasOne(OrderCourse::class, 'id', 'order_course_id');
     }
+
+    public function order()
+    {
+        return $this->hasOne(Order::class, 'id', 'order_id');
+    }
+
+
 
 
     public function setPaymentReceiptAttribute($payment_receipt)
@@ -171,10 +192,16 @@ class SapInstalation extends Model
             $file = str_replace(' ', '+', $file);
             $date = date('Y-m-d-H-i-s');
             $newFileName = 'payment_receipt_' . Carbon::now()->format('Y-m-d-H-i-s') . '.' . $extension;
-            \File::put(storage_path() . '/app/public/dues/' . $newFileName, base64_decode($file));
+            \File::put(storage_path() . '/app/public/payment_receipts/' . $newFileName, base64_decode($file));
             $payment_receipt = $newFileName;
         }
 
         $this->attributes['payment_receipt'] = $payment_receipt;
+    }
+
+
+    public function setPaymentDateAttribute($payment_date)
+    {
+        $this->attributes['payment_date'] = Carbon::parse($payment_date)->format('Y-m-d');
     }
 }

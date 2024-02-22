@@ -16,8 +16,8 @@ class CurrenciesSeeder extends Seeder
     public function run()
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-		DB::table('currencies')->truncate();
-		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        DB::table('currencies')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         DB::table('currencies')->insert([
             [
@@ -32,7 +32,7 @@ class CurrenciesSeeder extends Seeder
                 'name' => 'Dolar Americano',
                 'symbol' => '$',
                 'position' => 'left',
-                'country_id' => DB::table('countries')->where('name', 'Estados Unidos')->first()->id,
+                'country_id' => DB::table('countries')->where('name', 'United States')->first()->id,
             ],
             [
                 'iso_code' => 'PEN',

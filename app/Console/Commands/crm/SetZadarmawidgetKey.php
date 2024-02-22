@@ -51,12 +51,12 @@ class SetZadarmawidgetKey extends Command
             } catch (\Throwable $th) {
                 //throw $th;
 
-                Log::error('Error updating widget key for extension: ' . $extension);
-                Log::error($th->getMessage());
+                // Log::error('Error updating widget key for extension: ' . $extension);
+                // Log::error($th->getMessage());
             }
             $i++;
-            Log::info('Zadarma widget key updated: (' . $i . '/' . count($extensions) . ')');
-            Log::info('Extension: ' . $extension);
+            // Log::info('Zadarma widget key updated: (' . $i . '/' . count($extensions) . ')');
+            // // Log::info('Extension: ' . $extension);
         }
         return Command::SUCCESS;
     }

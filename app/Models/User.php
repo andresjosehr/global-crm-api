@@ -118,6 +118,7 @@ class User extends Authenticatable implements JWTSubject
             ->get()
             ->groupBy('day');
 
+
         $unavailableTimes = [];
 
         foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
@@ -143,7 +144,7 @@ class User extends Authenticatable implements JWTSubject
                 if ($previousEnd->lt(Carbon::parse('23:59:59'))) {
                     $unavailableTimes[$day][] = [
                         'start_time' => $previousEnd->toTimeString(),
-                        'end_time' => Carbon::parse('23:59:59')->toTimeString(),
+                        'end_time' => Carbon::parse('00:00:00')->toTimeString(),
                     ];
                 }
             }
@@ -240,12 +241,15 @@ class User extends Authenticatable implements JWTSubject
         }
 
 
+
         // Obtener los tiempos ocupados y no disponibles para ese día
         $busyTimesForDay = data_get($this->append('bussyTimesForCalculate')->bussyTimesForCalculate, $date->format('Y-m-d'), []);
         $unavailableTimesForDay = data_get($this->unavailableTimes, $dayName, []);
+        // Log::info($unavailableTimesForDay);
+        // Log::info($date->format('Y-m-d'));
 
 
-        Log::info($this->append('bussyTimesForCalculate')->bussyTimesForCalculate);
+        // Log::info($this->append('bussyTimesForCalculate')->bussyTimesForCalculate);
 
         // Adicionar los tiempos ocupados enviados desde el frontend
         $additionalBusyTimes = data_get($datesBussy, $date->format('Y-m-d'), []);
@@ -253,7 +257,7 @@ class User extends Authenticatable implements JWTSubject
         // Fusionar y contar las ocurrencias de cada intervalo de tiempo
         $mergedBusyTimes = array_merge(array_column($busyTimesForDay, 'start_time'), $additionalBusyTimes);
 
-        Log::info($mergedBusyTimes);
+        // Log::info($mergedBusyTimes);
 
 
 
@@ -264,26 +268,39 @@ class User extends Authenticatable implements JWTSubject
             return $occurrence >= 2;
         });
 
+
         // Función para verificar si un intervalo de tiempo está ocupado o no disponible
-        $isIntervalUnavailable = function ($interval) use ($finalBusyTimes, $unavailableTimesForDay) {
+        $isIntervalAvailable = function ($interval) use ($finalBusyTimes, $unavailableTimesForDay) {
+            // Log::info('interval', $finalBusyTimes);
+            // Log::info('unavailableTimesForDay', $unavailableTimesForDay);
             $startTime = Carbon::parse($interval['start_time']);
             $endTime = Carbon::parse($interval['end_time']);
+
             if (isset($finalBusyTimes[$interval['start_time']])) {
-                return true;
+                return false;
             }
-            foreach ($unavailableTimesForDay as $unavailableInterval) {
-                $unavailableStart = Carbon::parse($unavailableInterval['start_time']);
-                $unavailableEnd = Carbon::parse($unavailableInterval['end_time']);
-                if ($startTime->lt($unavailableEnd) && $endTime->gt($unavailableStart)) {
-                    return true;
+
+            $unavailable = array_filter($unavailableTimesForDay, function ($unavailable) use ($startTime, $endTime) {
+                $start = Carbon::parse($unavailable['start_time']);
+                $end = Carbon::parse($unavailable['end_time']);
+
+                if ($end->format('H:i:s') === '00:00:00') {
+                    $end = Carbon::parse('23:59:59');
                 }
+
+                return $startTime->between($start, $end) || $endTime->between($start, $end);
+            });
+
+            if (!empty($unavailable)) {
+                return false;
             }
-            return false;
+
+            return true;
         };
 
         // Filtrar los intervalos de tiempo para quedarse solo con los disponibles
-        $availableIntervals = array_filter($intervals, function ($interval) use ($isIntervalUnavailable) {
-            return !$isIntervalUnavailable($interval);
+        $availableIntervals = array_filter($intervals, function ($interval) use ($isIntervalAvailable) {
+            return $isIntervalAvailable($interval);
         });
 
         return array_values($availableIntervals);

@@ -23,11 +23,11 @@ class NotificationController extends Controller
 
         $notifications = Notification::where('user_id', $user_id)
 
-                        ->when($request->read, function($query) use ($request){
-                            return $query->where('read', $request->read);
-                        })
-                        ->orderBy('created_at', 'desc')
-                        ->paginate($perPage);
+            ->when($request->read, function ($query) use ($request) {
+                return $query->where('read', $request->read);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
 
         return ApiResponseController::response('Exito', 200, $notifications);
     }
@@ -55,11 +55,12 @@ class NotificationController extends Controller
 
         // Get fillable fields
         $fillable = (new Notification())->getFillable();
-        $noti = array_filter($notification, function($key) use ($fillable) {
+        $noti = array_filter($notification, function ($key) use ($fillable) {
             return in_array($key, $fillable);
         }, ARRAY_FILTER_USE_KEY);
 
         $not->fill($noti);
+        $not->save();
 
         event(new \App\Events\SendNotificationEvent($notification['user_id'], $notification));
 
@@ -99,8 +100,8 @@ class NotificationController extends Controller
     {
         $user = auth()->user();
         Notification::where('id', $id)
-        ->where('user_id', $user->id)
-        ->update(['read' => true]);
+            ->where('user_id', $user->id)
+            ->update(['read' => true]);
 
         return ApiResponseController::response('Exito', 200, 'Notificación actualizada');
     }

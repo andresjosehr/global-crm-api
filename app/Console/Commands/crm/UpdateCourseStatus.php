@@ -66,7 +66,7 @@ class UpdateCourseStatus extends Command
             }
         });
 
-        Log::channel('processes')->info('UpdateCourseStatus executed successfully.');
+        // Log::channel('processes')->info('UpdateCourseStatus executed successfully.');
 
         return Command::SUCCESS;
     }

@@ -8,6 +8,7 @@ use App\Models\Currency;
 use App\Models\Due;
 use App\Models\Order;
 use App\Models\SapInstalation;
+use App\Models\Student;
 use App\Models\User;
 use App\Models\ZadarmaStatistic;
 use App\Models\ZohoToken;
@@ -27,12 +28,20 @@ class TestController extends Controller
     public function index()
     {
 
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => 'Titulo de prueba',
+            'body'       => 'Esta es una prueba',
+            'icon'       => 'check_circle_outline',
+            'url'        => '#',
+            'user_id'    => 6,
+            'use_router' => false,
+            'custom_data' => [
+                []
+            ]
+        ]);
 
-        return ZohoService::deleteCalendarEvent('f69956629d9e4d748b121b1d305d5022@zoho.com', $etag = '1708306217689');
-
-        $start = '2024-02-18 22:00:00';
-        $end = '2024-02-18 22:20:00';
-        // return ZohoService::createCalendarEvent($start, $end);
+        return "Epa";
     }
     public function importStatistics()
     {

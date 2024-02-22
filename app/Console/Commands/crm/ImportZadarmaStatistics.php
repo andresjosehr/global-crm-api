@@ -88,10 +88,10 @@ class ImportZadarmaStatistics extends Command
 
 
             $records = count($statistics->stats);
-            Log::info('Skiped: ' . $skiping);
-            Log::info('Cicle start - end: ' . $statistics->stats[0]['callstart'] . ' - ' . $statistics->stats[$records - 1]['callstart']);
-            Log::info('Now: ' . Carbon::now()->format('Y-m-d H:i:s'));
-            Log::info('----------------------------------------------------------------');
+            // Log::info('Skiped: ' . $skiping);
+            // Log::info('Cicle start - end: ' . $statistics->stats[0]['callstart'] . ' - ' . $statistics->stats[$records - 1]['callstart']);
+            // Log::info('Now: ' . Carbon::now()->format('Y-m-d H:i:s'));
+            // Log::info('----------------------------------------------------------------');
             $skiping += 1000;
             sleep(30);
         }

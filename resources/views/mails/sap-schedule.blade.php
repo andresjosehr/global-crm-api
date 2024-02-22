@@ -52,7 +52,8 @@
             </p>
 
             <p>La fecha y hora de agendamiento que has escogido es: </p>
-            <p><b>Fecha: {{$sap->start_datetime}}</b></p>
+            <p><b>Fecha: {{$sap->start_datetime_target_timezone}}</b></p>
+            <p><b>Zona horaria: {{$sap->timezone}}</b></p>
 
             <p>Te recordamos los siguientes puntos:</p>
 

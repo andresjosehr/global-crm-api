@@ -100,4 +100,10 @@ class Student extends Model
     {
         return $this->belongsTo(State::class);
     }
+
+    public function userAssigned()
+    {
+        // The last user assigned to the student
+        return $this->belongsToMany(User::class, 'user_student', 'student_id', 'user_id')->orderBy('user_student.created_at', 'desc')->limit(1);
+    }
 }

@@ -18,6 +18,28 @@ class SapTry extends Model
         "staff_id",
         "status",
         "schedule_at",
+
+
+        'price_id',
+        'payment_date',
+        'price_amount',
+        'currency_id',
+        'payment_receipt',
+        'payment_method_id',
+    ];
+
+    protected $appends = [
+        'time',
+        'date',
+    ];
+
+    public $payment_fields = [
+        'price_id',
+        'payment_date',
+        'price_amount',
+        'currency_id',
+        'payment_receipt',
+        'payment_method_id',
     ];
 
     public function sapInstalation()
@@ -50,10 +72,25 @@ class SapTry extends Model
             $file = str_replace(' ', '+', $file);
             $date = date('Y-m-d-H-i-s');
             $newFileName = 'payment_receipt_' . Carbon::now()->format('Y-m-d-H-i-s') . '.' . $extension;
-            \File::put(storage_path() . '/app/public/dues/' . $newFileName, base64_decode($file));
+            \File::put(storage_path() . '/app/public/payment_receipts/' . $newFileName, base64_decode($file));
             $payment_receipt = $newFileName;
         }
 
         $this->attributes['payment_receipt'] = $payment_receipt;
+    }
+
+    public function getTimeAttribute()
+    {
+        return Carbon::parse($this->start_datetime)->format('H:i') . ':00';
+    }
+
+    public function getDateAttribute()
+    {
+        return Carbon::parse($this->start_datetime)->format('Y-m-d');
+    }
+
+    public function setPaymentDateAttribute($payment_date)
+    {
+        $this->attributes['payment_date'] = Carbon::parse($payment_date)->format('Y-m-d');
     }
 }

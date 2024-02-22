@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CountriesController;
+use App\Http\Controllers\OptionsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\OrdersCoursesController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\Traking\CertificationTestsController;
 use App\Http\Controllers\Traking\SapInstalationsController;
+use App\Http\Controllers\Traking\SapTriesController;
 use App\Models\SapInstalation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -116,11 +119,20 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::get('list', [SapInstalationsController::class, 'getList']);
             Route::post('save-draft', [SapInstalationsController::class, 'saveDraft']);
             Route::put('update/{id}', [SapInstalationsController::class, 'update']);
+            Route::put('update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
+
             Route::get('get-sap-instalation/{key}', [SapInstalationsController::class, 'getSapInstalation']);
             Route::get('options', [SapInstalationsController::class, 'getOptions']);
             Route::get('get-available-times/{date}', [SapInstalationsController::class, 'getAvailableTimes']);
-            Route::get('sap-tries/{sap_id}', [SapInstalationsController::class, 'getSapTries']);
-            Route::get('sap-tries/{sap_id}', [SapInstalationsController::class, 'getSapTries']);
+            Route::get('sap-tries/{sap_id}', [SapTriesController::class, 'getSapTries']);
+            Route::get('sap-try/{sap_id}', [SapTriesController::class, 'getSapTry']);
+            Route::put('sap-try/{id}', [SapTriesController::class, 'update']);
+            Route::put('sap-try/verified-payment/{id}', [SapTriesController::class, 'verifiedPayment']);
+
+
+
+            Route::put('update-payment/{id}', [SapInstalationsController::class, 'updatePayment']);
+            Route::put('sap-try/update-payment/{id}', [SapTriesController::class, 'updatePayment']);
 
 
             Route::get('{id}', [SapInstalationsController::class, 'getSapInstalation']);
@@ -157,7 +169,13 @@ Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Control
 
 
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
-Route::get('countries', 'App\Http\Controllers\CountriesController@index');
+Route::get('countries', [CountriesController::class, 'index']);
+Route::get('get-currencies', [OptionsController::class, 'getCurrencies']);
+Route::get('get-schedule-sap-prices', [OptionsController::class, 'getScheduleSapPrices']);
+Route::get('get-payment-methods', [OptionsController::class, 'getPaymentMethods']);
+Route::get('get-holidays', [OptionsController::class, 'getHolidays']);
+
+
 Route::get('get-state-by-country/{country_id}', 'App\Http\Controllers\CountriesController@getStateByCountry');
 Route::get('get-city-by-state/{state_id}', 'App\Http\Controllers\CountriesController@getCityByState');
 Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');

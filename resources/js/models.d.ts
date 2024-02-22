@@ -11,6 +11,7 @@ declare namespace App.Models {
         title: string | null;
         description: string | null;
         link: string | null;
+        icon: string | null;
         resolved_at: string | null;
         created_at: string | null;
         updated_at: string | null;
@@ -159,6 +160,7 @@ declare namespace App.Models {
         created_at: string | null;
         updated_at: string | null;
         payment_method?: App.Models.PaymentMethod | null;
+        currency?: App.Models.Currency | null;
     }
 
     export interface EspecialMessage {
@@ -516,10 +518,12 @@ declare namespace App.Models {
         order_course_id: number | null;
         instalation_type: string | null;
         price_id: number | null;
-        price: string | null;
+        price_amount: number | null;
+        payment_date: string | null;
+        sap_payment_date: string | null;
+        payment_receipt: string | null;
         currency_id: number | null;
         payment_method_id: number | null;
-        sap_payment_date: string | null;
         observation: string | null;
         previus_sap_instalation: boolean | null;
         screenshot: string | null;
@@ -531,12 +535,16 @@ declare namespace App.Models {
         student?: App.Models.Student | null;
         sap_tries?: Array<App.Models.SapTry> | null;
         order_course?: App.Models.OrderCourse | null;
+        order?: App.Models.Order | null;
         sap_tries_count?: number | null;
         readonly start_datetime?: any;
+        readonly start_datetime_target_timezone?: any;
         readonly end_datetime?: any;
         readonly staff_id?: any;
         readonly time?: any;
         readonly date?: any;
+        readonly timezone?: any;
+        readonly last_try_status?: any;
     }
 
     export interface SapInstalationStatus {}
@@ -553,13 +561,28 @@ declare namespace App.Models {
         id: number;
         sap_instalation_id: number;
         start_datetime: string | null;
+        start_datetime_target_timezone: string | null;
+        timezone: string | null;
         end_datetime: string | null;
         status: string | null;
         staff_id: number | null;
         schedule_at: string | null;
+        zoho_data: Array<any> | any | null;
+        price_id: number | null;
+        price_amount: number | null;
+        currency_id: number | null;
+        payment_method_id: number | null;
+        payment_date: string | null;
+        payment_receipt: string | null;
+        payment_enabled: boolean;
+        payment_verified_at: string | null;
+        payment_verified_by: number | null;
         created_at: string | null;
         updated_at: string | null;
         sap_instalation?: App.Models.SapInstalation | null;
+        staff?: App.Models.User | null;
+        readonly time?: any;
+        readonly date?: any;
     }
 
     export interface Sheet {
@@ -628,10 +651,12 @@ declare namespace App.Models {
         sap_instalations?: Array<App.Models.SapInstalation> | null;
         city?: App.Models.City | null;
         state?: App.Models.State | null;
+        user_assigned?: Array<App.Models.User> | null;
         orders_count?: number | null;
         wp_learnpress_user_items_count?: number | null;
         users_count?: number | null;
         sap_instalations_count?: number | null;
+        user_assigned_count?: number | null;
     }
 
     export interface User {

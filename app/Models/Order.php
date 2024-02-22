@@ -64,4 +64,9 @@ class Order extends Model
         }
         return $this;
     }
+
+    public function sapInstalations()
+    {
+        return $this->hasMany(SapInstalation::class);
+    }
 }

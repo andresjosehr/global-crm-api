@@ -9,6 +9,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SendNotificationEvent implements ShouldBroadcast
 {
@@ -36,7 +37,8 @@ class SendNotificationEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return ['notification-channel-' . $this->user_id];
+        Log::info('notification-channel-' . env('NOTIFICATION_KEY') . '-' . $this->user_id);
+        return ['notification-channel-' . env('NOTIFICATION_KEY') . '-' . $this->user_id];
     }
 
     public function broadcastAs()
@@ -44,7 +46,7 @@ class SendNotificationEvent implements ShouldBroadcast
         return 'notification-event';
     }
 
-     /**
+    /**
      * Get the data to broadcast.
      *
      * @return array

@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Models\ZohoToken;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Mockery\Undefined;
 
@@ -33,9 +34,34 @@ class SapInstalationsController extends Controller
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
 
         $saps = SapInstalation::with('sapTries', 'student')
-            // ->whereHas('sapTries', function ($query) use ($user) {
-            //     $query->where('staff_id', $user->id);
-            // })
+            ->when($user->role_id === 5, function ($query) use ($user) {
+                // Subquery to get the latest sapTry id for each sapInstallation
+                $latestSapTryIdSub = SapTry::selectRaw('MAX(id) as latest_id, sap_instalation_id')
+                    ->groupBy('sap_instalation_id');
+
+                // Join with subquery to filter sapInstallations
+                $query->joinSub($latestSapTryIdSub, 'latest_tries', function ($join) {
+                    $join->on('sap_instalations.id', '=', 'latest_tries.sap_instalation_id');
+                })
+                    ->whereExists(function ($subQuery) use ($user) {
+                        $subQuery->select(DB::raw(1))
+                            ->from('sap_tries')
+                            ->whereColumn('sap_tries.id', 'latest_tries.latest_id')
+                            ->where('sap_tries.staff_id', $user->id)
+                            ->where('status', 'Programada');
+                    });
+            })
+            ->when($user->role_id === 1, function ($query) use ($request) {
+                $query->when($request->searchTerm, function ($query) use ($request) {
+                    $query->when($request->searchTerm === 'Pendiente de verificacion de pago', function ($query) {
+                        $query->whereHas('sapTries', function ($query) {
+                            $query->where('payment_enabled', 1)
+                                ->where('payment_receipt', 'IS NOT', null)
+                                ->where('payment_verified_at', null);
+                        });
+                    });
+                });
+            })
             ->paginate($perPage);
 
         return ApiResponseController::response('Sap instalations list', 200, $saps);
@@ -48,7 +74,19 @@ class SapInstalationsController extends Controller
 
         $sap['key'] = md5(microtime());
 
-        $otherSaps = SapInstalation::where('order_id', $sap['order_id'])->get();
+        $otherSaps = SapInstalation::where('order_id', $sap['order_id'])
+            ->where(function ($query) {
+                $query->where('instalation_type', '<>', 'Desbloqueo')
+                    ->orWhereNull('instalation_type');
+            })
+            ->get()
+            ->count();
+
+        $sap['status'] = 'Pendiente';
+
+        if ($otherSaps > 1) {
+            $sap['payment_enabled'] = 1;
+        }
 
         $sapInstalation->fill($sap);
         $sapInstalation->save();
@@ -57,6 +95,7 @@ class SapInstalationsController extends Controller
         $try->start_datetime = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
             return $item->start < $carry ? $item->start : $carry;
         }, Carbon::now()->addDecade()->format('Y-m-d'));
+        $try->end_datetime = Carbon::parse($try->start_datetime)->addMinutes(30)->format('Y-m-d H:i:s');
 
         $try->staff_id           = $this->findAvailableStaff($try->start_datetime)->id;
         $try->sap_instalation_id = $sapInstalation->id;
@@ -71,49 +110,19 @@ class SapInstalationsController extends Controller
     public function update(Request $request, $id)
     {
         $sapDB = SapInstalation::find($id);
-        $tryDB = SapTry::where('sap_instalation_id', $sapDB->id)->orderBy('id', 'desc')->first();
         $data   = $request->all();
-
-
         unset($data['key']);
-        $data['start_datetime'] = Carbon::parse($data['date'])->format('Y-m-d') . ' ' . $request->time['start_time'];
-        $data['start_datetime_target_timezone'] = Carbon::parse($data['date'])->format('Y-m-d') . ' ' . $request->time['start_time_in_target_zone'];
-        $data['timezone']       = $request->time['timezone'];
-        $data['end_datetime']   = Carbon::parse($data['start_datetime'])->addMinutes(30)->format('Y-m-d H:i:s');
-        $data['schedule_at']    = self::isSchedule($data);
-
-
-
 
         $sapFillable = (new SapInstalation())->getFillable();
         $sapData = collect($data)->only($sapFillable)->toArray();
 
-        $sapInstallation = SapInstalation::find($id);
-        if ($sapInstallation) {
-            // aquí asignarías cada uno de los atributos de $sapData uno por uno
-            $sapInstallation->screenshot = $sapData['screenshot'];
-            unset($sapData['screenshot']);
-            // repite para otros atributos si los hay
-            $sapInstallation->save();
+        if ($sapData['instalation_type'] === 'Desbloqueo') {
+            $sapData['payment_enabled'] = 1;
         }
+
         SapInstalation::where('id', $id)->update($sapData);
 
         $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
-
-        if (!$tryDB->schedule_at && $data['schedule_at']) {
-            $data['status'] = 'Programada';
-        }
-
-        $sapTryFillable = (new SapTry())->getFillable();
-        $tryData = collect($data)->only($sapTryFillable)->toArray();
-        SapTry::where('id', $tryDB->id)->update($tryData);
-
-        // self::triggerSapInstalationEvents($tryDB, $data);
-
-
-
-        GeneralJob::dispatch(SapInstalationsController::class, 'triggerSapInstalationEvents', ['trypOld' => $tryDB, 'tryNew' => $data])->onQueue('default');
-
 
         $sapDB = SapInstalation::with('sapTries')->where('id', $id)->first();
         return ApiResponseController::response('Sap instalation updated', 200, $sapDB);
@@ -165,11 +174,11 @@ class SapInstalationsController extends Controller
 
         $first = null;
 
-        if (!$trypOld->schedule_at && $tryNew['schedule_at']) {
+        if (!$trypOld->schedule_at && $tryNew->schedule_at) {
             $first = true;
         }
 
-        if ($trypOld->start_datetime != $tryNew['start_datetime'] && $trypOld->schedule_at) {
+        if ($trypOld->start_datetime != $tryNew->start_datetime && $trypOld->schedule_at && $trypOld->schedule_at) {
             $first = false;
         }
 
@@ -183,24 +192,35 @@ class SapInstalationsController extends Controller
             ZohoService::deleteCalendarEvent($zoho_data->uid, $zoho_data->etag);
         }
 
-        $response = ZohoService::createCalendarEvent($tryNew['start_datetime'], $tryNew['end_datetime'], 'Instalación SAP con alumno ' . $sap->student->name);
+
+        $title = $first ? 'Agendamiento de instalación SAP' : 'Reagendamiento de instalación SAP';
+
+
+        $attendees = [
+            [
+                'email'      => $sap->student->email,
+                'permission' => "2"
+            ]
+        ];
+
+        $response = ZohoService::createCalendarEvent($tryNew->start_datetime, $tryNew->end_datetime, 'Instalación SAP con alumno ' . $sap->student->name, $attendees);
         $data = json_decode($response)->events[0];
         // Convert StdClass to Array
         $data = json_decode(json_encode($data), true);
         SapTry::where('id', $trypOld->id)->update(['zoho_data' => $data]);
 
         $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first])->render();
-        CoreMailsController::sendMail('andresjosehr@gmail.com', 'Reagendamiento de instalación', $content);
+        CoreMailsController::sendMail('andresjosehr@gmail.com', $title, $content);
 
 
         $data = [
             "icon"        => 'computer',
             "user_id"     => $sap->staff_id,
-            "title"       => $first ? 'Agendamiento de instalación SAP' : 'Reagendamiento de instalación SAP',
+            "title"       => $title,
             "description" => 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha agendado una instalación SAP',
             "link"        => '/instalaciones-sap/' . $sap->id
         ];
-        $data['title'] = $first ? 'Agendamiento de instalación SAP' : 'Reagendamiento de instalación SAP';
+        $data['title'] = $title;
         $data['description'] = 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' una instalación SAP';
 
         $assignment = new AssignmentsController();
@@ -226,8 +246,15 @@ class SapInstalationsController extends Controller
     public function getSapInstalation(Request $request, $key)
     {
         $sapInstalation = SapInstalation::where('key', $key)->orWhere('id', $key)
-            ->with('student.city', 'student.state', 'staff')
+            ->with('student.city', 'student.state', 'staff', 'sapTries')
             ->first();
+
+        $sapInstalation->sapTry = $sapInstalation->sapTries->last();
+
+        $sapInstalation->first_install = SapInstalation::where('order_id', $sapInstalation->order_id)
+            ->where('instalation_type', 'Instalación')
+            ->where('id', '<>', $sapInstalation->id)
+            ->count() === 0;
 
         if (!$sapInstalation) {
             return ApiResponseController::response('No sap instalation found', 404);
@@ -236,7 +263,7 @@ class SapInstalationsController extends Controller
         return ApiResponseController::response('Authorized', 200, $sapInstalation);
     }
 
-    public function findAvailableStaff($date)
+    static public function findAvailableStaff($date)
     {
         // 1. Obtener todos los técnicos
         $technicians = User::where('role_id', 5)->get();
@@ -274,12 +301,13 @@ class SapInstalationsController extends Controller
                     $totalInstalationTime += $instalationEndTime->diffInMinutes($instalationStartTime);
                 }
 
-                $totalAvailableTime += $endTime->diffInMinutes($startTime) - $totalInstalationTime;
+                $totalAvailableTime += abs($endTime->diffInMinutes($startTime) - $totalInstalationTime);
             }
 
             // Log::info([$technician->id => [
             //     'totalAvailableTime' => $totalAvailableTime,
-            //     'maxAvailableTime' => $maxAvailableTime
+            //     'maxAvailableTime' => $maxAvailableTime,
+            //     'availableTechnician' => $availableTechnician
             // ]]);
 
             // 4. Seleccionar Técnico con Más Tiempo Disponible
@@ -289,6 +317,7 @@ class SapInstalationsController extends Controller
             }
         }
 
+        // Log::info([$availableTechnician]);
         return $availableTechnician;
     }
 
@@ -315,10 +344,75 @@ class SapInstalationsController extends Controller
         return ApiResponseController::response('Options', 200, $data);
     }
 
-    public function getSapTries(Request $request, $id)
-    {
-        $sapInstalation = SapTry::with('staff')->where('sap_instalation_id', $id)->get();
 
-        return ApiResponseController::response('Sap instalation tries', 200, $sapInstalation);
+    public function updateFromStudent(Request $request, $id)
+    {
+        $sapDB = SapInstalation::find($id);
+        $tryDB = SapTry::where('sap_instalation_id', $sapDB->id)->orderBy('id', 'desc')->first();
+        $data   = $request->all();
+
+
+        unset($data['key']);
+        $data['start_datetime']                 = Carbon::parse($data['date'])->format('Y-m-d') . ' ' . $request->time['start_time'];
+        $data['start_datetime_target_timezone'] = Carbon::parse($data['date'])->format('Y-m-d') . ' ' . $request->time['start_time_in_target_zone'];
+        $data['timezone']                       = $request->time['timezone'];
+        $data['end_datetime']                   = Carbon::parse($data['start_datetime'])->addMinutes(30)->format('Y-m-d H:i:s');
+        $data['schedule_at']                    = self::isSchedule($data);
+
+
+
+
+        $sapFillable = (new SapInstalation())->getFillable();
+        $sapData = collect($data)->only($sapFillable)->toArray();
+
+        $sapInstallation = SapInstalation::find($id);
+        if ($sapInstallation) {
+            // aquí asignarías cada uno de los atributos de $sapData uno por uno
+            $sapInstallation->screenshot = $sapData['screenshot'];
+            unset($sapData['screenshot']);
+            // repite para otros atributos si los hay
+            $sapInstallation->save();
+        }
+        SapInstalation::where('id', $id)->update($sapData);
+
+        $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
+
+        if (!$tryDB->schedule_at && $data['schedule_at']) {
+            $data['status'] = 'Programada';
+        }
+
+        $sapTryFillable = (new SapTry())->getFillable();
+        $tryData = collect($data)->only($sapTryFillable)->toArray();
+        SapTry::where('id', $tryDB->id)->update($tryData);
+
+        $tryNew = SapTry::where('id', $tryDB->id)->first();
+        // self::triggerSapInstalationEvents($tryDB, $data);
+
+
+
+        GeneralJob::dispatch(SapInstalationsController::class, 'triggerSapInstalationEvents', ['trypOld' => $tryDB, 'tryNew' => $tryNew])->onQueue('default');
+
+
+        $sapDB = SapInstalation::with('sapTries')->where('id', $id)->first();
+        return ApiResponseController::response('Sap instalation updated', 200, $sapDB);
+    }
+
+    public function updatePayment(Request $request, $id)
+    {
+        $sapPayment = SapInstalation::find($id);
+        // only payment_fields
+        $data = array_filter($request->all(), function ($key) {
+            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_method_id', 'payment_date']);
+        }, ARRAY_FILTER_USE_KEY);
+
+        $sapPayment->fill($data);
+
+        if ($data['price_id']) {
+            $sapPayment->price_amount = Price::find($data['price_id'])->amount;
+        }
+
+        $sapPayment->save();
+
+        return ApiResponseController::response('Sap try instalation updated', 200, $sapPayment);
     }
 }

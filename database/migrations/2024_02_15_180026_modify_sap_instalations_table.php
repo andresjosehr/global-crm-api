@@ -17,11 +17,15 @@ return new class extends Migration
             $table->string('screenshot')->nullable()->after('previus_sap_instalation');
             $table->string('restrictions')->nullable()->after('screenshot');
             $table->string('payment_receipt')->nullable()->after('sap_payment_date');
+            $table->integer('price_amount')->nullable()->after('price_id');
+            $table->date('payment_date')->nullable()->after('price_amount');
 
 
             // drop column
             $table->dropColumn('start_datetime');
             $table->dropColumn('end_datetime');
+            $table->dropColumn('price');
+            $table->dropColumn('sap_payment_date');
 
             // Drop foreign key
             $table->dropForeign(['staff_id']);
@@ -40,10 +44,13 @@ return new class extends Migration
             $table->dropColumn('screenshot');
             $table->dropColumn('restrictions');
             $table->dropColumn('payment_receipt');
+            $table->dropColumn('price_amount');
+            $table->dropColumn('payment_date');
 
             $table->dateTime('start_datetime')->nullable()->after('order_id');
             $table->dateTime('end_datetime')->nullable()->after('start_datetime');
             $table->foreignId('staff_id')->nullable()->after('end_datetime')->constrained('users');
+            $table->dateTime('sap_payment_date')->nullable()->after('price_id');
         });
     }
 };
