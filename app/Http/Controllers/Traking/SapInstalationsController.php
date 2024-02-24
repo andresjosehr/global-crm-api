@@ -74,7 +74,7 @@ class SapInstalationsController extends Controller
         return ApiResponseController::response('Sap instalations list', 200, $saps);
     }
 
-    public function getFromOrderCourse(Request $request, $id)
+    public function getFromOrder(Request $request, $id)
     {
         $saps = SapInstalation::with('sapTries', 'student')
             ->where('order_id', $id)
