@@ -229,8 +229,9 @@ class SapInstalationsController extends Controller
         // Convert StdClass to Array
         $data = json_decode(json_encode($data), true);
         SapTry::where('id', $trypOld->id)->update(['zoho_data' => $data]);
+        $otherSapInstalations = SapInstalation::where('order_id', $sap->order_id)->get();
 
-        $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first])->render();
+        $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first, 'otherSapInstalations' => $otherSapInstalations])->render();
         CoreMailsController::sendMail('andresjosehr@gmail.com', $title, $content);
 
 
