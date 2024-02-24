@@ -126,6 +126,8 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::prefix('traking')->group(function () {
         Route::prefix('sap-instalations')->group(function () {
             Route::get('list', [SapInstalationsController::class, 'getList']);
+            Route::get('get-from-order/{id}', [SapInstalationsController::class, 'getFromOrder']);
+
             Route::post('save-draft', [SapInstalationsController::class, 'saveDraft']);
             Route::put('update/{id}', [SapInstalationsController::class, 'update']);
             Route::put('update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);

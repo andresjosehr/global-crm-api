@@ -49,11 +49,9 @@ class SapTriesController extends Controller
             $sapInstalationsCount = Order::where('id', $sapTry->sapInstalation->order_id)->with('sapInstalations')->first()->sapInstalations->count();
             $sapStryCount = SapTry::where('sap_instalation_id', $sap_instalation_id)->get()->count();
 
-
-
-            Log::info('sapInstalationsCount: ' . $sapInstalationsCount);
-            Log::info('sapStryCount: ' . $sapStryCount);
             if ($sapInstalationsCount === 1 && $sapStryCount === 3) {
+                SapInstalation::where('id', $sap_instalation_id)->update(['status' => 'Cancelada']);
+
                 // create new sap instalation with the same data
                 $sapInstalation                   = new SapInstalation();
                 // get fillable fields
@@ -61,8 +59,8 @@ class SapTriesController extends Controller
                 foreach ($fillableFields as $field) {
                     $sapInstalation->$field = $sapTry->sapInstalation->$field;
                 }
-                $sapInstalation->status           = 'Por programar';
-                $sapInstalation->key             = md5(microtime());
+                $sapInstalation->status = 'Pendiente';
+                $sapInstalation->key    = md5(microtime());
                 $sapInstalation->save();
 
                 $sap_instalation_id = $sapInstalation->id;
@@ -76,7 +74,7 @@ class SapTriesController extends Controller
             $try->staff_id           = SapInstalationsController::findAvailableStaff($try->start_datetime)->id;
             $try->sap_instalation_id = $sap_instalation_id;
             $try->status             = "Por programar";
-            $try->payment_enabled    = SapTry::where('sap_instalation_id', $sap_instalation_id)->count() == 3  ? 1 : 0;
+            $try->payment_enabled    = SapTry::where('sap_instalation_id', $sap_instalation_id)->count() >= 3  ? 1 : 0;
             $try->save();
         }
 
@@ -86,6 +84,7 @@ class SapTriesController extends Controller
             $sapInstalation->save();
         }
 
+        $sapTry->status = $request->status;
         $sapTry->save();
 
 

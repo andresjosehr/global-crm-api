@@ -45,7 +45,7 @@ class StudentsController extends Controller
                     $q->where('status', 'Matriculado');
                 })
                     ->when($user->role_id != 1, function ($q) use ($user) {
-                        $q->where('user_id', $user->id);
+                        $q->where('created_by', $user->id);
                     });
             })
             ->with(['orders' => function ($q) {

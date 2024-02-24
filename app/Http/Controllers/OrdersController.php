@@ -4,22 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Mails\CoreMailsController;
-use App\Jobs\GeneralJob;
 use App\Models\CertificationTest;
 use App\Models\Course;
 use App\Models\Currency;
 use App\Models\DatesHistory;
 use App\Models\DocumentType;
-use App\Models\Invoice;
 use App\Models\Message;
 use App\Models\Order;
 use App\Models\OrderCourse;
 use App\Models\PaymentMethod;
-use App\Models\Price;
-use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use App\Models\Price;
+use Carbon\Carbon;
 
 class OrdersController extends Controller
 {
@@ -296,7 +292,7 @@ class OrdersController extends Controller
     public function show($id)
     {
 
-        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses.sapInstalations.staff', 'orderCourses.freezings', 'orderCourses.dateHistory', 'currency', 'dues', 'createdBy', 'invoice')->find($id);
+        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses', 'orderCourses.freezings', 'orderCourses.dateHistory', 'sapInstalations.staff', 'currency', 'dues', 'createdBy', 'invoice')->find($id);
         if (!$order) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
