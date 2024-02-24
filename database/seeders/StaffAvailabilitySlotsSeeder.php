@@ -21,142 +21,188 @@ class StaffAvailabilitySlotsSeeder extends Seeder
 
         DB::table('staff_availability_slots')->insert([
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
                 'day' => 'monday',
-                'start_time' => '09:00:00',
-                'end_time' => '12:00:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'monday',
-                'start_time' => '14:00:00',
-                'end_time' => '18:00:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'tuesday',
-                'start_time' => '09:00:00',
-                'end_time' => '12:00:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'tuesday',
-                'start_time' => '14:00:00',
-                'end_time' => '18:30:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'wednesday',
-                'start_time' => '08:30:00',
-                'end_time' => '12:30:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'wednesday',
-                'start_time' => '13:30:00',
-                'end_time' => '17:30:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'thursday',
-                'start_time' => '09:30:00',
-                'end_time' => '12:30:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'thursday',
                 'start_time' => '14:30:00',
-                'end_time' => '19:00:00',
+                'end_time' => '22:00:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'friday',
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
+                'day' => 'tuesday',
+                'start_time' => '14:30:00',
+                'end_time' => '22:00:00',
+            ],
+            [
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
+                'day' => 'wednesday',
                 'start_time' => '09:00:00',
                 'end_time' => '13:00:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'friday',
-                'start_time' => '15:00:00',
-                'end_time' => '19:00:00',
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
+                'day' => 'wednesday',
+                'start_time' => '14:30:00',
+                'end_time' => '18:30:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion@gmail.com')->first()->id,
-                'day' => 'saturday',
-                'start_time' => '10:00:00',
-                'end_time' => '15:00:00',
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
+                'day' => 'thursday',
+                'start_time' => '14:30:00',
+                'end_time' => '22:00:00',
             ],
+            [
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
+                'day' => 'friday',
+                'start_time' => '14:30:00',
+                'end_time' => '22:00:00',
+            ],
+
+            [
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
+                'day' => 'saturday',
+                'start_time' => '09:00:00',
+                'end_time' => '13:00:00',
+            ],
+            [
+                'user_id' => self::user('ejec.ventasarmando@gmail.com'),
+                'day' => 'saturday',
+                'start_time' => '14:30:00',
+                'end_time' => '18:30:00',
+            ],
+
         ]);
+
+
 
 
 
         DB::table('staff_availability_slots')->insert([
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'monday',
-                'start_time' => '08:00:00',
-                'end_time' => '11:00:00',
+                'start_time' => '19:30:00',
+                'end_time' => '22:30:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
-                'day' => 'monday',
-                'start_time' => '13:00:00',
-                'end_time' => '17:00:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'tuesday',
-                'start_time' => '10:00:00',
+                'start_time' => '19:30:00',
+                'end_time' => '22:30:00',
+            ],
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'wednesday',
+                'start_time' => '19:30:00',
+                'end_time' => '22:30:00',
+            ],
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'thursday',
+                'start_time' => '19:30:00',
+                'end_time' => '22:30:00',
+            ],
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'friday',
+                'start_time' => '19:30:00',
+                'end_time' => '22:30:00',
+            ],
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'saturday',
+                'start_time' => '09:00:00',
                 'end_time' => '13:00:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'saturday',
+                'start_time' => '14:30:00',
+                'end_time' => '22:30:00',
+            ]
+        ]);
+
+
+
+
+        DB::table('staff_availability_slots')->insert([
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'monday',
+                'start_time' => '09:00:00',
+                'end_time' => '13:00:00',
+            ],
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'monday',
+                'start_time' => '14:30:00',
+                'end_time' => '21:00:00',
+            ],
+
+
+
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
+                'day' => 'tuesday',
+                'start_time' => '09:00:00',
+                'end_time' => '13:00:00',
+            ],
+            [
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'tuesday',
                 'start_time' => '14:30:00',
-                'end_time' => '19:00:00',
+                'end_time' => '21:00:00',
             ],
+
+
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'wednesday',
                 'start_time' => '09:00:00',
-                'end_time' => '12:00:00',
+                'end_time' => '13:00:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'wednesday',
-                'start_time' => '14:00:00',
-                'end_time' => '18:00:00',
+                'start_time' => '14:30:00',
+                'end_time' => '21:00:00',
             ],
+
+
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'thursday',
-                'start_time' => '08:30:00',
-                'end_time' => '11:30:00',
+                'start_time' => '09:00:00',
+                'end_time' => '13:00:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'thursday',
-                'start_time' => '13:00:00',
-                'end_time' => '17:30:00',
+                'start_time' => '14:30:00',
+                'end_time' => '21:00:00',
             ],
+
+
+
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'friday',
-                'start_time' => '10:00:00',
-                'end_time' => '14:00:00',
+                'start_time' => '09:00:00',
+                'end_time' => '13:00:00',
             ],
             [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
+                'user_id' => DB::table('users')->where('email', 'andreecuentas22@gmail.com')->first()->id,
                 'day' => 'friday',
-                'start_time' => '15:00:00',
-                'end_time' => '19:30:00',
+                'start_time' => '14:30:00',
+                'end_time' => '21:00:00',
             ],
-            [
-                'user_id' => DB::table('users')->where('email', 'tecnicoinstalacion2@gmail.com')->first()->id,
-                'day' => 'saturday',
-                'start_time' => '11:00:00',
-                'end_time' => '16:00:00',
-            ],
+
+
+
         ]);
+    }
+
+    public function user($email)
+    {
+        return DB::table('users')->where('email', $email)->first()->id;
     }
 }

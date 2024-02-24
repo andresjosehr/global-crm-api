@@ -94,6 +94,19 @@ class ModulesRolesSeeder extends Seeder
                 'role_id'   => self::role('Tecnico de instalación'),
             ],
 
+
+
+            [
+                'module_id' => self::module('Alumnos'),
+                'role_id'   => self::role('Asesor academico de cobranza'),
+            ],
+
+
+            [
+                'module_id' => self::module('Alumnos'),
+                'role_id'   => self::role('Asesor academico'),
+            ],
+
         ]);
     }
 

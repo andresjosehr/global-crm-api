@@ -391,8 +391,10 @@ declare namespace App.Models {
         user?: App.Models.User | null;
         invoice?: App.Models.Invoice | null;
         price?: App.Models.Price | null;
+        sap_instalations?: Array<App.Models.SapInstalation> | null;
         order_courses_count?: number | null;
         dues_count?: number | null;
+        sap_instalations_count?: number | null;
     }
 
     export interface OrderCourse {
@@ -520,15 +522,16 @@ declare namespace App.Models {
         price_id: number | null;
         price_amount: number | null;
         payment_date: string | null;
-        sap_payment_date: string | null;
-        payment_receipt: string | null;
         currency_id: number | null;
         payment_method_id: number | null;
+        payment_receipt: string | null;
         observation: string | null;
         previus_sap_instalation: boolean | null;
         screenshot: string | null;
         restrictions: string | null;
         payment_enabled: boolean;
+        payment_verified_at: string | null;
+        payment_verified_by: number | null;
         draft: boolean;
         created_at: string | null;
         updated_at: string | null;

@@ -223,71 +223,28 @@ class ReportsController extends Controller
         $callsCount = $callsCount->count();
         $answeredCallsCount = $answeredCallsCount->count();
 
-        $callStats = $this->getCallStats($user, $start, $end);
-        $minutesStats = $this->minutesStats($user, $start, $end);
+        $callStats = $this->getCallStats($user, $start);
+        $minutesStats = $this->minutesStats($user, $start);
         $salesStats = $this->getSalesStats($user, $start, $end);
-        $categoriesStats = $this->getSalesCategoriesStats($user, $start, $end);
 
-        $data = [
-            'hoursInCall'        => $hours,
-            'leadCounts'         => $leadCounts,
-            'callsCount'         => $callsCount,
-            'answeredCallsCount' => $answeredCallsCount,
-            'categoriesSales'    => $categoriesStats,
-            'salesStats'         => $salesStats,
-            'minutesStats'       => $minutesStats,
-            'callsStats'         => $callStats,
-            'user_id'            => $user->id
-        ];
 
-        return ApiResponseController::response("Exito", 200, $data);
+
+        return ApiResponseController::response("Exito", 200, $callStats);
     }
 
-
-    public function getSalesCategoriesStats($user, $start, $end)
+    public function getSalesStats(Request $request)
     {
-        $salesQuery = Order::withCount(['orderCourses' => function ($query) {
-            $query->where('type', 'paid');
-        }])
-            ->whereBetween('created_at', [$start, $end]);
 
-        // Aplicar filtro por user_id solo si el usuario no es administrador (rol 1)
-        if ($user->role_id != 1) {
-            $salesQuery->where('created_by', $user->id);
-        }
-
-        $sales = $salesQuery->get();
-
-        return [
-            'orders' => $sales,
-            'plus_sales' => $sales->where('order_courses_count', 1)->count(),
-            'premium_sales' => $sales->where('order_courses_count', 2)->count(),
-            'platinum_sales' => $sales->where('order_courses_count', 5)->count()
-        ];
-    }
-
-
-
-
-    public function getSalesStats($user, $start, $end)
-    {
         // Inicializar las consultas sin filtros por ID
         $salesQuery = Order::query();
-
-        // Si el usuario no es administrador (rol_id != 1), aplicar filtro por ID
-        if ($user->role_id != 1) {
-            $salesQuery->where('created_by', $user->id);
-        }
-
-        // Ventas en el mes actual
-        $totalSalesThisMonth = $salesQuery
-            ->whereBetween('created_at', [$start, $end])
-            ->count();
 
         // Mes con mayor venta y cantidad de ventas mensuales
         $monthlySales = Order::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total_sales')
             ->groupBy('year', 'month')
             ->orderByDesc('total_sales')
+            ->when($request->input('user_id'), function ($query) use ($request) {
+                return $query->where('created_by', $request->input('user_id'));
+            })
             ->first();
 
         $bestMonth = null;
@@ -298,151 +255,115 @@ class ReportsController extends Controller
         }
 
         // Total de ventas del mejor mes
-        $totalBestMonthSales = Order::whereYear('created_at', $monthlySales->year)
-            ->whereMonth('created_at', $monthlySales->month)
+        $totalSales = Order::whereYear('created_at', $monthlySales->year)
+            ->whereBetween('created_at', [$request->input('start'), $request->input('end')])
+            ->when($request->input('user_id'), function ($query) use ($request) {
+                return $query->where('created_by', $request->input('user_id'));
+            })
             ->count();
 
-        // Media de ventas mensuales
-
-        $totalMonthlySales = $salesQuery
-            ->selectRaw('COUNT(*) as total_sales')
-            ->whereBetween('created_at', [$start, $end])
-            ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
-            ->pluck('total_sales')
-            ->sum();
-
-        // Media de ventas mensuales
-        $averageMonthlySales = $totalMonthlySales / Carbon::now()->month;
+        $salesQuery = Order::withCount(['orderCourses' => function ($query) {
+            $query->where('type', 'paid');
+        }])->whereBetween('created_at', [$request->input('start'), $request->input('end')])
+            ->when($request->input('user_id'), function ($query) use ($request) {
+                return $query->where('created_by', $request->input('user_id'));
+            })->get();
 
 
-        return [
-            // 'objetiveCalls' => $objectiveCalls,
-            'totalSalesThisMonth' => $totalSalesThisMonth,
-            'bestMonth' => $bestMonth,
+
+
+        $data = [
+            'totalSales'     => $totalSales,
+            'bestMonth'      => $bestMonth,
             'bestMonthSales' => $bestMonthSales,
-            'totalBestMonthSales' => $totalBestMonthSales,
-            'averageMonthlySales' => (float) number_format($averageMonthlySales, 2, '.', ''),
+
+            'salesTypes' => [
+                'plus_sales' => $salesQuery->where('order_courses_count', 1)->count(),
+                'premium_sales' => $salesQuery->where('order_courses_count', 2)->count(),
+                'platinum_sales' => $salesQuery->where('order_courses_count', 5)->count()
+            ]
         ];
+
+        return ApiResponseController::response("Exito", 200, $data);
     }
 
-    public function minutesStats($user, $start, $end)
+    public function minutesStats($user, $start)
     {
-        // Consultas sin filtro de usuario si el rol es 1 (administrador)
-        if ($user->role_id == 1) {
-            $totalMinutesToday = ZadarmaStatistic::where(DB::raw('DATE(callstart)'), Carbon::now()->format('Y-m-d'))
-                ->sum('seconds') / 60;
+        $now = Carbon::now();
+        // Consultas con filtro de usuario para roles distintos de 1
+        $totalMinutesToday = ZadarmaStatistic::when($user, function ($query) use ($user) {
+            $query->where('extension', $user->zadarma_id);
+        })
+            ->where(DB::raw('DATE(callstart)'), Carbon::now()->format('Y-m-d'))
+            ->sum('seconds') / 60;
 
-            $minutesCurrentMonth = ZadarmaStatistic::whereBetween('callstart', [$start, $end])
-                ->sum('seconds') / 60;
+        $minutesCurrentMonth = ZadarmaStatistic::when($user, function ($query) use ($user) {
+            $query->where('extension', $user->zadarma_id);
+        })
+            ->whereMonth('callstart', $now->month)
+            ->sum('seconds') / 60;
 
-            $averageMinutesCurrentMonth = ZadarmaStatistic::whereBetween('callstart', [$start, $end])
-                ->where('seconds', '>', 0)
-                ->selectRaw('AVG(seconds) as average')
-                ->first()
-                ->average / 60;
+        $averageMinutesCurrentMonth = ZadarmaStatistic::when($user, function ($query) use ($user) {
+            $query->where('extension', $user->zadarma_id);
+        })
+            ->where('callstart', $start)
+            ->where('seconds', '>', 0)
+            ->selectRaw('AVG(seconds) as average')
+            ->first()
+            ->average / 60;
 
-            // Si no se encontraron datos, establecer el promedio en 0
-
-        } else {
-            // Consultas con filtro de usuario para roles distintos de 1
-            $totalMinutesToday = ZadarmaStatistic::where('extension', $user->zadarma_id)
-                ->where(DB::raw('DATE(callstart)'), Carbon::now()->format('Y-m-d'))
-                ->sum('seconds') / 60;
-
-            $minutesCurrentMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
-                ->whereBetween('callstart', [$start, $end])
-                ->sum('seconds') / 60;
-
-            $averageMinutesCurrentMonth = ZadarmaStatistic::where('extension', $user->zadarma_id)
-                ->whereBetween('callstart', [$start, $end])
-                ->where('seconds', '>', 0)
-                ->selectRaw('AVG(seconds) as average')
-                ->first()
-                ->average / 60;
-        }
-
-        return [
+        $data = [
             'minutesToday' => (float) number_format($totalMinutesToday, 2, '.', ''),
             'minutesCurrentMonth' => (float) number_format($minutesCurrentMonth, 2, '.', ''),
             'averageMinutesCurrentMonth' => (float) number_format($averageMinutesCurrentMonth, 2, '.', ''),
         ];
+
+        return $data;
     }
 
-    public function getCallStats($user, $start, $end)
+    public function getCallStats($user, $start)
     {
         $now = Carbon::now();
 
-        // Consultas sin filtro de usuario si el rol es 1 (administrador)
-        if ($user->role_id == 1) {
-            // Obtener llamadas del día de hoy
-            $totalCallsToday = ZadarmaStatistic::select('DISTINCT(to)')
-                ->whereDate('callstart', $now->format('Y-m-d'))
-                ->count();
+        // Consultas con filtro de usuario para roles distintos de 1
+        // Obtener llamadas del día de hoy
+        $totalCallsToday = ZadarmaStatistic::select('DISTINCT(to)')
+            ->when($user, function ($query) use ($user) {
+                $query->where('extension', $user->zadarma_id);
+            })
+            ->whereDate('callstart', $now->format('Y-m-d'))
+            ->count();
 
-            // Obtener llamadas para el mes actual
-            $totalCallsCurrentMonth = ZadarmaStatistic::select('DISTINCT(to)')
-                ->whereBetween('callstart', [$start, $end])
-                ->count();
+        // Obtener llamadas para el mes actual
+        $totalCallsCurrentMonth = ZadarmaStatistic::select('DISTINCT(to)')
+            ->when($user, function ($query) use ($user) {
+                $query->where('extension', $user->zadarma_id);
+            })
+            ->whereMonth('callstart', $now->month)
+            ->count();
 
-            // Obtener llamadas para el mes anterior
-            $averageCallsPerDayCurrentMonth = ZadarmaStatistic::selectRaw('DATE(callstart) as date, COUNT(DISTINCT(`destination`)) as total')
-                ->whereBetween('callstart', [$start, $end])
-                ->groupBy('date')
-                ->get()->pluck('total');
-
-            if ($averageCallsPerDayCurrentMonth->count() > 0) {
-                $averageCallsPerDayCurrentMonth = $averageCallsPerDayCurrentMonth->sum() / $averageCallsPerDayCurrentMonth->count();
-            } else {
-                $averageCallsPerDayCurrentMonth = 0;
-            }
-        } else {
-            // Consultas con filtro de usuario para roles distintos de 1
-            // Obtener llamadas del día de hoy
-            $totalCallsToday = ZadarmaStatistic::select('DISTINCT(to)')
-                ->where('extension', $user->zadarma_id)
-                ->whereDate('callstart', $now->format('Y-m-d'))
-                ->count();
-
-            // Obtener llamadas para el mes actual
-            $totalCallsCurrentMonth = ZadarmaStatistic::select('DISTINCT(to)')
-                ->where('extension', $user->zadarma_id)
-                ->whereBetween('callstart', [$start, $end])
-                ->count();
-
-            // Obtener llamadas para el mes anterior
-            $averageCallsPerDayCurrentMonth = ZadarmaStatistic::selectRaw('DATE(callstart) as date, COUNT(DISTINCT(`destination`)) as total')
-                ->where('extension', $user->zadarma_id)
-                ->whereBetween('callstart', [$start, $end])
-                ->groupBy('date')
-                ->get()->pluck('total');
-
-            if ($averageCallsPerDayCurrentMonth->count() > 0) {
-                $averageCallsPerDayCurrentMonth = $averageCallsPerDayCurrentMonth->sum() / $averageCallsPerDayCurrentMonth->count();
-            } else {
-                $averageCallsPerDayCurrentMonth = 0;
-            }
-        }
-
-        return [
+        $data = [
             'totalCallsToday'                => $totalCallsToday,
             'totalCallsCurrentMonth'         => $totalCallsCurrentMonth,
-            'averageCallsPerDayCurrentMonth' => (float) number_format($averageCallsPerDayCurrentMonth, 2, '.', ''),
         ];
+        return $data;
     }
 
 
 
-    public function getCallsAndSalesPerWeek(Request $request)
+    public function getStatsPerDay(Request $request)
     {
+        $user = $request->user_id ? User::find($request->user_id) : null;
+
         $days = ["Monday" => "Lunes", "Tuesday" => "Martes", "Wednesday" => "Miércoles", "Thursday" => "Jueves", "Friday" => "Viernes", "Saturday" => "Sábado", "Sunday" => "Domingo"];
-        $user = $request->has('user_id') ? User::find($request->user_id) : $request->user();
+        $user = $request->user_id != 'null' ? User::find($request->user_id) : $request->user();
         $callsPerDay = ZadarmaStatistic::select(
             DB::raw('DATE(callstart) as date'),
             DB::raw('COUNT(*) as value')
         )
             ->groupBy(DB::raw('DATE(callstart)')) // Agrupar también por 'to'
             ->whereBetween('callstart', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
-            ->when($user->role_id != 1, function ($query) use ($user) {
+            ->when($user, function ($query) use ($user) {
                 return $query->where('extension', $user->zadarma_id);
             })
             ->get()
@@ -452,7 +373,7 @@ class ReportsController extends Controller
             DB::raw('DATE(created_at) as date'),
             DB::raw('COUNT(*) as value')
         )
-            ->when($user->role_id != 1, function ($query) use ($user) {
+            ->when($user, function ($query) use ($user) {
                 return $query->where('created_by', $user->id);
             })
             ->groupBy(DB::raw('DATE(created_at)'))
@@ -489,7 +410,22 @@ class ReportsController extends Controller
             return strtotime($a['date']) - strtotime($b['date']);
         });
 
-        // created_at
+
+        // Crear el array de datos de respuesta
+        $data = [
+            'callsPerDay' => $callsPerDay,
+            'sellsPerDay' => $sellsPerDay
+        ];
+
+        // Retornar la respuesta en formato JSON
+        return ApiResponseController::response("Éxito", 200, $data);
+    }
+
+    public function getStatsPerHour(Request $request)
+    {
+        $user = $request->user_id ? User::find($request->user_id) : null;
+
+
 
         // Calls per hour
         $callsPerHour = ZadarmaStatistic::select(
@@ -499,8 +435,8 @@ class ReportsController extends Controller
             DB::raw('COUNT(*) as value')
         )
             ->groupBy(DB::raw('DATE(callstart)'), DB::raw('HOUR(callstart)'))
-            ->whereBetween('callstart', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
-            ->when($user->role_id != 1, function ($query) use ($user) {
+            ->whereDate('callstart', $request->date)
+            ->when($user, function ($query) use ($user) {
                 return $query->where('extension', $user->zadarma_id);
             })
             ->orderByRaw('MAX(callstart)')
@@ -516,8 +452,8 @@ class ReportsController extends Controller
             DB::raw('SUM(seconds) as value')
         )
             ->groupBy(DB::raw('DATE(callstart)'), DB::raw('HOUR(callstart)'))
-            ->whereBetween('callstart', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
-            ->when($user->role_id != 1, function ($query) use ($user) {
+            ->whereDate('callstart', $request->date)
+            ->when($user, function ($query) use ($user) {
                 return $query->where('extension', $user->zadarma_id);
             })
             ->get()->each(function ($item) {
@@ -526,8 +462,8 @@ class ReportsController extends Controller
 
 
 
-        $date = Carbon::parse($request->start);
-        for ($i = 0; $i < $daysBetween; $i++) {
+        $date = Carbon::parse($request->date);
+        for ($i = 0; $i < 1; $i++) {
             $hours = range(8, 22);
             foreach ($hours as $hour) {
                 $datetime = $date->format('Y-m-d') . ' ' . str_pad($hour, 2, '0', STR_PAD_LEFT) . ':00:00';
@@ -555,19 +491,13 @@ class ReportsController extends Controller
             $minutesPerHour[$key]['value'] = number_format($value['value'] / 60, 2, '.', '');
         }
 
-
-
-
-
-        // Crear el array de datos de respuesta
         $data = [
-            'callsPerDay' => $callsPerDay,
-            'sellsPerDay' => $sellsPerDay,
-            'callsPerHour' => $callsPerHour,
-            'minutesPerHour' => $minutesPerHour
+            'callsPerHour'   => $callsPerHour,
+            'minutesPerHour' => $minutesPerHour,
+            'callStats'      => $this->getCallStats($user, $request->date),
+            'minutesStats'   => $this->minutesStats($user, $request->date)
         ];
 
-        // Retornar la respuesta en formato JSON
         return ApiResponseController::response("Éxito", 200, $data);
     }
 

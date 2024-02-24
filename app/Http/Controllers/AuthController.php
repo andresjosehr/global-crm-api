@@ -49,7 +49,7 @@ class AuthController extends Controller
             $query->where('key', $order_key);
         })->first();
 
-        if (!$user){
+        if (!$user) {
             return ApiResponseController::response('Usuario o contraseña invalida', 422);
         }
 
@@ -164,7 +164,8 @@ class AuthController extends Controller
         return ApiResponseController::response('Contraseña reestablecida, ahora puedes iniciar sesion', 200);
     }
 
-    public function makeSession(Request $request, $id){
+    public function makeSession(Request $request, $id)
+    {
         $user = User::find($id);
         if (!$user) {
             return ApiResponseController::response('Usuario no existe', 422);

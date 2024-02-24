@@ -296,7 +296,7 @@ class OrdersController extends Controller
     public function show($id)
     {
 
-        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses.sapInstalations.staff', 'orderCourses.freezings', 'orderCourses.dateHistory', 'currency', 'dues', 'user', 'invoice')->find($id);
+        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses.sapInstalations.staff', 'orderCourses.freezings', 'orderCourses.dateHistory', 'currency', 'dues', 'createdBy', 'invoice')->find($id);
         if (!$order) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }

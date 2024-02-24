@@ -50,8 +50,8 @@ class CoreTexts extends Command
 
 
         $processesController = new ProcessesController();
-        $i=0;
-        foreach($students as $student){
+        $i = 0;
+        foreach ($students as $student) {
 
             $studentString = json_encode($student);
             // Simulate Request Object
@@ -60,9 +60,9 @@ class CoreTexts extends Command
             $request->merge(['data' => $studentString]);
 
 
-            try{
+            try {
                 $text = $processesController->generateMessage($request)['message'];
-                $students[$i]['text'] = $text == 'No se encontró mensaje para el estudiante' ? '' : $text;
+                $students[$i]['text'] = $text == 'No se encontró mensaje para el alumno' ? '' : $text;
             } catch (\Exception $e) {
                 $students[$i]['text'] = 'Hubo un error';
             }
@@ -76,17 +76,17 @@ class CoreTexts extends Command
         $dataToUpdate = [];
 
         foreach ($studentsWithText as $student) {
-                $dataToUpdate[] = [
-                    'sheet_id'          => $student['sheet_id'],
-                    'course_row_number' => $student['course_row_number'],
-                    'column'            => "BB",
-                    'email'             => $student['CORREO'],
-                    'tab_id'            => $student['course_tab_id'],
-                    'value'             => $student['text'],
-                ];
+            $dataToUpdate[] = [
+                'sheet_id'          => $student['sheet_id'],
+                'course_row_number' => $student['course_row_number'],
+                'column'            => "BB",
+                'email'             => $student['CORREO'],
+                'tab_id'            => $student['course_tab_id'],
+                'value'             => $student['text'],
+            ];
         }
 
-        foreach($students as $student){
+        foreach ($students as $student) {
             $dataToUpdate[] = [
                 'sheet_id'          => $student['sheet_id'],
                 'course_row_number' => $student['course_row_number'],
@@ -106,7 +106,8 @@ class CoreTexts extends Command
         return $this->line(json_encode($dataToUpdate));
     }
 
-    public function filter($students, $studentsWithText){
+    public function filter($students, $studentsWithText)
+    {
         // remove records in studentsWithText from students by sheet_id and course_row_number
         $students = array_filter($students, function ($student) use ($studentsWithText) {
             $studentWithText = array_filter($studentsWithText, function ($studentWithText) use ($student) {

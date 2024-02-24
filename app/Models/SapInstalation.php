@@ -46,10 +46,11 @@ class SapInstalation extends Model
 
     public $payment_fields = [
         'price_id',
+        'payment_date',
+        'price_amount',
         'currency_id',
         'payment_receipt',
         'payment_method_id',
-        'payment_date',
     ];
 
 

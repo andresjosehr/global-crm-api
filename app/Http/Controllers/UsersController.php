@@ -12,6 +12,41 @@ use Illuminate\Http\Request;
 class UsersController extends Controller
 {
 
+    public function getList(Request $request)
+    {
+
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+        $users = User::with('role')
+            ->withCount('studentsAssigned')
+            ->when($request->input('role_id'), function ($query) use ($request) {
+                return $query->where('role_id', $request->input('role_id'));
+            })
+            ->when(gettype($request->input('status')) == 'string', function ($query) use ($request) {
+                return $query->where('active', $request->input('status'));
+            })
+
+            ->paginate($perPage);
+
+        // return $users->items();
+        $users->data = $this->getUserWithCount(collect($users->items()));
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $users);
+    }
+
+    public function toggleStatus(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 401);
+        }
+
+        $user = User::find($id);
+
+        $user->active = !$user->active;
+        $user->save();
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $user);
+    }
 
 
     public function findAvailableStaff($date)
@@ -70,7 +105,7 @@ class UsersController extends Controller
         return ApiResponseController::response('Consulta Exitosa', 200, $users);
     }
 
-    public function toggleStatus(Request $request)
+    public function toggleWorkingStatus(Request $request)
     {
         $user = $request->user();
 
@@ -78,5 +113,28 @@ class UsersController extends Controller
         $user->save();
 
         return ApiResponseController::response('Consulta Exitosa', 200, $user);
+    }
+
+    public function getUserWithCount($users, $date = null)
+    {
+        return $users->map(function ($user) use ($date) {
+
+
+            $user->students_assigned_date_count = $user->students->filter(function ($student) use ($date) {
+                if (!$date) {
+                    return true;
+                }
+                if ($student->orders->count() > 0) {
+                    return $student->orders[0]->orderCourses[0]->start == $date;
+                }
+                return false;
+            })->count();
+            $user->date = $date;
+            unset($user->students);
+
+
+            return $user;
+        })
+            ->values();
     }
 }

@@ -24,6 +24,8 @@ class Student extends Model
         'user_id'
     ];
 
+    protected $appends = ['start_date'];
+
     function orders()
     {
         return $this->hasMany(Order::class);
@@ -105,5 +107,14 @@ class Student extends Model
     {
         // The last user assigned to the student
         return $this->belongsToMany(User::class, 'user_student', 'student_id', 'user_id')->orderBy('user_student.created_at', 'desc')->limit(1);
+    }
+
+    public function getStartDateAttribute()
+    {
+        try {
+            return $this->orders[0]->orderCourses[0]->start;
+        } catch (\Throwable $th) {
+            return null;
+        }
     }
 }

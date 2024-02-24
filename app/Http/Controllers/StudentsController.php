@@ -9,6 +9,7 @@ use App\Models\Car;
 use App\Models\DocumentType;
 use App\Models\Order;
 use App\Models\Student;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +27,7 @@ class StudentsController extends Controller
     {
 
         $user = $request->user();
-
+        // return $user;
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
 
         $searchString = $request->input('searchString') ? $request->input('searchString') : '';
@@ -53,11 +54,9 @@ class StudentsController extends Controller
                 }]);
             }])
             ->with('lead')
-            // ->when($user->role_id != 1, function ($q) use ($user) {
-            //     return $q->whereHas('orders', function ($q) use ($user) {
-            //         $q->where('user_id', $user->id);
-            //     });
-            // })
+            ->when($user->role_id == 3 || $user->role_id == 4, function ($q) use ($user) {
+                return $q->where('user_id', $user->id);
+            })
             ->orderByDesc('id')
             ->paginate($perPage);
 
@@ -142,10 +141,11 @@ class StudentsController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = $request->user();
         $student                       = Student::find($id);
 
         if (!$student) {
-            return ApiResponseController::response('Estudiante no encontrado', 404);
+            return ApiResponseController::response('Alumno no encontrado', 404);
         }
 
         $student->name       = $request->input('name');
@@ -168,7 +168,15 @@ class StudentsController extends Controller
                 $student->document_type_id = $documentType->id;
             }
         } else {
+
             $student->document_type_id     = $request->input('document_type_id');
+        }
+
+        // check if user_id comming from request is different from the one in the database
+        if ($request->input('user_id') && $request->input('user_id') != $student->user_id) {
+            if ($user->role_id == 1) {
+                $student->user_id = $request->input('user_id');
+            }
         }
 
 
@@ -193,7 +201,7 @@ class StudentsController extends Controller
         $student = Student::where('id', $id)->with('orders')->first();
 
         if (!$student) {
-            return ApiResponseController::response('Estudiante no encontrado', 404);
+            return ApiResponseController::response('Alumno no encontrado', 404);
         }
 
         $orderController = new OrdersController();
@@ -205,7 +213,7 @@ class StudentsController extends Controller
 
         $student->delete();
 
-        return ApiResponseController::response('Estudiante eliminado con éxito', 200);
+        return ApiResponseController::response('Alumno eliminado con éxito', 200);
     }
 
 
@@ -332,6 +340,7 @@ class StudentsController extends Controller
             ]
         ]);
 
+        self::assignStudentToUser($order->student->id);
         $processesController = new ProcessesController();
         $processesController->updateSellsExcel($order->id);
     }
@@ -363,7 +372,9 @@ class StudentsController extends Controller
         $order = Order::find($order_id);
 
         $filename = 'orden_' . Carbon::parse($order->created_at)->format('YmdHis') . $order->id . '.pdf';
+
         // return $filename;
+
 
         if (!Storage::disk('local')->exists("public/terminos-aceptados/$filename")) {
             return response()->json(['message' => 'File not found.'], 404);
@@ -395,5 +406,118 @@ class StudentsController extends Controller
 
         // Descargar el archivo
         return response()->download($path);
+    }
+
+
+
+    public function assignStudentToUser($student_id, $created_by = null, $orderCriteria = null)
+    {
+
+        // return self::getUserWithCount(null, [3, 4]);
+
+
+        if (!$orderCriteria) {
+            $orderCriteria =  [
+                ['students_assigned_date_count', 'asc'],
+                ['students_assigned_count', 'asc']
+            ];
+        }
+
+
+        return Student::where('id', $student_id)
+            ->with('orders')->get()->filter(function ($student) {
+                return $student->orders->count() > 0;
+            })->values()->map(function ($student) {
+                $student->role = $student->orders[0]->dues->where('paid', 1)->sum('amount') == $student->orders[0]->price_amount ? 4 : 3;
+                $student->role_name = $student->role == 4 ? 'Seguimiento' : 'Cobranza';
+                return $student;
+            })
+            ->filter(function ($student) {
+                return $student->start_date;
+            })->values()
+            ->map(function ($student) use ($created_by, $orderCriteria) {
+
+                $user = self::getUserWithCount($student->start_date, [$student->role], $orderCriteria)->first();
+                $student->user_id = $user->id;
+                Student::where('id', $student->id)->update(['user_id' => $user->id]);
+                DB::table('user_student')->insert([
+                    'student_id' => $student->id,
+                    'user_id'    => $user->id,
+                    'created_by' => $created_by,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
+
+                return $student;
+            });
+    }
+
+    public function getUserWithCount($date = null, $roles = [], $orderCriteria)
+    {
+        return User::when($roles, function ($query, $roles) {
+            return $query->whereIn('role_id', $roles);
+        })
+            ->withCount('studentsAssigned')->with('students.orders.orderCourses')
+            // ->where('role_id', $student->role)
+            ->get()->map(function ($user) use ($date) {
+
+
+                $user->students_assigned_date_count = $user->students->filter(function ($student) use ($date) {
+                    if (!$date) {
+                        return true;
+                    }
+                    if ($student->orders->count() > 0) {
+                        return $student->orders[0]->orderCourses[0]->start == $date;
+                    }
+                    return false;
+                })->count();
+                $user->date = $date;
+                unset($user->students);
+
+
+                return $user;
+            })
+            ->values()
+            ->sortBy($orderCriteria)->values();
+    }
+
+    public function delegateAcademicArea(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if ($user->role_id != 3 && $user->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 422);
+        }
+
+        $student = Student::with('orders')->where('id', $id)->first();
+        if (!$student) {
+            return ApiResponseController::response('Alumno no encontrado', 404);
+        }
+
+
+        // Get last order with its dues
+        $order = $student->orders->last();
+        $dues = $order->dues;
+
+
+        $duesAmount = $dues->where('paid', 1)->sum('amount');
+
+
+        if ($duesAmount < $order->price_amount) {
+            return ApiResponseController::response('El Alumno no ha pagado la totalidad de la matrícula, no se puede delegar', 400);
+        }
+
+        $start_date = $order->orderCourses[0]->start;
+
+        $orderCriteria = null;
+        if ($start_date < Carbon::now()->format('Y-m-d')) {
+            $orderCriteria = [['students_assigned_count', 'asc']];
+        }
+
+        self::assignStudentToUser($id, $user->id, $orderCriteria);
+
+
+
+        return ApiResponseController::response('Alumno delegado con éxito', 200);
     }
 }

@@ -332,6 +332,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Student::class, 'user_student', 'user_id', 'student_id');
     }
 
+    public function studentsAssigned()
+    {
+        return $this->hasMany(Student::class);
+    }
     public function zadarmaStatistics()
     {
         return $this->hasMany(ZadarmaStatistic::class, 'extension', 'extension');

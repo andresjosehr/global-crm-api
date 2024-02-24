@@ -25,8 +25,15 @@ class ModulesSeeder extends Seeder
             [
                 'name'        => 'Alumnos',
                 'description' => 'Gestor de Alumnos',
-                'icon'        => 'heroicons_outline:user-group',
+                'icon'        => 'heroicons_outline:face-smile',
                 'path'        => 'alumnos',
+                'type'        => 'basic',
+            ],
+            [
+                'name'        => 'Usuarios',
+                'description' => 'Gestor de Usuarios',
+                'icon'        => 'heroicons_outline:user-group',
+                'path'        => 'usuarios',
                 'type'        => 'basic',
             ],
             [
@@ -40,6 +47,10 @@ class ModulesSeeder extends Seeder
 
 
         DB::table('modules')->insert([
+
+
+
+
             [
                 'name'        => 'Base General',
                 'description' => '',

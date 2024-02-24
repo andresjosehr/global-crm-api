@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->call(MessagesSeeder::class);
         $this->call(DocumentTypesSeeder::class);
         $this->call(HolidaysSeeder::class);
-        // $this->call(StaffAvailabilitySlotsSeeder::class);
+        $this->call(StaffAvailabilitySlotsSeeder::class);
         // $this->call(SapInstalationsSeeder::class);
         // $this->call(SheetsSeeder::class);
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');

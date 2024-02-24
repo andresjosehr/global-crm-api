@@ -298,7 +298,8 @@ class ProcessesController extends Controller
 
         $emptyRow = array_search(1, $rows) + 2; // Suponiendo que la primera columna debe estar vacía
 
-        $order = Order::where('id', $order_id)->with('orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user', 'student.documentType')->first();
+        $order = Order::where('id', $order_id)->with('createdBy', 'orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user', 'student.documentType')->first();
+        Log::info($order);
 
         // Sort $orderCourses by type ASC
         $order->orderCourses = $order->orderCourses->sortByDesc('type');
@@ -309,13 +310,14 @@ class ProcessesController extends Controller
         }, '');
 
         // TO UPPERCASE
-        $courses                        = substr($courses, 0, -3);
-        $order->student['courses']      = $courses;
-        $start                          = $order->orderCourses->min('start');
-        $order->student['start']        = Carbon::parse($start)->format('d/m/Y');
-        $order->student['license']      =  strtoupper($order->orderCourses->first()->license) . ' DE LICENCIA SAP Y AULA VIRTUAL';
-        $order->student['user']         = $order->student->user->name;
-        $order->student['row']          = $emptyRow;
+        $courses                         = substr($courses, 0, -3);
+        $order->student['courses']       = $courses;
+        $start                           = $order->orderCourses->min('start');
+        $order->student['start']         = Carbon::parse($start)->format('d/m/Y');
+        $order->student['license']       = strtoupper($order->orderCourses->first()->license) . ' DE LICENCIA SAP Y AULA VIRTUAL';
+        $order->student['created_by']    = $order->createdBy->name;
+        $order->student['row']           = $emptyRow;
+        $order->student['user_assigned'] = $order->student->user->name;
         try {
             $order->student['documento'] = $order->student->documentType->code . ' ' . $order->student->document;
         } catch (\Exception $e) {
@@ -325,14 +327,15 @@ class ProcessesController extends Controller
 
 
         $ref = [
-            'row'          => 'A',
-            'name'         => 'B',
-            'documento'    => 'C',
-            'phone'        => 'E',
-            'email'        => 'F',
-            'start'        => 'AB',
-            'user'         => 'AD',
-            'observations' => 'AG'
+            'row'           => 'A',
+            'name'          => 'B',
+            'documento'     => 'C',
+            'phone'         => 'E',
+            'email'         => 'F',
+            'start'         => 'AB',
+            'created_by'    => 'AD',
+            'observations'  => 'AG',
+            'user_assigned' => 'AF'
         ];
 
         foreach ($ref as $key => $col) {

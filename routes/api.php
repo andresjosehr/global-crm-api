@@ -6,10 +6,12 @@ use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\OptionsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\OrdersCoursesController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\Traking\CertificationTestsController;
 use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Http\Controllers\Traking\SapTriesController;
+use App\Http\Controllers\UsersController;
 use App\Models\SapInstalation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -57,9 +59,15 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
 
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
+    Route::get('users/get-list', [UsersController::class, 'getList']);
+    Route::put('users/toggle-status/{id}', [UsersController::class, 'toggleStatus']);
+
+
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
     Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
     Route::resource('students', StudentsController::class);
+    Route::put('students/delegate-academic-area/{id}', [StudentsController::class, 'delegateAcademicArea']);
+
     Route::resource('orders', OrdersController::class);
     Route::resource('order-courses', OrdersCoursesController::class);
     Route::get('student-orders/get-options', 'App\Http\Controllers\OrdersController@getOptions');
@@ -109,8 +117,9 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::get('get-calls', 'App\Http\Controllers\LeadsController@getCalls');
             Route::get('get-calls-by-hour', 'App\Http\Controllers\ReportsController@getCallsByHour');
 
-            Route::get('get-main-stats', 'App\Http\Controllers\ReportsController@getMainStats');
-            Route::get('get-calls-and-sales-per-week', 'App\Http\Controllers\ReportsController@getCallsAndSalesPerWeek');
+            Route::get('get-sales-stats', [ReportsController::class, 'getSalesStats']);
+            Route::get('get-stats-per-day', [ReportsController::class, 'getStatsPerDay']);
+            Route::get('get-stats-per-hour', [ReportsController::class, 'getStatsPerHour']);
         });
     });
 
@@ -124,6 +133,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::get('get-sap-instalation/{key}', [SapInstalationsController::class, 'getSapInstalation']);
             Route::get('options', [SapInstalationsController::class, 'getOptions']);
             Route::get('get-available-times/{date}', [SapInstalationsController::class, 'getAvailableTimes']);
+            Route::put('verified-payment/{id}', [SapInstalationsController::class, 'verifiedPayment']);
             Route::get('sap-tries/{sap_id}', [SapTriesController::class, 'getSapTries']);
             Route::get('sap-try/{sap_id}', [SapTriesController::class, 'getSapTry']);
             Route::put('sap-try/{id}', [SapTriesController::class, 'update']);
@@ -153,6 +163,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         });
     });
     /* Add new routes here */
+    Route::get('get-roles', [OptionsController::class, 'getRoles']);
 });
 
 Route::resource('document-types', 'App\Http\Controllers\DocumentTypesController');
@@ -180,7 +191,7 @@ Route::get('get-state-by-country/{country_id}', 'App\Http\Controllers\CountriesC
 Route::get('get-city-by-state/{state_id}', 'App\Http\Controllers\CountriesController@getCityByState');
 Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');
 Route::get('get-state/{id}', 'App\Http\Controllers\CountriesController@getState');
-Route::get('test', 'App\Http\Controllers\TestController@index');
+Route::get('test', 'App\Http\Controllers\TestController@index2');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 

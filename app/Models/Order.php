@@ -29,7 +29,7 @@ class Order extends Model
         return $this->hasMany(Due::class);
     }
 
-    function user()
+    function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

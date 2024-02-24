@@ -8,6 +8,7 @@ use App\Models\Holiday;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Price;
+use App\Models\Role;
 use Illuminate\Http\Request;
 
 class OptionsController extends Controller
@@ -36,5 +37,12 @@ class OptionsController extends Controller
         $holidays = Holiday::all();
 
         return ApiResponseController::response('Exito', 200, $holidays);
+    }
+
+    public function getRoles()
+    {
+        $roles = Role::all();
+
+        return ApiResponseController::response('Exito', 200, $roles);
     }
 }

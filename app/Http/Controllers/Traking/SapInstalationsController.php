@@ -6,6 +6,7 @@ use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Mails\CoreMailsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
 use App\Models\Currency;
@@ -16,6 +17,7 @@ use App\Models\Price;
 use App\Models\SapInstalation;
 use App\Models\SapTry;
 use App\Models\StaffAvailabilitySlot;
+use App\Models\Student;
 use App\Models\User;
 use App\Models\ZohoToken;
 use Carbon\Carbon;
@@ -59,7 +61,12 @@ class SapInstalationsController extends Controller
                                 ->where('payment_receipt', 'IS NOT', null)
                                 ->where('payment_verified_at', null);
                         });
+                    })->orWhere(function ($query) use ($request) {
+                        $query->where('payment_enabled', 1)
+                            ->where('payment_receipt', 'IS NOT', null)
+                            ->where('payment_verified_at', null);
                     });
+                    // ->where('payment_verified_at', null);
                 });
             })
             ->paginate($perPage);
@@ -124,9 +131,14 @@ class SapInstalationsController extends Controller
 
         $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
 
+        if ($sapDB->payment_enabled) {
+            self::updatePayment($request, $id);
+        }
+
         $sapDB = SapInstalation::with('sapTries')->where('id', $id)->first();
         return ApiResponseController::response('Sap instalation updated', 200, $sapDB);
     }
+
 
     public function isSchedule($sap)
     {
@@ -266,7 +278,7 @@ class SapInstalationsController extends Controller
     static public function findAvailableStaff($date)
     {
         // 1. Obtener todos los técnicos
-        $technicians = User::where('role_id', 5)->get();
+        $technicians = User::where('role_id', 5)->where('active', 1)->get();
 
 
         $maxAvailableTime = 0;
@@ -411,8 +423,39 @@ class SapInstalationsController extends Controller
             $sapPayment->price_amount = Price::find($data['price_id'])->amount;
         }
 
+        $student = Student::with('userAssigned')->where('id', $sapPayment->order->student->id)->with('city', 'state')->first();
+        $user = $student->userAssigned[0];
+
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => 'Pago de agendamiento de instalación',
+            'body'       => 'El alumno ' . $student->name . ' ha realizado el pago de la instalación, por favor revisar el comprobante de pago y confirmar la instalación.',
+            'icon'       => 'check_circle_outline',
+            'url'        => '#',
+            'user_id'    => $user->id,
+            'use_router' => false,
+            'custom_data' => [
+                []
+            ]
+        ]);
+
         $sapPayment->save();
 
         return ApiResponseController::response('Sap try instalation updated', 200, $sapPayment);
+    }
+
+    public function verifiedPayment(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role_id !== 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 400);
+        }
+
+        $sapInstalation = SapInstalation::find($id);
+        $sapInstalation->payment_verified_at = Carbon::now();
+        $sapInstalation->payment_verified_by = $user->id;
+        $sapInstalation->save();
+
+        return ApiResponseController::response('Sap try instalation updated', 200, $sapInstalation);
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Services\ZohoService;
 use App\Models\Currency;
 use App\Models\Due;
 use App\Models\Order;
+use App\Models\OrderCourse;
 use App\Models\SapInstalation;
 use App\Models\Student;
 use App\Models\User;
@@ -31,7 +32,7 @@ class TestController extends Controller
         $student = Student::where('id', 496)->with('users', 'orders')->first();
         $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
 
-        StudentsController::dipatchNotification($order, $student);
+        // StudentsController::dipatchNotification($order, $student);
 
         return ["Exito"];
 
@@ -41,11 +42,64 @@ class TestController extends Controller
             'student' => $student
         ];
     }
-    public function importStatistics()
+    public function index2()
     {
 
+        // return self::getUserWithCount(null, [3, 4]);
+
+        return Student::with('orders')->get()->filter(function ($student) {
+            return $student->orders->count() > 0;
+        })->values()->map(function ($student) {
+            $student->role = $student->orders[0]->dues->where('paid', 1)->sum('amount') == $student->orders[0]->price_amount ? 4 : 3;
+            $student->role_name = $student->role == 4 ? 'Seguimiento' : 'Cobranza';
+            return $student;
+        })
+            ->filter(function ($student) {
+                return $student->start_date;
+            })->values()
+            ->map(function ($student) {
+
+                $user = self::getUserWithCount($student->start_date, [$student->role])->first();
+                Student::where('id', $student->id)->update(['user_id' => $user->id]);
+                DB::table('user_student')->insert([
+                    'student_id' => $student->id,
+                    'user_id' => $user->id
+                ]);
+
+                return $student;
+            });
+        return 'Exito';
+    }
+
+    public function getUserWithCount($date = null, $roles = [])
+    {
+        return User::when($roles, function ($query, $roles) {
+            return $query->whereIn('role_id', $roles);
+        })
+            ->withCount('studentsAssigned')->with('students.orders.orderCourses')
+            // ->where('role_id', $student->role)
+            ->get()->map(function ($user) use ($date) {
 
 
-        return "Exito";
+                $user->students_assigned_date_count = $user->students->filter(function ($student) use ($date) {
+                    if (!$date) {
+                        return true;
+                    }
+                    if ($student->orders->count() > 0) {
+                        return $student->orders[0]->orderCourses[0]->start == $date;
+                    }
+                    return false;
+                })->count();
+                $user->date = $date;
+                unset($user->students);
+
+
+                return $user;
+            })
+            ->values()
+            ->sortBy([
+                ['students_assigned_date_count', 'asc'],
+                ['students_assigned_count', 'asc']
+            ])->values();
     }
 }
