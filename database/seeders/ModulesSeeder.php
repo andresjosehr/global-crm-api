@@ -60,9 +60,9 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
-                'name'        => 'Asignacion de proyectos',
+                'name'        => 'Equipo de asesores',
                 'description' => '',
-                'icon'        => 'heroicons_outline:chart-bar',
+                'icon'        => 'heroicons_outline:identification',
                 'path'        => 'lista/historial-actividad',
                 'type'        => 'basic',
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
@@ -96,15 +96,6 @@ class ModulesSeeder extends Seeder
                 'description' => '',
                 'icon'        => 'heroicons_outline:phone',
                 'path'        => 'gestionar',
-                'type'        => 'basic',
-                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
-            ],
-
-            [
-                'name'        => 'Equipo de asesores',
-                'description' => '',
-                'icon'        => 'heroicons_outline:identification',
-                'path'        => '1',
                 'type'        => 'basic',
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
