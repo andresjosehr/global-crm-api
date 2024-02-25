@@ -48,6 +48,61 @@ class UsersController extends Controller
         return ApiResponseController::response('Consulta Exitosa', 200, $user);
     }
 
+    public function save(Request $request)
+    {
+        $user = $request->user();
+        if ($user->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 401);
+        }
+
+        $user = new User();
+
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->password = bcrypt($request->input('password'));
+        $user->role_id = $request->input('role_id');
+        $user->photo = $request->input('photo');
+        $user->zadarma_id = $request->input('zadarma_id');
+        $user->active = $request->input('active');
+        $user->save();
+
+        return ApiResponseController::response('Usuario creado exitosamente', 200, $user);
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 401);
+        }
+
+        $user = User::find($id);
+
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        $user->password = bcrypt($request->input('password'));
+        $user->role_id = $request->input('role_id');
+        $user->photo = $request->input('photo');
+        $user->zadarma_id = $request->input('zadarma_id');
+        $user->active = $request->input('active');
+        $user->save();
+
+        return ApiResponseController::response('Usuario actualizado exitosamente', 200, $user);
+    }
+
+    public function get(Request $request, $id)
+    {
+
+        if ($request->user()->role_id != 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 401);
+        }
+
+        $user = User::with('role')->find($id);
+
+        return ApiResponseController::response('Consulta Exitosa', 200, $user);
+    }
+
 
     public function findAvailableStaff($date)
     {

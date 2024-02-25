@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Mails\CoreMailsController;
+use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Jobs\GeneralJob;
 use App\Models\Car;
 use App\Models\DocumentType;
@@ -343,8 +344,90 @@ class StudentsController extends Controller
         ]);
 
         self::assignStudentToUser($order->student->id);
+        $student = Student::where('id', $order->student->id)->with('users')->first();
+
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => 'Se te ha asignado un nuevo alumno',
+            'body'       => 'El alumno ' . $order->student->name . ' ha confirmado su ficha de matrícula de manera satisfactoria y se ha asignado de manera automatica a tu base de estudiantes',
+            'icon'       => 'check_circle_outline',
+            'url'        => '#',
+            'user_id'    => $student->user_id,
+            'use_router' => false,
+        ]);
+
+
+        $excel = [
+            'production' => [
+                'excel_id' => '1U5mbiPnRfpOnD336Sio-3n2X6J_xQs0E3Pspme6eiUc',
+                'tab_id' => '301252804',
+                'tab_label' => 'FEBRERO 24'
+            ],
+            'test' => [
+                'excel_id' => '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs',
+                'tab_id' => '1438941447',
+                'tab_label' => 'FEBRERO 24'
+            ]
+        ];
+
+
         $processesController = new ProcessesController();
-        $processesController->updateSellsExcel($order->id);
+        $processesController->updateSellsExcel($order->id, $excel);
+
+
+        $excel = [
+            'production' => [
+                'excel_id' => '1f7ZZxwn1XwvbPfenzFOJrUu17kwOQO2UV14WtZVRLpM',
+                'tab_id' => '1438941447',
+                'tab_label' => 'Alumnos'
+            ],
+            'test' => [
+                'excel_id' => '180dMQ-Ixeol5rIh5cwseFpc9aoH4xPHOwyOw3uIp1f4',
+                'tab_id' => '1438941447',
+                'tab_label' => 'Alumnos'
+            ]
+        ];
+
+        $processesController = new ProcessesController();
+        $processesController->updateSellsExcel($order->id, $excel);
+
+
+        $haveSap = $order->orderCourses->where('type', 'paid')->some(function ($orderCourse) {
+            return $orderCourse->course->type == 'paid';
+        });
+
+        if ($haveSap) {
+            $orderCourse = $order->orderCourses->where('type', 'paid')->sortBy('id')->first();
+            $sapController = new SapInstalationsController();
+            // new request
+            $request = new Request();
+            $request->replace([
+                'order_course_id' => $orderCourse->id,
+                'order_id' => $order->id
+            ]);
+            $sapController->saveDraft($request);
+
+
+            $noti = new NotificationController();
+            $noti = $noti->store([
+                'title'      => 'Se ha creado un nuevo registro de instalación de SAP',
+                'body'       => 'Se ha creado un nuevo registro de instalación de SAP para el alumno ' . $order->student->name . ' Por favor, revisar y enviar el link de agendamiento al alumno',
+                'icon'       => 'check_circle_outline',
+                'url'        => '#',
+                'user_id'    => $student->user_id,
+                'use_router' => false,
+            ]);
+
+            $data = [
+                "icon"        => 'computer',
+                "user_id"     => $student->user_id,
+                "title"       => 'Enviar link de agendamiento de instalación de SAP',
+                "description" => 'Debes enviar el link de agendamiento de instalación de SAP al alumno ' . $order->student->name,
+                "link"        => '#',
+            ];
+            $assignment = new AssignmentsController();
+            $assignment->store($data);
+        }
     }
 
     public function saveTermsPdfTemplate(Request $request, $order_id)

@@ -77,16 +77,27 @@ class ReportsController extends Controller
                 }
             }
 
+            $sells = Order::where('created_by', $asesor->id)
+                ->whereBetween('created_at', [$start->startOfDay()->format('Y-m-d H:i:s'), $end->endOfDay()->format('Y-m-d H:i:s')])
+                ->count();
+            $calls = ZadarmaStatistic::whereBetween('callstart', [$start->startOfDay()->format('Y-m-d H:i:s'), $end->endOfDay()->format('Y-m-d H:i:s')])
+                ->where('extension', $asesor->zadarma_id)
+                ->count();
+
             return [
                 'id'             => $asesor->id,
                 'name'           => $asesor->name,
                 'email'          => $asesor->email,
+                'calling'        => $asesor->calling,
+                'last_call'      => $asesor->last_call,
                 'active_working' => $asesor->active_working,
                 'role_id'        => $asesor->role_id,
                 'count'          => $count,
                 'projects_pivot' => $asesor->projects_pivot,
                 'data'           => $datos,
-                'datica'         => $assignmentsPorHora
+                'datica'         => $assignmentsPorHora,
+                'sells'          => $sells,
+                'calls'          => $calls
             ];
         });
 
@@ -287,14 +298,14 @@ class ReportsController extends Controller
         return ApiResponseController::response("Exito", 200, $data);
     }
 
-    public function minutesStats($user, $start)
+    public function minutesStats($user, $date)
     {
         $now = Carbon::now();
         // Consultas con filtro de usuario para roles distintos de 1
         $totalMinutesToday = ZadarmaStatistic::when($user, function ($query) use ($user) {
             $query->where('extension', $user->zadarma_id);
         })
-            ->where(DB::raw('DATE(callstart)'), Carbon::now()->format('Y-m-d'))
+            ->where(DB::raw('DATE(callstart)'), $date)
             ->sum('seconds') / 60;
 
         $minutesCurrentMonth = ZadarmaStatistic::when($user, function ($query) use ($user) {
@@ -303,25 +314,16 @@ class ReportsController extends Controller
             ->whereMonth('callstart', $now->month)
             ->sum('seconds') / 60;
 
-        $averageMinutesCurrentMonth = ZadarmaStatistic::when($user, function ($query) use ($user) {
-            $query->where('extension', $user->zadarma_id);
-        })
-            ->where('callstart', $start)
-            ->where('seconds', '>', 0)
-            ->selectRaw('AVG(seconds) as average')
-            ->first()
-            ->average / 60;
 
         $data = [
             'minutesToday' => (float) number_format($totalMinutesToday, 2, '.', ''),
             'minutesCurrentMonth' => (float) number_format($minutesCurrentMonth, 2, '.', ''),
-            'averageMinutesCurrentMonth' => (float) number_format($averageMinutesCurrentMonth, 2, '.', ''),
         ];
 
         return $data;
     }
 
-    public function getCallStats($user, $start)
+    public function getCallStats($user, $date)
     {
         $now = Carbon::now();
 
@@ -331,7 +333,7 @@ class ReportsController extends Controller
             ->when($user, function ($query) use ($user) {
                 $query->where('extension', $user->zadarma_id);
             })
-            ->whereDate('callstart', $now->format('Y-m-d'))
+            ->whereDate('callstart', $date)
             ->count();
 
         // Obtener llamadas para el mes actual

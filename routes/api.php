@@ -6,6 +6,7 @@ use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\OptionsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\OrdersCoursesController;
+use App\Http\Controllers\ProcessesController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\Traking\CertificationTestsController;
@@ -61,6 +62,9 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::post('users/toggle-status', 'App\Http\Controllers\UsersController@toggleStatus');
     Route::get('users/get-list', [UsersController::class, 'getList']);
     Route::put('users/toggle-status/{id}', [UsersController::class, 'toggleStatus']);
+    Route::post('users/save', [UsersController::class, 'save']);
+    Route::post('users/update/{id}', [UsersController::class, 'update']);
+    Route::get('users/get/{id}', [UsersController::class, 'get']);
 
 
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
@@ -193,7 +197,7 @@ Route::get('get-state-by-country/{country_id}', 'App\Http\Controllers\CountriesC
 Route::get('get-city-by-state/{state_id}', 'App\Http\Controllers\CountriesController@getCityByState');
 Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');
 Route::get('get-state/{id}', 'App\Http\Controllers\CountriesController@getState');
-Route::get('test', 'App\Http\Controllers\TestController@index2');
+Route::get('test', 'App\Http\Controllers\TestController@index');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 
@@ -241,3 +245,6 @@ Route::prefix('traking')->group(function () {
 });
 
 Route::post('users/{id}/get-available-times', 'App\Http\Controllers\Traking\SapInstalationsController@getAvailableTimes');
+
+Route::post('toggle-user-working-status', [ProcessesController::class, 'toggleUserWorkingStatus']);
+Route::get('toggle-user-working-status', [ProcessesController::class, 'toggleUserWorkingStatus']);

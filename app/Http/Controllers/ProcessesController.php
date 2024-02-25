@@ -9,6 +9,7 @@ use App\Http\Controllers\Processes\StudentsExcelController;
 use App\Models\Car;
 use App\Models\Lead;
 use App\Models\Order;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -278,18 +279,16 @@ class ProcessesController extends Controller
     }
 
 
-    public function updateSellsExcel($order_id)
+    public function updateSellsExcel($order_id, $excel)
     {
-        $sheet_id = env('APP_ENV') == 'production' ? '1U5mbiPnRfpOnD336Sio-3n2X6J_xQs0E3Pspme6eiUc' : '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs';
-        $tab_id = env('APP_ENV') == 'production' ? '301252804' : '1438941447';
+        $envionment = env('APP_ENV') == 'production' ? 'production' : 'test';
 
         $google_sheet = new GoogleSheetController();
 
-        $spreadsheetId = $sheet_id;
-        $range = 'FEBRERO 24!A1:AH';
+        $range = $excel[$envionment]['tab_label'] . '!A1:AH';
 
         // 1. Obtener los datos existentes para encontrar la primera fila vacía
-        $response = $google_sheet->service->spreadsheets_values->get($spreadsheetId, $range);
+        $response = $google_sheet->service->spreadsheets_values->get($excel[$envionment]['excel_id'], $range);
         $rows = $response->getValues();
         $header = array_shift($rows);
         $rows = array_map(function ($row) {
@@ -404,20 +403,12 @@ class ProcessesController extends Controller
             $col++;
         }
 
-        // 'sheet_id'          => '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs',
-        // 'course_row_number' => $emptyRow,
-        // 'tab_id'            => '1992733426',
-        // Add all this properties to the array
-
-        $dataToUpdate = array_map(function ($item) use ($emptyRow, $spreadsheetId, $tab_id) {
-            $item['sheet_id'] = $spreadsheetId;
+        $dataToUpdate = array_map(function ($item) use ($emptyRow, $excel, $envionment) {
+            $item['sheet_id'] = $excel[$envionment]['excel_id'];
             $item['course_row_number'] = $emptyRow;
-            $item['tab_id'] = $tab_id;
+            $item['tab_id'] = $excel[$envionment]['tab_id'];
             return $item;
         }, $dataToUpdate);
-        // return $dataToUpdate;
-
-        // return $dataToUpdate;
 
         $google_sheet = new GoogleSheetController();
         $data = $google_sheet->transformData($dataToUpdate);
@@ -443,5 +434,34 @@ class ProcessesController extends Controller
     public function downloadBkFile($file)
     {
         return Storage::disk('Laravel')->download($file);
+    }
+
+
+    public function toggleUserWorkingStatus(Request $request)
+    {
+
+        $extension = "-" . $request->internal;
+
+        $status = [
+            'NOTIFY_OUT_START' => 1,
+            'NOTIFY_OUT_END' => 0
+        ];
+
+        if (!array_key_exists($request->event, $status)) {
+            return ApiResponseController::response('Error', 201);
+        }
+
+        $user = User::where('zadarma_id', 'LIKE', '%' . $extension)
+            ->where('active', 1)
+            ->first();
+        $user->calling = $status[$request->event];
+        $user->last_call = Carbon::now()->format('Y-m-d H:i:s');
+        $user->save();
+
+        $user = User::find($user->id);
+        event(new \App\Events\CallActivityEvent(1, 'LAST_CALL_ACTIVITY', ["user" => $user]));
+
+
+        return ApiResponseController::response('Exito', 200);
     }
 }

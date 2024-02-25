@@ -29,22 +29,39 @@ class TestController extends Controller
     public function index()
     {
 
-        $student = Student::where('id', 496)->with('users', 'orders')->first();
-        $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
+        $order = Order::with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
 
-        // StudentsController::dipatchNotification($order, $student);
+        foreach ($order->orderCourses as $orderCourse) {
+            $haveSap = $order->orderCourses->where('type', 'paid')->some(function ($orderCourse) {
+                return $orderCourse->course->type == 'paid';
+            });
+            if ($haveSap) {
+                return $order;
+            }
+        }
+        return "epa";
 
-        return ["Exito"];
+
+        // $student = Student::where('id', 496)->with('users', 'orders')->first();
+        // $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
+
+        // // StudentsController::dipatchNotification($order, $student);
+
+        // return ["Exito"];
 
 
-        return [
-            'order' => $order,
-            'student' => $student
-        ];
+        // return [
+        //     'order' => $order,
+        //     'student' => $student
+        // ];
+
+        // event(new \App\Events\CallActivityEvent(1, 'LAST_CALL_ACTIVITY', ["Culito" => 'Esta es una prueba']));
     }
     public function index2()
     {
 
+        event(new \App\Events\CallActivityEvent(1, 'LAST_CALL_ACTIVITY', ["Culito" => 'Esta es una prueba']));
+        return;
         // return self::getUserWithCount(null, [3, 4]);
 
         return Student::with('orders')->get()->filter(function ($student) {

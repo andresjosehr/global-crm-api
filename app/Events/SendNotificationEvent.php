@@ -37,7 +37,6 @@ class SendNotificationEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        Log::info('notification-channel-' . env('NOTIFICATION_KEY') . '-' . $this->user_id);
         return ['notification-channel-' . env('NOTIFICATION_KEY') . '-' . $this->user_id];
     }
 

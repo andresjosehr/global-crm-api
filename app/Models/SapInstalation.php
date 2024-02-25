@@ -117,37 +117,40 @@ class SapInstalation extends Model
     // add datetime attribute as property from last try
     public function getStartDatetimeAttribute()
     {
-        return $this->sapTries->last()->start_datetime;
+        $start = $this->sapTries->last();
+        return $start ? Carbon::parse($start->start_datetime)->format('Y-m-d H:i:s') : null;
     }
 
     public function getStartDatetimeTargetTimezoneAttribute()
     {
-        return $this->sapTries->last()->start_datetime_target_timezone;
+        $start = $this->sapTries->last();
+        return $start ? Carbon::parse($start->start_datetime_target_timezone)->format('Y-m-d H:i:s') : null;
     }
 
     public function getEndDatetimeAttribute()
     {
-        return $this->sapTries->last()->end_datetime;
+        $start = $this->sapTries->last();
+        return $start ? Carbon::parse($start->end_datetime)->format('Y-m-d H:i:s') : null;
     }
 
     public function getStaffIdAttribute()
     {
-        return $this->sapTries->last()->staff_id;
+        return $this->sapTries->last() ? $this->sapTries->last()->staff_id : null;
     }
 
     public function getTimeAttribute()
     {
-        return Carbon::parse($this->sapTries->last()->start_datetime)->format('H:i') . ':00';
+        return $this->sapTries->last() ? Carbon::parse($this->sapTries->last()->start_datetime)->format('H:i') . ':00' : null;
     }
 
     public function getDateAttribute()
     {
-        return Carbon::parse($this->sapTries->last()->start_datetime)->format('Y-m-d');
+        return $this->sapTries->last() ? Carbon::parse($this->sapTries->last()->start_datetime)->format('Y-m-d') : null;
     }
 
     public function getTimezoneAttribute()
     {
-        return $this->sapTries->last()->timezone;
+        return $this->sapTries->last() ? $this->sapTries->last()->timezone : null;
     }
 
     public function staff()
@@ -157,7 +160,7 @@ class SapInstalation extends Model
 
     public function getLastTryStatusAttribute()
     {
-        return $this->sapTries->last()->status;
+        return $this->sapTries->last() ? $this->sapTries->last()->status : null;
     }
 
 

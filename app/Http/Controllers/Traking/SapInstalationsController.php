@@ -216,10 +216,32 @@ class SapInstalationsController extends Controller
         $aditionalText = '';
         if ($sapOld->restrictions == null && $sapNew->restrictions != null) {
             $aditionalText .= ' | Se han agregado restricciones';
+            if ($first) {
+                $data = [
+                    "icon"        => 'computer',
+                    "user_id"     => $sap->student->user_id,
+                    "title"       => 'Restricciones agregadas a instalación SAP',
+                    "description" => 'El alumno ' . $sap->student->name . ' ha agregado restricciones a su instalación SAP, por favor revisar la información',
+                    "link"        => '#',
+                ];
+                $assignment = new AssignmentsController();
+                $assignment->store($data);
+            }
         }
 
         if ($sapOld->previus_sap_instalation == null && $sapNew->previus_sap_instalation == 1) {
             $aditionalText .= ' | Se ha marcado como que ya ha tenido una instalación previa';
+            if ($first) {
+                $data = [
+                    "icon"        => 'computer',
+                    "user_id"     => $sap->student->user_id,
+                    "title"       => 'Instalación SAP previa marcada',
+                    "description" => 'El alumno ' . $sap->student->name . ' ha marcado que ya ha tenido una instalación SAP previa, por favor revisar la información',
+                    "link"        => '#',
+                ];
+                $assignment = new AssignmentsController();
+                $assignment->store($data);
+            }
         }
 
 
@@ -263,7 +285,7 @@ class SapInstalationsController extends Controller
             'body'       => 'El alumno ' . $sap->student->name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' su instalación SAP' . $aditionalText,
             'icon'       => 'check_circle_outline',
             'url'        => '#',
-            'user_id'    => $sap->student->user->id,
+            'user_id'    => $sap->student->user_id,
             'use_router' => false,
         ]);
 

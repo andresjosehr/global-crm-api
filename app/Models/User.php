@@ -23,9 +23,14 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'name',
+        'role_id',
         'email',
         'password',
+        'status',
+        'zadarma_id',
+        'photo',
     ];
 
     /**
@@ -339,5 +344,32 @@ class User extends Authenticatable implements JWTSubject
     public function zadarmaStatistics()
     {
         return $this->hasMany(ZadarmaStatistic::class, 'extension', 'extension');
+    }
+
+    public function setPhotoAttribute($photo)
+    {
+
+        $base64Types = [
+            'data:image/jpeg;base64' => 'jpeg',
+            'data:image/png;base64' => 'png',
+            'data:application/pdf;base64' => 'pdf',
+        ];
+
+
+        $firstPart = explode(',', $photo)[0];
+        if ($photo && isset($base64Types[$firstPart])) {
+
+            $extension = $base64Types[$firstPart];
+
+            $file = $photo;
+            $file = str_replace($firstPart . ',', '', $file);
+            $file = str_replace(' ', '+', $file);
+            $date = date('Y-m-d-H-i-s');
+            $newFileName = 'photo_' . Carbon::now()->format('Y-m-d-H-i-s') . '.' . $extension;
+            \File::put(storage_path() . '/app/public/assets/' . $newFileName, base64_decode($file));
+            $photo = $newFileName;
+        }
+
+        $this->attributes['photo'] = $photo;
     }
 }

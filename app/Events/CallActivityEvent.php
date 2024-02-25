@@ -14,20 +14,37 @@ class CallActivityEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $message;
+    public $data;
+    public $event;
+    private $user_id;
 
-    public function __construct($message)
+    public function __construct($user_id, $event, $data)
     {
-        $this->message = $message;
+        $this->data = $data;
+        $this->event = $event;
+        $this->user_id = $user_id;
     }
 
     public function broadcastOn()
     {
-        return ['activity-channel'];
+        return ['activity-channel-' . env('NOTIFICATION_KEY') . '-' . $this->user_id];
     }
 
     public function broadcastAs()
     {
         return 'activity-event';
+    }
+
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
+    public function broadcastWith()
+    {
+        return [
+            'event' => $this->event,
+            'data' => $this->data
+        ];
     }
 }
