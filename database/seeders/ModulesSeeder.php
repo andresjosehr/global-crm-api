@@ -60,7 +60,7 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
             [
-                'name'        => 'Panel de reportes',
+                'name'        => 'Asignacion de proyectos',
                 'description' => '',
                 'icon'        => 'heroicons_outline:chart-bar',
                 'path'        => 'lista/historial-actividad',
