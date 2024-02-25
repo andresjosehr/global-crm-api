@@ -68,7 +68,19 @@
                 <li>El personal técnico se contactará por WhatsApp a la hora agendada. <b>NO REALIZAMOS LLAMADAS NI NOS CONECTAMOS VÍA MEET O ZOOM. Asimismo, solo tendrá una tolerancia de respuesta de 30min, es decir, que de no recibir respuesta de su parte en esos 30min, procederá a reprogramar la instalación. </b></li>
                 <li>Le recuerdo que hemos reservado esta cita únicamente para usted, no pudiendo brindarle este horario a ningún otro alumno. Si tuviera algún inconveniente, por favor <b> notifique con un mínimo de CUATRO (04) HORAS antes de su cita </b> (dentro de mi horario laboral) para poder reprogramarlo dentro del mismo día.</li>
 
-                <li> Le recuerdo una vez más que solo dispone de dos instalaciones gratuitas únicamente. Por tal motivo, si consume DOS (02) instalaciones, así hayan sido solo con reagendamientos, para un agendamiento más, tendrá que pagar, ya que, sería su tercera instalación.</li>
+                {{-- Para la primera y segundo --}}
+                @if(count($otherSapInstalations) == 1 || count($otherSapInstalations) == 2)
+                <li>
+                    Le recuerdo una vez más que solo dispone de dos instalaciones gratuitas únicamente (con tres reagendamientos de fecha/hora como máximo para cada una). Por cada 3 reagendamientos, se contará como una instalación adicional.
+                    {{-- Esta es tu {{count($otherSapInstalations)}}° instalación en su {{count($sap->sapTries)}}° agendamiento, por lo que si reagendas mas de {{3-count($sap->sapTries)}} veces, ya le estaría contando como una instalación consumida
+                    @if(count($otherSapInstalations) == 1)
+                    y te restaría 1 instalación gratuita disponible.
+                    @endif
+                    @if(count($otherSapInstalations) == 2)
+                    y te restaría 0 instalaciones gratuitas disponibles, por lo que tendrías que pagar por la siguiente instalación.
+                    @endif --}}
+                </li>
+                @endif
 
 
             </ul>
@@ -78,15 +90,30 @@
             <p><b>Consecuencias del reagendamiento de la instalación:</p></b>
 
             <ul>
-                {{-- Primera instalacion --}}
+                @if(count($otherSapInstalations) == 1 || count($otherSapInstalations) == 2)
                 <li>Su licencia SAP y accesos al curso estarán activos desde el día que enviamos los accesos. Es decir, desde el día de la fecha de inicio, aunque no haya recibido la instalación.</li>
+                @endif
 
 
-                <li>Si por alguna razón debe <b> reprogramar </b>su instalación por una <b>tercera vez</b>, ya le estaría contando como otra instalación. Le recuerdo una vez más que solo dispone de dos instalaciones gratuitas únicamente. </li>
-                <li>Por tal motivo, si consume DOS (02) instalaciones, así hayan sido solo con reagendamientos, para un agendamiento más, tendrá que pagar, ya que, sería su tercera instalación.</li>
+                <li>Si por alguna razón debe <b> reprogramar </b>su instalación por una <b>tercera vez</b>, ya le estaría contando como otra instalación.
+                    {{-- Para primera y segunda instalacion --}}
+                    @if(count($otherSapInstalations) == 1 || count($otherSapInstalations) == 2)
+                    Le recuerdo una vez más que solo dispone de dos instalaciones gratuitas únicamente.
+                    @endif
+                </li>
 
-
-                <li>Este sería su {{count($sap->sapTries)}}° agendamiento, por lo que te restan {{3-count($sap->sapTries)}} reagendamientos disponibles de su instalación.</li>
+                @if(count($otherSapInstalations) == 1 || count($otherSapInstalations) == 2)
+                <li>
+                    Le recuerdo una vez más que solo dispone de dos instalaciones gratuitas únicamente (con tres reagendamientos de fecha/hora como máximo para cada una). Por cada 3 reagendamientos, se contará como una instalación adicional.
+                    Esta es tu {{count($otherSapInstalations)}}° instalación en su {{count($sap->sapTries)}}° agendamiento, por lo que si reagendas mas de {{3-count($sap->sapTries)}} veces, ya le estaría contando como una instalación consumida
+                    @if(count($otherSapInstalations) == 1)
+                    y te restaría 1 instalación gratuita disponible.
+                    @endif
+                    @if(count($otherSapInstalations) == 2)
+                    y te restaría 0 instalaciones gratuitas disponibles, por lo que tendrías que pagar por la siguiente instalación.
+                    @endif
+                </li>
+                @endif
             </ul>
 
 

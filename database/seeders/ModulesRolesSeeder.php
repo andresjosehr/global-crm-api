@@ -46,14 +46,6 @@ class ModulesRolesSeeder extends Seeder
                 'role_id'   => self::role('Asesor de ventas'),
             ],
             [
-                'module_id' => self::module('Base General'),
-                'role_id'   => self::role('Asesor de ventas'),
-            ],
-            [
-                'module_id' => self::module('Panel de reportes'),
-                'role_id'   => self::role('Asesor de ventas'),
-            ],
-            [
                 'module_id' => self::module('Perfil'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
@@ -62,20 +54,8 @@ class ModulesRolesSeeder extends Seeder
                 'role_id'   => self::role('Asesor de ventas'),
             ],
 
-
-
-            [
-                'module_id' => self::module('Nube de documentos'),
-                'role_id'   => self::role('Asesor de ventas'),
-            ],
-
             [
                 'module_id' => self::module('Gestion de prospectos'),
-                'role_id'   => self::role('Asesor de ventas'),
-            ],
-
-            [
-                'module_id' => self::module('Equipo de asesores'),
                 'role_id'   => self::role('Asesor de ventas'),
             ],
 

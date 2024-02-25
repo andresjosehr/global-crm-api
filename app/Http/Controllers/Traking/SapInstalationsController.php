@@ -153,7 +153,6 @@ class SapInstalationsController extends Controller
     {
         $fields = [
             "restrictions",
-            "sap_user",
             "screenshot",
             "start_datetime",
             "end_datetime",
@@ -184,10 +183,10 @@ class SapInstalationsController extends Controller
         return null;
     }
 
-    public function triggerSapInstalationEvents($trypOld, $tryNew)
+    public function triggerSapInstalationEvents($trypOld, $tryNew, $sapOld, $sapNew)
     {
 
-        $sap = SapInstalation::with('sapTries', 'student')->whereHas('sapTries', function ($query) use ($trypOld) {
+        $sap = SapInstalation::with('sapTries', 'student.user')->whereHas('sapTries', function ($query) use ($trypOld) {
             $query->where('id', $trypOld->id);
         })->first();
 
@@ -214,6 +213,16 @@ class SapInstalationsController extends Controller
         }
 
 
+        $aditionalText = '';
+        if ($sapOld->restrictions == null && $sapNew->restrictions != null) {
+            $aditionalText .= ' | Se han agregado restricciones';
+        }
+
+        if ($sapOld->previus_sap_instalation == null && $sapNew->previus_sap_instalation == 1) {
+            $aditionalText .= ' | Se ha marcado como que ya ha tenido una instalación previa';
+        }
+
+
         $title = $first ? 'Agendamiento de instalación SAP' : 'Reagendamiento de instalación SAP';
 
 
@@ -235,15 +244,28 @@ class SapInstalationsController extends Controller
         CoreMailsController::sendMail('andresjosehr@gmail.com', $title, $content);
 
 
+
         $data = [
             "icon"        => 'computer',
             "user_id"     => $sap->staff_id,
-            "title"       => $title,
-            "description" => 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha agendado una instalación SAP',
+            "title"       => $title . $aditionalText,
+            "description" => 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ' . ($first ? 'agendado' : 'reagendado') . ' agendado una instalación SAP',
             "link"        => '/instalaciones-sap/' . $sap->id
         ];
         $data['title'] = $title;
         $data['description'] = 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' una instalación SAP';
+
+
+        Log::info($sap);
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => $title . ' | ' . $sap->student->name,
+            'body'       => 'El alumno ' . $sap->student->name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' su instalación SAP' . $aditionalText,
+            'icon'       => 'check_circle_outline',
+            'url'        => '#',
+            'user_id'    => $sap->student->user->id,
+            'use_router' => false,
+        ]);
 
         $assignment = new AssignmentsController();
         $assignment->store($data);
@@ -410,9 +432,9 @@ class SapInstalationsController extends Controller
         $tryNew = SapTry::where('id', $tryDB->id)->first();
         // self::triggerSapInstalationEvents($tryDB, $data);
 
+        $sapNew = SapInstalation::with('sapTries')->where('id', $id)->first();
 
-
-        GeneralJob::dispatch(SapInstalationsController::class, 'triggerSapInstalationEvents', ['trypOld' => $tryDB, 'tryNew' => $tryNew])->onQueue('default');
+        GeneralJob::dispatch(SapInstalationsController::class, 'triggerSapInstalationEvents', ['trypOld' => $tryDB, 'tryNew' => $tryNew, 'sapOld' => $sapDB, 'sapNew' => $sapNew]);
 
 
         $sapDB = SapInstalation::with('sapTries')->where('id', $id)->first();

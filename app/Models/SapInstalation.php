@@ -21,6 +21,7 @@ class SapInstalation extends Model
         "instalation_type",
         "key",
         "price_id",
+        "restrictions",
         "price_amount",
         "sap_user",
         "currency_id",
