@@ -18,6 +18,7 @@
         "resend/resend-php": "^0.11.0",
         "spatie/laravel-backup": "^8.2",
         "tomfordrumm/jwt-auth": "dev-develop",
+        "wnx/laravel-backup-restore": "^1.0",
         "zadarma/user-api-v1": "^1.1"
     },
     "require-dev": {
