@@ -24,6 +24,8 @@ class OrderCourse extends Model
         'classroom_status',
         'observation',
         'welcome_mail_id',
+        'created_at',
+        'updated_at',
     ];
 
     function course()

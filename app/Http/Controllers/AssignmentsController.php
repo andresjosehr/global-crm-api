@@ -15,8 +15,14 @@ class AssignmentsController extends Controller
      */
     public function index(Request $request)
     {
+        $user = $request->user();
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
-        $assignments = Assignment::paginate($perPage);
+        $assignments = Assignment::with('user')
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
 
         return ApiResponseController::response('Exitoso', 200, $assignments);
     }

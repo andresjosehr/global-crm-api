@@ -15,6 +15,7 @@ declare namespace App.Models {
         resolved_at: string | null;
         created_at: string | null;
         updated_at: string | null;
+        user?: App.Models.User | null;
     }
 
     export interface Car {}
@@ -372,6 +373,7 @@ declare namespace App.Models {
         enrollment_sheet: boolean | null;
         payment_mode: string;
         comunication_type: string | null;
+        sap_notes: string | null;
         free_courses_date: string | null;
         price_id: number | null;
         price_amount: number;
@@ -388,7 +390,7 @@ declare namespace App.Models {
         student?: App.Models.Student | null;
         currency?: App.Models.Currency | null;
         dues?: Array<App.Models.Due> | null;
-        user?: App.Models.User | null;
+        created_by?: App.Models.User | null;
         invoice?: App.Models.Invoice | null;
         price?: App.Models.Price | null;
         sap_instalations?: Array<App.Models.SapInstalation> | null;
@@ -537,6 +539,7 @@ declare namespace App.Models {
         updated_at: string | null;
         student?: App.Models.Student | null;
         sap_tries?: Array<App.Models.SapTry> | null;
+        staff?: App.Models.User | null;
         order_course?: App.Models.OrderCourse | null;
         order?: App.Models.Order | null;
         sap_tries_count?: number | null;
@@ -660,6 +663,7 @@ declare namespace App.Models {
         users_count?: number | null;
         sap_instalations_count?: number | null;
         user_assigned_count?: number | null;
+        readonly start_date?: any;
     }
 
     export interface User {
@@ -670,6 +674,8 @@ declare namespace App.Models {
         password: string;
         role_id: number | null;
         zadarma_id: string | null;
+        calling: boolean;
+        last_call: string | null;
         remember_token: string | null;
         main_view: string | null;
         active_working: boolean;
@@ -685,6 +691,7 @@ declare namespace App.Models {
         projects?: Array<App.Models.LeadProject> | null;
         projects_pivot?: Array<App.Models.UserLeadProject> | null;
         students?: Array<App.Models.Student> | null;
+        students_assigned?: Array<App.Models.Student> | null;
         zadarma_statistics?: Array<App.Models.ZadarmaStatistic> | null;
         sap_instalation_count?: number | null;
         availability_slots_count?: number | null;
@@ -692,6 +699,7 @@ declare namespace App.Models {
         projects_count?: number | null;
         projects_pivot_count?: number | null;
         students_count?: number | null;
+        students_assigned_count?: number | null;
         zadarma_statistics_count?: number | null;
         readonly unavailable_times?: any;
         readonly bussy_times?: any;
@@ -726,7 +734,6 @@ declare namespace App.Models {
 
     export interface ZohoToken {
         token: string | null;
-        type: string | null;
         updated_at: string | null;
     }
 

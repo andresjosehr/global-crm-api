@@ -31,16 +31,24 @@ class StudentsController extends Controller
         // return $user;
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
 
-        $searchString = $request->input('searchString') ? $request->input('searchString') : '';
-        $searchString = $request->input('searchString') != 'null' ? $request->input('searchString') : '';
+        $searchString = $request->input('searchString');
 
-        $users = Student::when($searchString, function ($q) use ($searchString) {
-            $q->where('name', 'LIKE', "%$searchString%")
-                ->orWhere('country_id', 'LIKE', "%$searchString%")
-                ->orWhere("email", 'LIKE', "%$searchString%")
-                ->orWhere('phone', 'LIKE', "%$searchString%")
-                ->orWhere('document', 'LIKE', "%$searchString%");
-        })
+        $users = Student::with(['orders' => function ($q) {
+            return $q->withCount(['orderCourses' => function ($query) {
+                $query->where('type', 'paid');
+            }]);
+        }])
+            ->with('lead', 'user')
+            ->when($searchString, function ($q) use ($searchString) {
+                $q->where('name', 'LIKE', "%$searchString%")
+                    ->orWhere('country_id', 'LIKE', "%$searchString%")
+                    ->orWhere("email", 'LIKE', "%$searchString%")
+                    ->orWhere('phone', 'LIKE', "%$searchString%")
+                    ->orWhere('document', 'LIKE', "%$searchString%");
+            })
+            ->when($request->created_from, function ($q) use ($request) {
+                $q->where('created_at', '>=', $request->created_from);
+            })
             ->when($request->input('Matriculados') == '1', function ($q) use ($user) {
                 $q->whereHas('lead', function ($q) {
                     $q->where('status', 'Matriculado');
@@ -51,12 +59,7 @@ class StudentsController extends Controller
                         });
                     });
             })
-            ->with(['orders' => function ($q) {
-                return $q->withCount(['orderCourses' => function ($query) {
-                    $query->where('type', 'paid');
-                }]);
-            }])
-            ->with('lead')
+
             ->when($user->role_id == 3 || $user->role_id == 4, function ($q) use ($user) {
                 return $q->where('user_id', $user->id);
             })
@@ -421,7 +424,7 @@ class StudentsController extends Controller
             $data = [
                 "icon"        => 'computer',
                 "user_id"     => $student->user_id,
-                "title"       => 'Enviar link de agendamiento de instalación de SAP',
+                "title"       => $order->student->name,
                 "description" => 'Debes enviar el link de agendamiento de instalación de SAP al alumno ' . $order->student->name,
                 "link"        => '#',
             ];

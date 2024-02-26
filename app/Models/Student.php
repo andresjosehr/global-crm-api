@@ -21,7 +21,9 @@ class Student extends Model
         'document',
         'email',
         'lead_id',
-        'user_id'
+        'user_id',
+        'created_at',
+        'updated_at',
     ];
 
     protected $appends = ['start_date'];

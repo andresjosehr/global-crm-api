@@ -132,7 +132,7 @@ class SapInstalationsController extends Controller
         $sapFillable = (new SapInstalation())->getFillable();
         $sapData = collect($data)->only($sapFillable)->toArray();
 
-        if ($sapData['instalation_type'] === 'Desbloqueo') {
+        if ($sapData['instalation_type'] === 'Desbloqueo SAP') {
             $sapData['payment_enabled'] = 1;
         }
 
@@ -465,7 +465,7 @@ class SapInstalationsController extends Controller
 
     public function updatePayment(Request $request, $id)
     {
-        $sapPayment = SapInstalation::find($id);
+        $sapPayment = SapInstalation::with('order.student')->where('id', $id)->first();
         // only payment_fields
         $data = array_filter($request->all(), function ($key) {
             return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_method_id', 'payment_date']);
@@ -494,6 +494,17 @@ class SapInstalationsController extends Controller
         ]);
 
         $sapPayment->save();
+
+
+        $data = [
+            "icon"        => 'computer',
+            "user_id"     => $sapPayment->order->student->user_id,
+            "title"       => $sapPayment->order->student->name,
+            "description" => 'El alumno ' . $sapPayment->order->student->name . ' ha realizado el pago de la instalación, por favor revisar el comprobante de pago y confirmar la instalación.',
+            "link"        => '#',
+        ];
+        $assignment = new AssignmentsController();
+        $assignment->store($data);
 
         return ApiResponseController::response('Sap try instalation updated', 200, $sapPayment);
     }

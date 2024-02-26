@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    protected $fillable = [
+        'payment_mode',
+        'terms_confirmed_by_student',
+        'price_amount',
+        'student_id',
+        'sap_notes',
+        'created_by',
+        'created_at',
+        'updated_at',
+    ];
     use HasFactory;
 
     function orderCourses()
