@@ -119,7 +119,7 @@ class ImportStudentsService
                 'order'          => [
                     'payment_mode'               => 'X',
                     'price_amount'               => 0,
-                    'sap_notes'                  => $student['sap_notes'],
+                    'sap_notes'                  => 'INSTALACIÓN: ' . $student['INSTALACIÓN'] . " -------- " . 'Notas: ' . $student['sap_notes'],
                     'terms_confirmed_by_student' => 1,
                     'order_courses'              => [],
                     'created_at'                 => '2024-01-01 00:00:00',
@@ -211,15 +211,16 @@ class ImportStudentsService
                 }
             }
 
-            $enable = [];
-            $status = '';
             $coursesStatus = [];
             if ($sapNumber > 1) {
 
                 $statusCol = $student['ESTADO'];
                 if ($student['OBSERVACIONES']) {
-                    $status = 'Cursando';
                     $statusCol .= " / " . $student['OBSERVACIONES'];
+                }
+
+                if ($student['observaciones_notas']) {
+                    $statusCol .= " / " . $student['observaciones_notas'];
                 }
 
                 $statues =  [
@@ -693,7 +694,7 @@ class ImportStudentsService
 
 
         $data = [];
-        $ranges = ['BASE!A1:ZZZ50000', 'CURSOS!A1:ZZZ50000'];
+        $ranges = ['SEGUIMIENTO BASE!A1:ZZZ50000', 'SEGUIMIENTO CURSOS!A1:ZZZ50000'];
 
         $response = $this->service->spreadsheets_values->batchGet($sheet, ['ranges' => $ranges]);
 
@@ -702,7 +703,7 @@ class ImportStudentsService
             'includeGridData' => true, // Esto es necesario para obtener las notas
             'fields' => 'sheets(data(rowData(values(note))))' // Especificar solo los campos necesarios
         ]);
-        // return $noteResponse->getSheets()[1]->getData()[0]->getRowData()[2]->getValues()[9];
+
 
         $baseSheet = $response[0]->getValues();
         $coursesSheet = $response[1]->getValues();
@@ -754,9 +755,11 @@ class ImportStudentsService
                         $mergedRow['base_row_number']   = $baseRow['row_number'];
                         $mergedRow['course_row_number'] = $courseRow['row_number'];
                         try {
-                            $mergedRow['sap_notes'] = $noteResponse->getSheets()[1]->getData()[0]->getRowData()[$i]->getValues()[7]->getNote();
+                            $mergedRow['sap_notes'] = $noteResponse->getSheets()[1]->getData()[0]->getRowData()[$i + 1]->getValues()[7]->getNote();
+                            $mergedRow['observaciones_notas'] = $noteResponse->getSheets()[1]->getData()[0]->getRowData()[$i + 1]->getValues()[50]->getNote();
                         } catch (\Throwable $th) {
                             $mergedRow['sap_notes'] = null;
+                            $mergedRow['observaciones_notas'] = null;
                         }
 
 
