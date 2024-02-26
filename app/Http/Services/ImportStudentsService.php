@@ -67,7 +67,7 @@ class ImportStudentsService
 
         self::createGoogleServiceInstance();
         $data = self::getSheetsData($sheet_type);
-        $data = self::formatCourses($data);
+        return $data = self::formatCourses($data);
         $data = self::formatForImport($data);
         $data = self::import($data);
 
@@ -756,9 +756,13 @@ class ImportStudentsService
                         $mergedRow['course_row_number'] = $courseRow['row_number'];
                         try {
                             $mergedRow['sap_notes'] = $noteResponse->getSheets()[1]->getData()[0]->getRowData()[$i + 1]->getValues()[7]->getNote();
-                            $mergedRow['observaciones_notas'] = $noteResponse->getSheets()[1]->getData()[0]->getRowData()[$i + 1]->getValues()[50]->getNote();
                         } catch (\Throwable $th) {
                             $mergedRow['sap_notes'] = null;
+                        }
+
+                        try {
+                            $mergedRow['observaciones_notas'] = $noteResponse->getSheets()[1]->getData()[0]->getRowData()[$i + 1]->getValues()[50]->getNote();
+                        } catch (\Throwable $th) {
                             $mergedRow['observaciones_notas'] = null;
                         }
 
