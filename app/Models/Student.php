@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Wordpress\WpUser;
 use App\Models\Wordpress\WpLearnpressUserItem;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
-    use HasFactory;
+
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',

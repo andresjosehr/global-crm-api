@@ -608,4 +608,20 @@ class StudentsController extends Controller
 
         return ApiResponseController::response('Alumno delegado con éxito', 200);
     }
+
+    public function saveLocation(Request $request, $id)
+    {
+        $student = Student::find($id);
+        if (!$student) {
+            return ApiResponseController::response('Alumno no encontrado', 404);
+        }
+
+        $student->country_id = $request->input('country_id');
+        $student->state_id   = $request->input('state_id');
+        $student->city_id    = $request->input('city_id');
+
+        $student->save();
+
+        return ApiResponseController::response('Ubicación actualizada con éxito', 200, $student);
+    }
 }

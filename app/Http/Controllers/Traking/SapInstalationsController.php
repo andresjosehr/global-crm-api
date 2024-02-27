@@ -478,7 +478,7 @@ class SapInstalationsController extends Controller
         }
 
         $student = Student::with('userAssigned')->where('id', $sapPayment->order->student->id)->with('city', 'state')->first();
-        $user = $student->userAssigned[0];
+        $user = $student->user;
 
         $noti = new NotificationController();
         $noti = $noti->store([
@@ -522,5 +522,18 @@ class SapInstalationsController extends Controller
         $sapInstalation->save();
 
         return ApiResponseController::response('Sap try instalation updated', 200, $sapInstalation);
+    }
+
+    public function delete(Request $request, $id)
+    {
+        $user = $request->user();
+        if ($user->role_id !== 1) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 400);
+        }
+
+        SapTry::where('sap_instalation_id', $id)->delete();
+        SapInstalation::where('id', $id)->delete();
+
+        return ApiResponseController::response('Sap instalation deleted', 200);
     }
 }

@@ -80,6 +80,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
     Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
+    Route::post('students/save-location/{id}', [StudentsController::class, 'saveLocation']);
     Route::resource('students', StudentsController::class);
     Route::put('students/delegate-academic-area/{id}', [StudentsController::class, 'delegateAcademicArea']);
 
@@ -141,6 +142,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::prefix('traking')->group(function () {
         Route::prefix('sap-instalations')->group(function () {
             Route::get('list', [SapInstalationsController::class, 'getList']);
+            Route::delete('{id}', [SapInstalationsController::class, 'delete']);
             Route::get('get-from-order/{id}', [SapInstalationsController::class, 'getFromOrder']);
 
             Route::post('save-draft', [SapInstalationsController::class, 'saveDraft']);

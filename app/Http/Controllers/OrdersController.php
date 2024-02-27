@@ -409,7 +409,11 @@ class OrdersController extends Controller
             $orderCourse->certificationTests()->delete();
             $orderCourse->freezings()->delete();
             $orderCourse->extensions()->delete();
-            $orderCourse->sapInstalations()->delete();
+
+            $orderCourse->sapInstalations()->each(function ($item) {
+                $item->sapTries()->delete();
+                $item->delete();
+            });
             $orderCourse->dateHistory()->delete();
         }
 
