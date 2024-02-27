@@ -67,7 +67,7 @@ class ImportStudentsServiceCO
 
         self::createGoogleServiceInstance();
         $data = self::getSheetsData($sheet_type);
-        $data = self::formatCourses($data);;
+        return $data = self::formatCourses($data);;
 
         $data = self::formatForImport($data);
         $data = self::import($data);
@@ -655,7 +655,7 @@ class ImportStudentsServiceCO
             $courseRowNumber++;  // Increment the counter
         }
 
-        $i = 1;
+        $i = -1;
         foreach ($baseData as $baseRow) {
             $email = $baseRow['CORREO'];
             $email = strtolower($email);
