@@ -67,7 +67,7 @@ class ImportStudentsServiceCO
 
         self::createGoogleServiceInstance();
         $data = self::getSheetsData($sheet_type);
-        return $data = self::formatCourses($data);;
+        $data = self::formatCourses($data);;
 
         $data = self::formatForImport($data);
         $data = self::import($data);
