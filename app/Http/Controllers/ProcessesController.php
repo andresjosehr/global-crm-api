@@ -459,7 +459,12 @@ class ProcessesController extends Controller
         $user->save();
 
         $user = User::find($user->id);
-        event(new \App\Events\CallActivityEvent(1, 'LAST_CALL_ACTIVITY', ["user" => $user]));
+
+
+        $users = User::where('active', 1)->where('role_id', 1)->get();
+        foreach ($users as $u) {
+            event(new \App\Events\CallActivityEvent($u->id, 'LAST_CALL_ACTIVITY', ["user" => $user]));
+        }
 
 
         return ApiResponseController::response('Exito', 200);
