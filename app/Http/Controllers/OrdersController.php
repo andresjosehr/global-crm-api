@@ -435,42 +435,16 @@ class OrdersController extends Controller
 
     public function updateTrakingInfo(Request $request, $id)
     {
-        if (!$order = Order::find($id)) {
+        if (!$orderCourse = OrderCourse::find($id)) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
-        foreach ($request->order_courses as $orderCourse) {
-
-            $orderCourseDB = OrderCourse::find($orderCourse['id']);
-
-            $orderCourseDB->end = $orderCourse['end'];
-
-            $orderCourseDB->save();
-
-            // Sincronizar certificationTests
-            $this->syncRelation($orderCourseDB->certificationTests(), $orderCourse['certification_tests']);
-
-            // Sincronizar freezings
-            $this->syncRelation($orderCourseDB->freezings(), $orderCourse['freezings']);
-
-            // Sincronizar extensions
-            $this->syncRelation($orderCourseDB->extensions(), $orderCourse['extensions']);
-
-            $i = 0;
-            foreach ($orderCourse['sap_instalations'] as $sapInstalation) {
-                $dateTime = explode('T', $sapInstalation['date'])[0];
-                $dateTime = $dateTime . ' ' . $sapInstalation['time'];
-                $orderCourse['sap_instalations'][$i]['start_datetime'] = Carbon::parse($dateTime)->format('Y-m-d H:i:s');
-                $orderCourse['sap_instalations'][$i]['end_datetime'] = Carbon::parse($dateTime)->addMinutes(30)->format('Y-m-d H:i:s');
-                $i++;
-            }
-
-            // Sincronizar sapInstalations
-            $this->syncRelation($orderCourseDB->sapInstalations(), $orderCourse['sap_instalations']);
-        }
-
-
-        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.sapInstalations', 'orderCourses.freezings', 'orderCourses.extensions', 'orderCourses.dateHistory')->find($id);
-        return ApiResponseController::response('Orden actualizada exitosamente', 200, $order);
+        $orderCourse->start                = $request->start;
+        $orderCourse->end                  = $request->end;
+        $orderCourse->classroom_status     = $request->classroom_status;
+        $orderCourse->license              = $request->license;
+        $orderCourse->classroom_user       = $request->classroom_user;
+        $orderCourse->certification_status = $request->certification_status;
+        return ApiResponseController::response('Orden actualizada exitosamente', 200, $orderCourse);
     }
 
     private function syncRelation($relation, $data)
