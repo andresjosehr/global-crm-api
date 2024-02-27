@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Google_Client;
 use Google_Service_Sheets;
 
-class ImportStudentsService
+class ImportStudentsServiceSEG
 {
 
     private $service;

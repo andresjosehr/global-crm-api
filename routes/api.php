@@ -13,6 +13,9 @@ use App\Http\Controllers\Traking\CertificationTestsController;
 use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Http\Controllers\Traking\SapTriesController;
 use App\Http\Controllers\UsersController;
+use App\Http\Services\ImportStudentsService;
+use App\Http\Services\ImportStudentsServiceCO;
+use App\Http\Services\ImportStudentsServiceSEG;
 use App\Models\SapInstalation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -221,6 +224,9 @@ Route::group(['middleware' => ['environment_access']], function () use ($basePat
         Route::get('free-courses-text', 'App\Http\Controllers\ProcessesController@freeCoursesTexts');
 
         Route::get('update-complete-free-courses-onemonth', 'App\Http\Controllers\ProcessesController@updatecompletefreecoursesonemonth');
+
+        Route::get('import-seg',  [ImportStudentsServiceSEG::class, 'index']);
+        Route::get('import-co',  [ImportStudentsServiceCO::class, 'index']);
     });
 
     Route::prefix('mails')->group(function () {
