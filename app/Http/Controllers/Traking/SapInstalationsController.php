@@ -147,6 +147,10 @@ class SapInstalationsController extends Controller
             $sapData['payment_enabled'] = 1;
         }
 
+        if ($sapData['instalation_type'] === 'Asignación de usuario y contraseña') {
+            $sapData['payment_enabled'] = 0;
+        }
+
         SapInstalation::where('id', $id)->update($sapData);
 
         $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
