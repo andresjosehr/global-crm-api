@@ -454,6 +454,11 @@ class ProcessesController extends Controller
         $user = User::where('zadarma_id', 'LIKE', '%' . $extension)
             ->where('active', 1)
             ->first();
+
+        if (!$user) {
+            return ApiResponseController::response('Usuario no encontrado', 201);
+        }
+
         $user->calling = $status[$request->event];
         $user->last_call = Carbon::now()->format('Y-m-d H:i:s');
         $user->save();
