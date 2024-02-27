@@ -217,6 +217,7 @@ class ImportStudentsServiceCO
 
                 $statues =  [
                     ['key' => 'HABILITAR', 'status' => 'Cursando'],
+                    ['key' => 'HABILITADO', 'status' => 'Cursando'],
                     ['key' => 'CONTADO', 'status' => 'Cursando'],
                     ['key' => 'PENDIENTE', 'status' => 'Por habilitar']
                 ];
