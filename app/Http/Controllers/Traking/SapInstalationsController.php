@@ -263,7 +263,7 @@ class SapInstalationsController extends Controller
         $otherSapInstalations = SapInstalation::where('order_id', $sap->order_id)->get();
 
         $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first, 'otherSapInstalations' => $otherSapInstalations])->render();
-        CoreMailsController::sendMail('andresjosehr@gmail.com', $title, $content);
+        CoreMailsController::sendMail($sap->student->email, $title, $content);
 
 
 
