@@ -42,9 +42,17 @@ class SapTriesController extends Controller
             $sapTry->start_datetime = Carbon::parse($request->date)->format('Y-m-d') . ' ' . $request->time['start_time'];
             $sapTry->end_datetime = Carbon::parse($sapTry->start_datetime)->addMinutes(30);
             $sapTry->start_datetime_target_timezone = Carbon::parse($sapTry->date)->format('Y-m-d') . ' ' . $request->time['start_time_in_target_zone'];
+        } else {
+            $time = Carbon::parse($sapTry->start_datetime)->format('H:i:s');
+            $sapTry->start_datetime = Carbon::parse($request->date)->format('Y-m-d') . ' ' . $time;
+            $sapTry->end_datetime = Carbon::parse($sapTry->start_datetime)->addMinutes(30);
         }
 
-        if ($request->status === 'Reprogramada') {
+        // Check if there is a sap try with id graten than current sap try
+        $sapTryNext = SapTry::where('sap_instalation_id', $sap_instalation_id)->where('id', '>', $id)->first();
+        $sapInstalationNext = SapInstalation::where('id', '>', $sap_instalation_id)->first();
+
+        if ($request->status === 'Reprogramada' && !$sapTryNext && !$sapInstalationNext) {
 
             $sapInstalationsCount = Order::where('id', $sapTry->sapInstalation->order_id)->with('sapInstalations')->first()->sapInstalations->count();
             $sapStryCount = SapTry::where('sap_instalation_id', $sap_instalation_id)->get()->count();

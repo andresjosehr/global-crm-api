@@ -31,6 +31,7 @@ class SapInstalationsController extends Controller
 
     public function getList(Request $request)
     {
+
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
@@ -68,6 +69,9 @@ class SapInstalationsController extends Controller
                     });
                     // ->where('payment_verified_at', null);
                 });
+            })
+            ->when($request->status, function ($query) use ($request) {
+                $query->where('status', $request->status);
             })
             ->paginate($perPage);
 
@@ -108,9 +112,16 @@ class SapInstalationsController extends Controller
         $sapInstalation->save();
 
         $try = new SapTry();
-        $try->start_datetime = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
-            return $item->start < $carry ? $item->start : $carry;
+        $start_datetime = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
+            $start = Carbon::parse($item->start);
+            return $carry ? ($start->lt($carry) ? $start : $carry) : $start;
         }, Carbon::now()->addDecade()->format('Y-m-d'));
+
+        $now = Carbon::now();
+        $start_datetime = $start_datetime->lt($now) ? $now->addDays(2) : $start_datetime;
+
+        $try->start_datetime = $start_datetime->format('Y-m-d') . ' 00:00:00';
+
         $try->end_datetime = Carbon::parse($try->start_datetime)->addMinutes(30)->format('Y-m-d H:i:s');
 
         $try->staff_id           = $this->findAvailableStaff($try->start_datetime)->id;
@@ -315,7 +326,11 @@ class SapInstalationsController extends Controller
             ->with('student.city', 'student.state', 'staff', 'sapTries')
             ->first();
 
-        $sapInstalation->sapTry = $sapInstalation->sapTries->last();
+        if ($sapInstalation->sapTries) {
+            $sapInstalation->sapTry = $sapInstalation->sapTries->last();
+        } else {
+            $sapInstalation->sapTry = [];
+        }
 
         $sapInstalation->first_install = SapInstalation::where('order_id', $sapInstalation->order_id)
             ->where('instalation_type', 'Instalación')
