@@ -12,11 +12,13 @@ use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\Traking\CertificationTestsController;
 use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Http\Controllers\Traking\SapTriesController;
+use App\Http\Controllers\UsersActivitiesControllers;
 use App\Http\Controllers\UsersController;
 use App\Http\Services\ImportStudentsService;
 use App\Http\Services\ImportStudentsServiceCO;
 use App\Http\Services\ImportStudentsServiceSEG;
 use App\Models\SapInstalation;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
@@ -53,6 +55,8 @@ Route::post('sales/call-activity', 'App\Http\Controllers\PusherController@callAc
 Route::post('sales/disconnect-call-activity', 'App\Http\Controllers\LeadsController@diconnectCallActivity');
 
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
+
+    Route::resource('users-activities', UsersActivitiesControllers::class);
 
     Route::get('assignments', [AssignmentsController::class, 'index']);
     Route::put('assignments/{id}', [AssignmentsController::class, 'update']);

@@ -16,6 +16,7 @@ use App\Models\LeadObservation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\UserActivity;
 use Carbon\CarbonPeriod;
 
 class LeadsController extends Controller
@@ -249,6 +250,7 @@ class LeadsController extends Controller
         $user_id = null;
 
         $user = $request->user();
+        $lead = Lead::where('id', $id)->first();
         if ($user->role_id == 1) {
             $user_id = $request->user_id;
         }
@@ -266,6 +268,14 @@ class LeadsController extends Controller
                 $user_id = $user->id;
             }
         }
+
+        if ($request->status != $lead->status) {
+            UserActivity::create([
+                'user_id'     => $user->id,
+                'description' => 'Cambio de estado del lead ' . $lead->name . ' de ' . $lead->status . ' a ' . $request->status . ' el ' . Carbon::now()->format('Y-m-d H:i:s')
+            ]);
+        }
+
         $lead = Lead::where('id', $id)->update([
             'name'             => $request->name,
             'courses'          => $request->courses ?? '',
@@ -593,6 +603,7 @@ class LeadsController extends Controller
 
     public function updateSalesActivity(Request $request)
     {
+        $user = $request->user();
         if ($request->end) {
             $callActivity = SaleActivity::where('user_id', $request->user_id)
                 ->where('lead_id', $request->lead_id)
@@ -608,7 +619,15 @@ class LeadsController extends Controller
             $end = Carbon::now();
 
             $schedule_call_datetime = null;
+            $lead = Lead::where('id', $request->lead_id)->first();
             if ($request->schedule_call_datetime) {
+
+
+                UserActivity::create([
+                    'user_id'     => $user->id,
+                    'description' => 'Llamada programada para el ' . $request->schedule_call_datetime . ' hacia el lead ' . $lead->name . ' con numero ' . $lead->phone . ' el ' . Carbon::now()->format('Y-m-d H:i:s')
+                ]);
+
                 $schedule_call_datetime = Carbon::parse($request->schedule_call_datetime);
                 // Update lead status as "Interesado"
                 Lead::where('id', $request->lead_id)->update([
@@ -620,6 +639,14 @@ class LeadsController extends Controller
                 $user_id = null;
                 if ($request->lead_status == 'Potencial' || $request->lead_status == 'Interesado' || $request->lead_status == 'Matriculado') {
                     $user_id = $request->user()->id;
+
+                    if ($lead->status != $request->lead_status) {
+                        $lead = Lead::where('id', $request->lead_id)->first();
+                        UserActivity::create([
+                            'user_id'     => $user->id,
+                            'description' => 'Cambio de estado del lead ' . $lead->name . ' de ' . $lead->status . ' a ' . $request->lead_status . ' el ' . Carbon::now()->format('Y-m-d H:i:s')
+                        ]);
+                    }
                 }
 
                 // Update lead status as "No interesado"

@@ -15,6 +15,8 @@ use App\Models\OrderCourse;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use App\Models\Price;
+use App\Models\Student;
+use App\Models\UserActivity;
 use Carbon\Carbon;
 
 class OrdersController extends Controller
@@ -68,6 +70,12 @@ class OrdersController extends Controller
         // Get user
         $user = $request->user();
         $id = $user->id;
+
+        $student = Student::find($request->student_id);
+        UserActivity::create([
+            'user_id'     => $user->id,
+            'description' => 'Creó una orden para el estudiante ' . $student->name . ' el ' . Carbon::now()->format('d/m/Y H:i:s')
+        ]);
 
         $order = new \App\Models\Order();
 
@@ -385,16 +393,18 @@ class OrdersController extends Controller
     public function destroy($id)
     {
 
-        $order = Order::with('orderCourses')->where('id', $id)->first();
+        $order = Order::with('orderCourses', 'student')->where('id', $id)->first();
         if (!$order) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
 
         $user = request()->user();
-        if ($user->role_id != 1) {
+        if ($user->role_id != 1 && $user->role_id != 2) {
             return ApiResponseController::response('No tienes permisos para realizar esta acción', 403);
         }
 
+        $student = $order->student;
+        $order_id = $order->id;
         foreach ($order->orderCourses as $orderCourse) {
             $orderCourse->certificationTests()->delete();
             $orderCourse->freezings()->delete();
@@ -408,6 +418,12 @@ class OrdersController extends Controller
         // $order->invoice()->delete();
 
         $order->delete();
+
+
+        UserActivity::create([
+            'user_id'     => $user->id,
+            'description' => 'Eliminó la orden del estudiante ' . $student->name . ' con el id ' . $order_id . ' el ' . Carbon::now()->format('d/m/Y H:i:s')
+        ]);
 
         return ApiResponseController::response('Registro eliminado con exito', 200);
     }

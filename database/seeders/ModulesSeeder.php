@@ -104,7 +104,7 @@ class ModulesSeeder extends Seeder
                 'name'        => 'Agenda activa',
                 'description' => '',
                 'icon'        => 'heroicons_outline:calendar',
-                'path'        => '2',
+                'path'        => '/agenda-activa',
                 'type'        => 'basic',
                 'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
             ],
