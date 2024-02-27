@@ -303,7 +303,7 @@ class SapInstalationsController extends Controller
         $sapInstalation = SapInstalation::where('key', $key)->first();
 
         if (!$sapInstalation) {
-            return ApiResponseController::response('Unauthorized', 401);
+            return ApiResponseController::response('No found', 404);
         }
 
         return ApiResponseController::response('Authorized', 200);

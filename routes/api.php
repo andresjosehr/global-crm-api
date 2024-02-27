@@ -39,6 +39,9 @@ use PhpParser\Node\Expr\Assign;
 
 $basePathController = 'App\Http\Controllers\\';
 
+Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
+Route::get('traking/sap-instalations/{key}', [SapInstalationsController::class, 'getSapInstalation']);
+
 Route::prefix('auth')->group(function () {
     Route::post('sign-in', [AuthController::class, 'signIn'])->name('auth.sign-in');
     Route::post('sign-in-enrollment/{order_jey}', [AuthController::class, 'signInEnrollment'])->name('auth.sign-in-enrollment');
@@ -143,7 +146,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::put('update/{id}', [SapInstalationsController::class, 'update']);
             Route::put('update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
 
-            Route::get('get-sap-instalation/{key}', [SapInstalationsController::class, 'getSapInstalation']);
+
             Route::get('options', [SapInstalationsController::class, 'getOptions']);
             Route::get('get-available-times/{date}', [SapInstalationsController::class, 'getAvailableTimes']);
             Route::put('verified-payment/{id}', [SapInstalationsController::class, 'verifiedPayment']);
@@ -189,7 +192,6 @@ Route::post('terms-pdf-template/{order_id}', 'App\Http\Controllers\StudentsContr
 Route::get('download-terms-pdf-template/{order_id}', 'App\Http\Controllers\StudentsController@downloadTermsPdfTemplate');
 Route::post('terms-info/{key}/confirm', 'App\Http\Controllers\StudentsController@confirmTermsInfo');
 
-Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
 
 
 Route::get('import', 'App\Http\Controllers\ImportContorller@index');
