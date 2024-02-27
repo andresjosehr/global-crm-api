@@ -442,9 +442,10 @@ class OrdersController extends Controller
         $orderCourse->end                  = $request->end;
         $orderCourse->classroom_status     = $request->classroom_status;
         $orderCourse->license              = $request->license;
-        $orderCourse->classroom_user       = $request->classroom_user;
         $orderCourse->certification_status = $request->certification_status;
-        return ApiResponseController::response('Orden actualizada exitosamente', 200, $orderCourse);
+        $orderCourse->save();
+
+        return ApiResponseController::response('Datos actualizados exitosamente', 200, $orderCourse);
     }
 
     private function syncRelation($relation, $data)
