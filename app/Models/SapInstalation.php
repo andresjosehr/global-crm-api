@@ -114,6 +114,11 @@ class SapInstalation extends Model
         return $this->hasMany(SapTry::class, 'sap_instalation_id');
     }
 
+    public function lastSapTry()
+    {
+        return $this->hasOne(SapTry::class, 'sap_instalation_id')->latest();
+    }
+
     // add datetime attribute as property from last try
     public function getStartDatetimeAttribute()
     {

@@ -36,7 +36,7 @@ class SapInstalationsController extends Controller
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
 
-        $saps = SapInstalation::with('sapTries', 'student')
+        $saps = SapInstalation::with('sapTries', 'student', 'lastSapTry.staff')
             ->when($user->role_id === 5, function ($query) use ($user) {
                 // Subquery to get the latest sapTry id for each sapInstallation
                 $latestSapTryIdSub = SapTry::selectRaw('MAX(id) as latest_id, sap_instalation_id')
