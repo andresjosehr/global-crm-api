@@ -42,6 +42,7 @@ $basePathController = 'App\Http\Controllers\\';
 Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
 Route::get('traking/sap-instalations/{key}', [SapInstalationsController::class, 'getSapInstalation']);
 Route::put('traking/sap-instalations/update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
+Route::post('students/save-location/{id}', [StudentsController::class, 'saveLocation']);
 
 Route::prefix('auth')->group(function () {
     Route::post('sign-in', [AuthController::class, 'signIn'])->name('auth.sign-in');
@@ -80,7 +81,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::post('orders/update-traking-info/{id}', 'App\Http\Controllers\OrdersController@updateTrakingInfo');
     Route::get('orders/{id}/dates-history', 'App\Http\Controllers\OrdersController@datesHistory');
-    Route::post('students/save-location/{id}', [StudentsController::class, 'saveLocation']);
+
     Route::resource('students', StudentsController::class);
     Route::put('students/delegate-academic-area/{id}', [StudentsController::class, 'delegateAcademicArea']);
 
