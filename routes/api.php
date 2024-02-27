@@ -41,6 +41,7 @@ $basePathController = 'App\Http\Controllers\\';
 
 Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
 Route::get('traking/sap-instalations/{key}', [SapInstalationsController::class, 'getSapInstalation']);
+Route::put('traking/sap-instalations/update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
 
 Route::prefix('auth')->group(function () {
     Route::post('sign-in', [AuthController::class, 'signIn'])->name('auth.sign-in');
@@ -144,7 +145,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
             Route::post('save-draft', [SapInstalationsController::class, 'saveDraft']);
             Route::put('update/{id}', [SapInstalationsController::class, 'update']);
-            Route::put('update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
+
 
 
             Route::get('options', [SapInstalationsController::class, 'getOptions']);
