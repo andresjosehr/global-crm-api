@@ -38,12 +38,13 @@ class TestController extends Controller
             }])
             ->where('active', 1)->get();
 
-        // $student = Student::where('id', 496)->with('users', 'orders')->first();
-        // $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
+        $student = Student::where('id', 618)->with('users', 'orders')->first();
+        $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
 
-        // // StudentsController::dipatchNotification($order, $student);
+        $s = new StudentsController();
+        $s->dipatchNotification($order, $student);
 
-        // return ["Exito"];
+        return ["Exito"];
 
 
         // return [
