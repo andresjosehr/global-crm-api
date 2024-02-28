@@ -334,9 +334,15 @@ class SapInstalationsController extends Controller
 
     public function getSapInstalation(Request $request, $key)
     {
-        $sapInstalation = SapInstalation::where('key', $key)->orWhere('id', $key)
+        $sapInstalation = SapInstalation::where('key', $key)
             ->with('student.city', 'student.state', 'staff', 'sapTries')
             ->first();
+
+        if (!$sapInstalation) {
+            $sapInstalation = SapInstalation::where('id', $key)
+                ->with('student.city', 'student.state', 'staff', 'sapTries')
+                ->first();
+        }
 
         if ($sapInstalation->sapTries) {
             $sapInstalation->sapTry = $sapInstalation->sapTries->last();
