@@ -32,28 +32,33 @@ class SapInstalationsController extends Controller
     public function getList(Request $request)
     {
 
+
         $user = $request->user();
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
 
-        $saps = SapInstalation::with('sapTries', 'student', 'lastSapTry.staff')
-            ->when($user->role_id === 5, function ($query) use ($user) {
-                // Subquery to get the latest sapTry id for each sapInstallation
-                $latestSapTryIdSub = SapTry::selectRaw('MAX(id) as latest_id, sap_instalation_id')
-                    ->groupBy('sap_instalation_id');
+        $latestSapTryIdSub = SapTry::selectRaw('MAX(id) as latest_id, sap_instalation_id')
+            ->groupBy('sap_instalation_id')->when($request->instalation_date, function ($query) use ($request) {
+                $query->whereDate('start_datetime', $request->instalation_date);
+            });
 
-                // Join with subquery to filter sapInstallations
-                $query->joinSub($latestSapTryIdSub, 'latest_tries', function ($join) {
-                    $join->on('sap_instalations.id', '=', 'latest_tries.sap_instalation_id');
-                })
-                    ->whereExists(function ($subQuery) use ($user) {
-                        $subQuery->select(DB::raw(1))
-                            ->from('sap_tries')
-                            ->whereColumn('sap_tries.id', 'latest_tries.latest_id')
-                            ->where('sap_tries.staff_id', $user->id)
+        $saps = SapInstalation::with('sapTries', 'student', 'lastSapTry.staff')
+            ->joinSub($latestSapTryIdSub, 'latest_tries', function ($join) {
+                $join->on('sap_instalations.id', '=', 'latest_tries.sap_instalation_id');
+            })->whereExists(function ($subQuery) use ($user, $request) {
+                $subQuery->select(DB::raw(1))
+                    ->from('sap_tries')
+                    ->whereColumn('sap_tries.id', 'latest_tries.latest_id')
+                    ->when($user->role_id === 5, function ($query) use ($user, $request) {
+                        $query->where('sap_tries.staff_id', $user->id)
                             ->where('status', 'Programada');
+                    })
+
+                    ->when($request->instalation_date, function ($query) use ($request) {
+                        $query->whereDate('start_datetime', $request->instalation_date);
                     });
             })
+
             ->when($user->role_id === 1, function ($query) use ($request) {
                 $query->when($request->searchTerm, function ($query) use ($request) {
                     $query->when($request->searchTerm === 'Pendiente de verificacion de pago', function ($query) {
@@ -73,6 +78,7 @@ class SapInstalationsController extends Controller
             ->when($request->status, function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
+            // ->orderBy
             ->paginate($perPage);
 
         return ApiResponseController::response('Sap instalations list', 200, $saps);
