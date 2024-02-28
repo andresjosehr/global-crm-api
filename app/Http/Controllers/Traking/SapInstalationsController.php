@@ -35,7 +35,7 @@ class SapInstalationsController extends Controller
 
         $user = $request->user();
 
-        $perPage = $request->input('perPage') ? $request->input('perPage') : 10;
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 1000;
 
         $latestSapTryIdSub = SapTry::selectRaw('MAX(id) as latest_id, sap_instalation_id')
             ->groupBy('sap_instalation_id')->when($request->instalation_date, function ($query) use ($request) {
@@ -79,7 +79,7 @@ class SapInstalationsController extends Controller
             ->when($request->status, function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-            ->paginate($perPage);
+            ->paginate(1000);
 
         // sort by start_datetime
         // $saps = $saps->sortBy('start_datetime');
