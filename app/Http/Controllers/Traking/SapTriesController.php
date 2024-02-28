@@ -48,6 +48,8 @@ class SapTriesController extends Controller
             $sapTry->end_datetime = Carbon::parse($sapTry->start_datetime)->addMinutes(30);
         }
 
+
+
         // Check if there is a sap try with id graten than current sap try
         $sapTryNext = SapTry::where('sap_instalation_id', $sap_instalation_id)->where('id', '>', $id)->first();
         $sapInstalationNext = SapInstalation::where('id', '>', $sap_instalation_id)->first();
@@ -93,6 +95,7 @@ class SapTriesController extends Controller
         }
 
         $sapTry->status = $request->status;
+        $sapTry->staff_id = $request->staff_id;
         $sapTry->save();
 
 

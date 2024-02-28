@@ -75,11 +75,14 @@ class SapInstalationsController extends Controller
                     // ->where('payment_verified_at', null);
                 });
             })
+
             ->when($request->status, function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-            // ->orderBy
             ->paginate($perPage);
+
+        // sort by start_datetime
+        // $saps = $saps->sortBy('start_datetime');
 
         return ApiResponseController::response('Sap instalations list', 200, $saps);
     }
