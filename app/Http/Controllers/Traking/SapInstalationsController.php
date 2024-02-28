@@ -37,51 +37,30 @@ class SapInstalationsController extends Controller
 
         $perPage = $request->input('perPage') ? $request->input('perPage') : 1000;
 
-        $latestSapTryIdSub = SapTry::selectRaw('MAX(id) as latest_id, sap_instalation_id')
-            ->groupBy('sap_instalation_id')->when($request->instalation_date, function ($query) use ($request) {
-                $query->whereDate('start_datetime', $request->instalation_date);
-            });
+
 
         $saps = SapInstalation::with('sapTries', 'student', 'lastSapTry.staff')
-            ->joinSub($latestSapTryIdSub, 'latest_tries', function ($join) {
-                $join->on('sap_instalations.id', '=', 'latest_tries.sap_instalation_id');
-            })->whereExists(function ($subQuery) use ($user, $request) {
-                $subQuery->select(DB::raw(1))
-                    ->from('sap_tries')
-                    ->whereColumn('sap_tries.id', 'latest_tries.latest_id')
-                    ->when($user->role_id === 5, function ($query) use ($user, $request) {
-                        $query->where('sap_tries.staff_id', $user->id)
-                            ->where('status', 'Programada');
-                    })
-
-                    ->when($request->instalation_date, function ($query) use ($request) {
-                        $query->whereDate('start_datetime', $request->instalation_date);
-                    });
-            })
-
-            ->when($user->role_id === 1, function ($query) use ($request) {
-                $query->when($request->searchTerm, function ($query) use ($request) {
-                    $query->when($request->searchTerm === 'Pendiente de verificacion de pago', function ($query) {
-                        $query->whereHas('sapTries', function ($query) {
-                            $query->where('payment_enabled', 1)
-                                ->where('payment_receipt', 'IS NOT', null)
-                                ->where('payment_verified_at', null);
-                        });
-                    })->orWhere(function ($query) use ($request) {
-                        $query->where('payment_enabled', 1)
-                            ->where('payment_receipt', 'IS NOT', null)
-                            ->where('payment_verified_at', null);
-                    });
-                    // ->where('payment_verified_at', null);
+            ->when($user->role_id === 5, function ($query) use ($user, $request) {
+                $query->whereHas('lastSapTry', function ($query) use ($user) {
+                    return $query->where('status', 'Programada')
+                        ->where('staff_id', $user->id);
                 });
             })
-
+            ->when($request->instalation_date, function ($query) use ($request) {
+                $query->whereHas('lastSapTry', function ($query) use ($request) {
+                    $query->whereDate('start_datetime', $request->instalation_date);
+                });
+            })
             ->when($request->status && $request->status != 'Pendiente sin agendar', function ($query) use ($request) {
-                $query->where('status', $request->status);
+                $query->where('status', $request->status)
+                    ->whereHas('lastSapTry', function ($query) {
+                        $query->whereNotNull('schedule_at')
+                            ->whereNotNull('start_datetime_target_timezone');
+                    });
             })
             ->when($request->status && $request->status == 'Pendiente sin agendar', function ($query) use ($request) {
                 return $query->whereHas('lastSapTry', function ($query) {
-                    $query->where('schedule_at', null);
+                    $query->whereNull('schedule_at');
                 })->where('status', 'Pendiente');
             })
             ->paginate(1000);
@@ -111,6 +90,7 @@ class SapInstalationsController extends Controller
         $otherSaps = SapInstalation::where('order_id', $sap['order_id'])
             ->where(function ($query) {
                 $query->where('instalation_type', '<>', 'Desbloqueo')
+                    ->where('instalation_type', '<>', 'Asignación de usuario y contraseña')
                     ->orWhereNull('instalation_type');
             })
             ->get()
