@@ -100,9 +100,7 @@ class SapTriesController extends Controller
 
         // is today
         if ($sapTry->wasChanged('staff_id') && Carbon::parse($sapTry->start_datetime)->format('Y-m-d') === Carbon::now()->format('Y-m-d')) {
-            $staff = $sapTry->staff;
             $student = Student::where('id', $sapTry->sapInstalation->order->student->id)->with('city', 'state')->first();
-            $user = $student->userAssigned[0];
 
             $noti = new NotificationController();
             $noti = $noti->store([

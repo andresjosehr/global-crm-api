@@ -472,14 +472,17 @@ class SapInstalationsController extends Controller
         }
         SapInstalation::where('id', $id)->update($sapData);
 
-        // $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
-
         if (!$tryDB->schedule_at && $data['schedule_at']) {
             $data['status'] = 'Programada';
         }
 
         $sapTryFillable = (new SapTry())->getFillable();
         $tryData = collect($data)->only($sapTryFillable)->toArray();
+
+        if ($request->previus_sap_instalation) {
+            $tryData['staff_id'] = 30;
+        }
+
         SapTry::where('id', $tryDB->id)->update($tryData);
 
         $tryNew = SapTry::where('id', $tryDB->id)->first();
