@@ -116,7 +116,8 @@ class SapInstalation extends Model
 
     public function lastSapTry()
     {
-        return $this->belongsTo(SapTry::class, 'last_sap_try_id');
+        return $this->hasOne(SapTry::class, 'sap_instalation_id')->latest();
+        // return $this->belongsTo(SapTry::class, 'last_sap_try_id');
     }
 
     // add datetime attribute as property from last try
