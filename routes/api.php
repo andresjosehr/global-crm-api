@@ -40,7 +40,7 @@ use PhpParser\Node\Expr\Assign;
 $basePathController = 'App\Http\Controllers\\';
 
 Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
-Route::get('traking/sap-instalations/{key}', [SapInstalationsController::class, 'getSapInstalation']);
+Route::get('traking/sap-instalations/get/{key}', [SapInstalationsController::class, 'getSapInstalation']);
 Route::put('traking/sap-instalations/update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
 Route::post('students/save-location/{id}', [StudentsController::class, 'saveLocation']);
 

@@ -31,6 +31,12 @@ class TestController extends Controller
     public function index()
     {
 
+        $date = Carbon::now()->format('Y-m-d');
+        return $technicians = User::where('role_id', 5)
+            ->withCount(['sapSchedules' => function ($query) use ($date) {
+                $query->whereDate('start_datetime', $date);
+            }])
+            ->where('active', 1)->get();
 
         // $student = Student::where('id', 496)->with('users', 'orders')->first();
         // $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();

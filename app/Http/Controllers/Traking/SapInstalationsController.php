@@ -153,7 +153,7 @@ class SapInstalationsController extends Controller
 
         SapInstalation::where('id', $id)->update($sapData);
 
-        $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
+        // $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
 
         if ($sapDB->payment_enabled) {
             self::updatePayment($request, $id);
@@ -293,7 +293,6 @@ class SapInstalationsController extends Controller
         $data['description'] = 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' una instalación SAP';
 
 
-        Log::info($sap);
         $noti = new NotificationController();
         $noti = $noti->store([
             'title'      => $title . ' | ' . $sap->student->name,
@@ -351,58 +350,39 @@ class SapInstalationsController extends Controller
     static public function findAvailableStaff($date)
     {
         // 1. Obtener todos los técnicos
-        $technicians = User::where('role_id', 5)->where('active', 1)->get();
+        $technicians = User::where('role_id', 5)
+            ->withCount(['sapSchedules' => function ($query) use ($date) {
+                $query->whereDate('start_datetime', $date);
+            }])
+            ->where('active', 1)->get();
 
 
-        $maxAvailableTime = 0;
-        $availableTechnician = null;
-
-        foreach ($technicians as $technician) {
-            // 2. Filtrar por Disponibilidad
-            $availabilitySlots = StaffAvailabilitySlot::where('user_id', $technician->id)
+        $technicians = $technicians->map(function ($technician) use ($date) {
+            $technician->availabilitySlots = StaffAvailabilitySlot::where('user_id', $technician->id)
                 ->where('day', strtolower(Carbon::parse($date)->format('l')))
                 ->get();
 
-
-            $totalAvailableTime = 0;
-
-            foreach ($availabilitySlots as $slot) {
-                // 3. Calcular Tiempo Disponible
+            $technician->totalAvailableTime = $technician->availabilitySlots->reduce(function ($carry, $slot) use ($date, $technician) {
                 $startTime = Carbon::parse($slot->start_time);
                 $endTime = Carbon::parse($slot->end_time);
 
-                $instalations = SapTry::selectRaw('MAX(id) as id, sap_instalation_id')
-                    ->where('staff_id', $technician->id)
-                    ->groupBy('sap_instalation_id')
-                    ->pluck('id')
-                    ->toArray();
+                $minuteDiff = $endTime->diffInMinutes($startTime) * 2;
 
-                $instalations = SapTry::whereIn('id', $instalations)->whereDate('start_datetime', $date)->get();
+                return $carry + $minuteDiff;
+            }, 0);
 
-                $totalInstalationTime = 0;
-                foreach ($instalations as $instalation) {
-                    $instalationStartTime = Carbon::parse($instalation->start_datetime);
-                    $instalationEndTime = Carbon::parse($instalation->end_datetime);
-                    $totalInstalationTime += $instalationEndTime->diffInMinutes($instalationStartTime);
-                }
+            $technician->bussyTime = $technician->sap_schedules_count * 30;
 
-                $totalAvailableTime += abs($endTime->diffInMinutes($startTime) - $totalInstalationTime);
-            }
+            $technician->totalAvailableTime = $technician->totalAvailableTime - $technician->bussyTime;
 
-            // Log::info([$technician->id => [
-            //     'totalAvailableTime' => $totalAvailableTime,
-            //     'maxAvailableTime' => $maxAvailableTime,
-            //     'availableTechnician' => $availableTechnician
-            // ]]);
 
-            // 4. Seleccionar Técnico con Más Tiempo Disponible
-            if ($totalAvailableTime > $maxAvailableTime) {
-                $maxAvailableTime = $totalAvailableTime;
-                $availableTechnician = $technician;
-            }
-        }
 
-        // Log::info([$availableTechnician]);
+            return $technician;
+        });
+        $availableTechnician = $technicians->filter(function ($technician) {
+            return $technician->totalAvailableTime > 0;
+        })->sortBy('sap_schedules_count')->first();
+
         return $availableTechnician;
     }
 
@@ -460,7 +440,7 @@ class SapInstalationsController extends Controller
         }
         SapInstalation::where('id', $id)->update($sapData);
 
-        $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
+        // $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
 
         if (!$tryDB->schedule_at && $data['schedule_at']) {
             $data['status'] = 'Programada';

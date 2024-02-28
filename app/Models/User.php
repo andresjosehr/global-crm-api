@@ -114,6 +114,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(SapInstalation::class, 'staff_id');
     }
 
+    function sapSchedules()
+    {
+        return $this->hasMany(SapTry::class, 'staff_id');
+    }
+
 
     public function getUnavailableTimesAttribute()
     {
@@ -262,7 +267,7 @@ class User extends Authenticatable implements JWTSubject
         // Fusionar y contar las ocurrencias de cada intervalo de tiempo
         $mergedBusyTimes = array_merge(array_column($busyTimesForDay, 'start_time'), $additionalBusyTimes);
 
-        // Log::info($mergedBusyTimes);
+
 
 
 
