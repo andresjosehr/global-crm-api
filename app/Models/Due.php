@@ -18,7 +18,6 @@ class Due extends Model
         'amount',
         'paid',
         'payment_method_id',
-        'payment_method_id',
         'position',
         'payment_receipt',
     ];

@@ -76,8 +76,13 @@ class SapInstalationsController extends Controller
                 });
             })
 
-            ->when($request->status, function ($query) use ($request) {
+            ->when($request->status && $request->status != 'Pendiente sin agendar', function ($query) use ($request) {
                 $query->where('status', $request->status);
+            })
+            ->when($request->status && $request->status == 'Pendiente sin agendar', function ($query) use ($request) {
+                return $query->whereHas('lastSapTry', function ($query) {
+                    $query->where('schedule_at', null);
+                })->where('status', 'Pendiente');
             })
             ->paginate(1000);
 
@@ -154,13 +159,20 @@ class SapInstalationsController extends Controller
 
         if ($sapData['instalation_type'] === 'Desbloqueo SAP') {
             $sapData['payment_enabled'] = 1;
+            $sapData['staff_id'] = 30;
         }
 
         if ($sapData['instalation_type'] === 'Asignación de usuario y contraseña') {
             $sapData['payment_enabled'] = 0;
         }
 
-        SapInstalation::where('id', $id)->update($sapData);
+        // iterate over fillable fields
+        collect($sapDB->getFillable())->each(function ($field) use ($sapData, $sapDB) {
+            if (isset($sapData[$field])) {
+                $sapDB->$field = $sapData[$field];
+            }
+        });
+        $sapDB->save();
 
         // $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
 
@@ -502,7 +514,7 @@ class SapInstalationsController extends Controller
         $sapPayment = SapInstalation::with('order.student')->where('id', $id)->first();
         // only payment_fields
         $data = array_filter($request->all(), function ($key) {
-            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_method_id', 'payment_date']);
+            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_method_id']);
         }, ARRAY_FILTER_USE_KEY);
 
         $sapPayment->fill($data);
