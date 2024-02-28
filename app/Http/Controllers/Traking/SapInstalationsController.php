@@ -302,13 +302,27 @@ class SapInstalationsController extends Controller
         $data['description'] = 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' una instalación SAP';
 
 
+        $title = $title . ' | ' . $sap->student->name;
+        $body = 'El alumno ' . $sap->student->name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' su instalación SAP' . $aditionalText;
+
         $noti = new NotificationController();
         $noti = $noti->store([
-            'title'      => $title . ' | ' . $sap->student->name,
-            'body'       => 'El alumno ' . $sap->student->name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' su instalación SAP' . $aditionalText,
+            'title'      => $title,
+            'body'       => $body,
             'icon'       => 'check_circle_outline',
             'url'        => '#',
             'user_id'    => $sap->student->user_id,
+            'use_router' => false,
+        ]);
+
+
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => $title,
+            'body'       => $body,
+            'icon'       => 'check_circle_outline',
+            'url'        => '#',
+            'user_id'    => $tryNew->staff_id,
             'use_router' => false,
         ]);
 
