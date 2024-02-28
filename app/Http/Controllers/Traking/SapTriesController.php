@@ -61,7 +61,7 @@ class SapTriesController extends Controller
             $sapInstalationsCount = Order::where('id', $sapTry->sapInstalation->order_id)->with('sapInstalations')->first()->sapInstalations->count();
             $sapStryCount = SapTry::where('sap_instalation_id', $sap_instalation_id)->get()->count();
 
-            if ($sapInstalationsCount === 1 && $sapStryCount === 3) {
+            if ($sapStryCount === 3) {
                 SapInstalation::where('id', $sap_instalation_id)->update(['status' => 'Cancelada']);
 
                 // create new sap instalation with the same data

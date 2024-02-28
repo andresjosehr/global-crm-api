@@ -106,10 +106,13 @@ class SapInstalationsController extends Controller
         $sapInstalation->save();
 
         $try = new SapTry();
-        $start_datetime = OrderCourse::where('order_id', $sap['order_id'])->where('type', 'paid')->get()->reduce(function ($carry, $item) {
-            $start = Carbon::parse($item->start);
-            return $carry ? ($start->lt($carry) ? $start : $carry) : $start;
-        }, Carbon::now()->addDecade()->format('Y-m-d'));
+        $start_datetime = OrderCourse::where('order_id', $sap['order_id'])
+            ->where('type', 'paid')
+            ->whereNotNull('start')
+            ->get()->reduce(function ($carry, $item) {
+                $start = Carbon::parse($item->start);
+                return $carry ? ($start->lt($carry) ? $start : $carry) : $start;
+            }, Carbon::now()->addDecade()->format('Y-m-d'));
 
         $now = Carbon::now();
         $start_datetime = $start_datetime->lt($now) ? $now->addDays(2) : $start_datetime;
