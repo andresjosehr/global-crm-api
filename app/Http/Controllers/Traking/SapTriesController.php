@@ -98,6 +98,26 @@ class SapTriesController extends Controller
         $sapTry->staff_id = $request->staff_id;
         $sapTry->save();
 
+        // is today
+        if ($sapTry->wasChanged('staff_id') && Carbon::parse($sapTry->start_datetime)->format('Y-m-d') === Carbon::now()->format('Y-m-d')) {
+            $staff = $sapTry->staff;
+            $student = Student::where('id', $sapTry->sapInstalation->order->student->id)->with('city', 'state')->first();
+            $user = $student->userAssigned[0];
+
+            $noti = new NotificationController();
+            $noti = $noti->store([
+                'title'      => 'Asignación de instalación SAP',
+                'body'       => 'Se te ha asignado una instalación para el día ' . Carbon::parse($sapTry->start_datetime)->format('d/m/Y') . ' a las ' . Carbon::parse($sapTry->start_datetime)->format('H:i') . ' para el alumno ' . $student->name,
+                'icon'       => 'check_circle_outline',
+                'url'        => '#',
+                'user_id'    => $request->staff_id,
+                'use_router' => false,
+                'custom_data' => [
+                    []
+                ]
+            ]);
+        }
+
 
         if ($sapTry->payment_enabled) {
             self::updatePayment($request, $id);

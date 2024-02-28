@@ -301,9 +301,12 @@ class SapInstalationsController extends Controller
         $data['title'] = $title;
         $data['description'] = 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' una instalación SAP';
 
+        $assignment = new AssignmentsController();
+        $assignment->store($data);
+
 
         $title = $title . ' | ' . $sap->student->name;
-        $body = 'El alumno ' . $sap->student->name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' su instalación SAP' . $aditionalText;
+        $body = 'El alumno ' . $sap->student->name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' su instalación SAP el ' . Carbon::parse($tryNew->start_datetime)->format('Y-m-d H:i:s') . ' ' . $aditionalText;
 
         $noti = new NotificationController();
         $noti = $noti->store([
@@ -316,18 +319,18 @@ class SapInstalationsController extends Controller
         ]);
 
 
-        $noti = new NotificationController();
-        $noti = $noti->store([
-            'title'      => $title,
-            'body'       => $body,
-            'icon'       => 'check_circle_outline',
-            'url'        => '#',
-            'user_id'    => $tryNew->staff_id,
-            'use_router' => false,
-        ]);
-
-        $assignment = new AssignmentsController();
-        $assignment->store($data);
+        // if Carbon::parse($tryNew->start_datetime) is today
+        if (Carbon::parse($tryNew->start_datetime)->isToday()) {
+            $noti = new NotificationController();
+            $noti = $noti->store([
+                'title'      => $title,
+                'body'       => $body,
+                'icon'       => 'check_circle_outline',
+                'url'        => '#',
+                'user_id'    => $tryNew->staff_id,
+                'use_router' => false,
+            ]);
+        }
     }
 
     public function createAssignment($sap, $try, $data)
