@@ -64,6 +64,7 @@ class SapTriesController extends Controller
             if ($sapStryCount === 3) {
                 SapInstalation::where('id', $sap_instalation_id)->update(['status' => 'Cancelada']);
 
+
                 // create new sap instalation with the same data
                 $sapInstalation                   = new SapInstalation();
                 // get fillable fields
@@ -71,6 +72,20 @@ class SapTriesController extends Controller
                 foreach ($fillableFields as $field) {
                     $sapInstalation->$field = $sapTry->sapInstalation->$field;
                 }
+
+                $otherSaps = SapInstalation::where('order_id', $sapTry->sapInstalation->order_id)
+                    ->where(function ($query) {
+                        $query->where('instalation_type', '<>', 'Desbloqueo')
+                            ->where('instalation_type', '<>', 'Asignación de usuario y contraseña')
+                            ->orWhereNull('instalation_type');
+                    })
+                    ->get()
+                    ->count();
+
+                if ($otherSaps > 1) {
+                    $sapInstalation->payment_enabled = 1;
+                }
+
                 $sapInstalation->status = 'Pendiente';
                 $sapInstalation->key    = md5(microtime());
                 $sapInstalation->save();
