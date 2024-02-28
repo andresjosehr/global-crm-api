@@ -42,6 +42,13 @@ class SapTry extends Model
         'payment_method_id',
     ];
 
+    // protected static function booted()
+    // {
+    //     static::created(function ($sapTry) {
+    //         $sapTry->sapInstalation->update(['last_sap_try_id' => $sapTry->id]);
+    //     });
+    // }
+
     public function sapInstalation()
     {
         return $this->belongsTo(SapInstalation::class, 'sap_instalation_id');

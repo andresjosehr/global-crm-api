@@ -494,7 +494,7 @@ class SapInstalationsController extends Controller
         $sapPayment = SapInstalation::with('order.student')->where('id', $id)->first();
         // only payment_fields
         $data = array_filter($request->all(), function ($key) {
-            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_method_id']);
+            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_date', 'payment_method_id']);
         }, ARRAY_FILTER_USE_KEY);
 
         $sapPayment->fill($data);

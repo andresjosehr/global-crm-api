@@ -43,6 +43,7 @@ Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Control
 Route::get('traking/sap-instalations/get/{key}', [SapInstalationsController::class, 'getSapInstalation']);
 Route::put('traking/sap-instalations/update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
 Route::post('students/save-location/{id}', [StudentsController::class, 'saveLocation']);
+Route::put('traking/sap-instalations/update-payment/{id}', [SapInstalationsController::class, 'updatePayment']);
 
 Route::prefix('auth')->group(function () {
     Route::post('sign-in', [AuthController::class, 'signIn'])->name('auth.sign-in');
@@ -161,7 +162,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
 
 
-            Route::put('update-payment/{id}', [SapInstalationsController::class, 'updatePayment']);
+
             Route::put('sap-try/update-payment/{id}', [SapTriesController::class, 'updatePayment']);
 
 
