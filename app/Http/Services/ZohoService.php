@@ -15,7 +15,7 @@ class ZohoService
 
 
         $token = ZohoToken::where('type', 'production')->first()->token;
-        $calendar = '70d8c9bc138b47ab8a8cd00de7a60b9b';
+        $calendar = 'bcc9a0f5ac0949b69b9a99ba331dd03f';
         if (env('APP_ENV') != 'production') {
             $token = ZohoToken::where('type', 'qa')->first()->token;
             $calendar = '70d8c9bc138b47ab8a8cd00de7a60b9b';
@@ -96,7 +96,7 @@ class ZohoService
     {
 
         $token = ZohoToken::where('type', 'production')->first()->token;
-        $calendar = '70d8c9bc138b47ab8a8cd00de7a60b9b';
+        $calendar = 'bcc9a0f5ac0949b69b9a99ba331dd03f';
         if (env('APP_ENV') != 'production') {
             $token = ZohoToken::where('type', 'qa')->first()->token;
             $calendar = '70d8c9bc138b47ab8a8cd00de7a60b9b';
