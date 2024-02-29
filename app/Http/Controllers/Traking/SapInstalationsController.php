@@ -190,6 +190,11 @@ class SapInstalationsController extends Controller
             unset($fields[0]);
         }
 
+        if ($sap['instalation_type'] === 'Instalación completa') {
+            unset($fields[6]);
+            unset($fields[1]);
+        }
+
         if ($sap['previus_sap_instalation'] === false) {
             unset($fields[1]);
             unset($fields[2]);

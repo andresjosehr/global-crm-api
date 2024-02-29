@@ -24,6 +24,7 @@ class SapInstalation extends Model
         "restrictions",
         "price_amount",
         "sap_user",
+        "last_sap_try_id",
         "currency_id",
         'payment_enabled',
         "payment_method_id",
@@ -116,8 +117,8 @@ class SapInstalation extends Model
 
     public function lastSapTry()
     {
-        return $this->hasOne(SapTry::class, 'sap_instalation_id')->latest();
-        // return $this->belongsTo(SapTry::class, 'last_sap_try_id');
+        // return $this->hasOne(SapTry::class, 'sap_instalation_id')->latest();
+        return $this->belongsTo(SapTry::class, 'last_sap_try_id');
     }
 
     // add datetime attribute as property from last try

@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class SapTry extends Model
 {
@@ -42,12 +43,18 @@ class SapTry extends Model
         'payment_method_id',
     ];
 
-    // protected static function booted()
-    // {
-    //     static::created(function ($sapTry) {
-    //         $sapTry->sapInstalation->update(['last_sap_try_id' => $sapTry->id]);
-    //     });
-    // }
+    protected static function booted()
+    {
+        Log::info('booted');
+        static::created(function ($sapTry) {
+            $sapTry->sapInstalation->update(['last_sap_try_id' => $sapTry->id]);
+        });
+
+        static::deleting(function ($sapTry) {
+            // Set the last sap try id to last sap try id of the sap instalation
+            $sapTry->sapInstalation->update(['last_sap_try_id' => $sapTry->sapInstalation->sapTries()->where('id', '!=', $sapTry->id)->latest()->first()->id]);
+        });
+    }
 
     public function sapInstalation()
     {

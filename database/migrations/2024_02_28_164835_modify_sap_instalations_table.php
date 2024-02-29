@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('sap_instalations', function (Blueprint $table) {
             // add last_sap_try_id
-            $table->unsignedBigInteger('last_sap_try_id')->nullable();
+            $table->unsignedBigInteger('last_sap_try_id')->nullable()->after('order_id');
         });
     }
 

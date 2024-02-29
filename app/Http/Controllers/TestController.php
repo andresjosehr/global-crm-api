@@ -30,29 +30,12 @@ class TestController extends Controller
      */
     public function index()
     {
-
-        $date = Carbon::now()->format('Y-m-d');
-        return $technicians = User::where('role_id', 5)
-            ->withCount(['sapSchedules' => function ($query) use ($date) {
-                $query->whereDate('start_datetime', $date);
-            }])
-            ->where('active', 1)->get();
-
-        $student = Student::where('id', 618)->with('users', 'orders')->first();
-        $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
-
-        $s = new StudentsController();
-        $s->dipatchNotification($order, $student);
-
-        return ["Exito"];
-
-
-        // return [
-        //     'order' => $order,
-        //     'student' => $student
-        // ];
-
-        // event(new \App\Events\CallActivityEvent(1, 'LAST_CALL_ACTIVITY', ["Culito" => 'Esta es una prueba']));
+        SapInstalation::with('sapTries')->get()->each(function ($sapInstalation) {
+            if ($lastSap = $sapInstalation->sapTries->last()) {
+                $sapInstalation->update(['last_sap_try_id' => $lastSap->id]);
+            }
+        });
+        return "Exito";
     }
     public function index2()
     {
