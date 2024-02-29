@@ -63,6 +63,12 @@ class SapInstalationsController extends Controller
                     $query->whereNull('schedule_at');
                 })->where('status', 'Pendiente');
             })
+            ->when($request->searchTerm === 'Pendiente de verificacion de pago', function ($query) {
+
+                $query->where('payment_enabled', 1)
+                    ->whereNotNull('payment_receipt')
+                    ->whereNull('payment_verified_at');
+            })
             ->paginate(1000);
 
         // sort by start_datetime
