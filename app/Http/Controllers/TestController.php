@@ -31,9 +31,13 @@ class TestController extends Controller
      */
     public function index()
     {
-        $liveConnectService = new LiveConnectService();
-        $token = $liveConnectService->sendMessage2("584140339097", 'Me alegra :)');
-        return $token;
+        $sap = SapInstalation::with('sapTries')->where('id', 216)->first();
+        $otherSapInstalations = SapInstalation::where('id', '!=', 216)->get();
+        $first = true;
+
+        $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first, 'otherSapInstalations' => $otherSapInstalations])->render();
+
+        return $content;
     }
     public function index2()
     {
