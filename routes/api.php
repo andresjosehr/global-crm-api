@@ -261,7 +261,7 @@ Route::prefix('traking')->group(function () {
     });
 });
 
-Route::post('users/{id}/get-available-times', 'App\Http\Controllers\Traking\SapInstalationsController@getAvailableTimes');
+Route::post('staff/get-available-times/{id}/{sapId}', 'App\Http\Controllers\Traking\SapInstalationsController@getAvailableTimes');
 
 Route::post('toggle-user-working-status', [ProcessesController::class, 'toggleUserWorkingStatus']);
 Route::get('toggle-user-working-status', [ProcessesController::class, 'toggleUserWorkingStatus']);

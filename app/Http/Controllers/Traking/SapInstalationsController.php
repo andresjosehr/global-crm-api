@@ -433,11 +433,24 @@ class SapInstalationsController extends Controller
         return $availableTechnician;
     }
 
-    public function getAvailableTimes(Request $request, $id)
+    public function getAvailableTimes(Request $request, $staff_id, $sap_id)
     {
-        $user = User::where('id', $id)->first();
+        $user = User::where('id', $staff_id)->first();
 
         $availableTimes = $user->getAvailableTimesForDate($request->date, $request->datesBussy); // Reemplaza la fecha con la que deseas trabajar.
+
+        $sap = SapInstalation::with('lastSapTry')->find($sap_id);
+        $sapTry = $sap->lastSapTry;
+        $time = Carbon::parse($sapTry->start_datetime)->format('H:i:s');
+
+        if (count($availableTimes) === 0 && $time === '00:00:00') {
+            // reasignar el staff
+
+            $sapTry->staff_id = self::findAvailableStaff($request->date)->id;
+            $sapTry->save();
+
+            $availableTimes = User::find($sapTry->staff_id)->first()->getAvailableTimesForDate($request->date, $request->datesBussy);
+        }
 
         return ApiResponseController::response('Consulta Exitosa', 200, $availableTimes);
     }
