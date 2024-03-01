@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Traking;
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\NotificationController;
+use App\Models\Holiday;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\Price;
@@ -95,8 +96,18 @@ class SapTriesController extends Controller
 
 
             $try = new SapTry();
-            $try->start_datetime = Carbon::now()->addDays(2)->format('Y-m-d') . ' 00:00:00';
+            $start_datetime = Carbon::now()->addDays(2);
+
+
+            $holidays = Holiday::all();
+            while ($start_datetime->isSunday() || $holidays->contains('date', $start_datetime->format('Y-m-d'))) {
+                $start_datetime->addDay();
+            }
+
+
+            $try->start_datetime = $start_datetime->format('Y-m-d') . ' 00:00:00';
             $try->end_datetime = Carbon::parse($try->start_datetime)->addMinutes(30);
+
 
             $try->staff_id           = SapInstalationsController::findAvailableStaff($try->start_datetime)->id;
             $try->sap_instalation_id = $sap_instalation_id;
