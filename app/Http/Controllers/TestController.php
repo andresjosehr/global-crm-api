@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Mails\CoreMailsController;
 use App\Http\Services\ImportStudentsService;
 use App\Http\Services\ImportStudentsServiceSEG;
+use App\Http\Services\LiveConnectService;
 use App\Http\Services\ZohoService;
 use App\Models\Currency;
 use App\Models\Due;
@@ -30,12 +31,9 @@ class TestController extends Controller
      */
     public function index()
     {
-        SapInstalation::with('sapTries')->get()->each(function ($sapInstalation) {
-            if ($lastSap = $sapInstalation->sapTries->last()) {
-                $sapInstalation->update(['last_sap_try_id' => $lastSap->id]);
-            }
-        });
-        return "Exito";
+        $liveConnectService = new LiveConnectService();
+        $token = $liveConnectService->sendMessage2("584140339097", 'Me alegra :)');
+        return $token;
     }
     public function index2()
     {

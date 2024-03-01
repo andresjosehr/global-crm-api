@@ -10,6 +10,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
 use App\Models\Currency;
+use App\Models\Holiday;
 use App\Models\Message;
 use App\Models\OrderCourse;
 use App\Models\PaymentMethod;
@@ -120,8 +121,16 @@ class SapInstalationsController extends Controller
                 return $carry ? ($start->lt($carry) ? $start : $carry) : $start;
             }, Carbon::now()->addDecade()->format('Y-m-d'));
 
+
+
         $now = Carbon::now();
         $start_datetime = $start_datetime->lt($now) ? $now->addDays(2) : $start_datetime;
+
+        $holidays = Holiday::all();
+        while ($start_datetime->isSunday() || $holidays->contains('date', $start_datetime->format('Y-m-d'))) {
+            $start_datetime->addDay();
+        }
+
 
         $try->start_datetime = $start_datetime->format('Y-m-d') . ' 00:00:00';
 
