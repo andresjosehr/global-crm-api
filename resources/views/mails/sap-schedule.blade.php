@@ -47,8 +47,16 @@
                 <div>{{$sap->student->name}}</div>
             </p>
 
+            @php
+                $sapType = $sap->instalation_type;
+                if($sapType === 'Instalación completa'){
+                    $sapType = 'primera';
+                }
+
+            @endphp
+
             <p>
-                <b>¡Has {{$retry ? 're' : ''}}agendado correctamente tu instalación SAP!</b>
+                <b>¡Has {{$retry ? 're' : ''}}agendado correctamente tu {{$sapType}}!</b>
             </p>
 
             <p>La fecha y hora de agendamiento que has escogido es: </p>
