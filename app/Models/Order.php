@@ -24,7 +24,7 @@ class Order extends Model
 
     function orderCourses()
     {
-        return $this->hasMany(OrderCourse::class);
+        return $this->hasMany(OrderCourse::class)->orderBy('start', 'asc');
     }
 
     function student()
