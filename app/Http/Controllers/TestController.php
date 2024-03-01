@@ -31,7 +31,7 @@ class TestController extends Controller
      */
     public function index()
     {
-        $sap = SapInstalation::with('sapTries')->where('id', 216)->first();
+        $sap = SapInstalation::with('sapTries', 'lastSapTry')->where('id', 216)->first();
         $otherSapInstalations = SapInstalation::where('id', '!=', 216)->get();
         $first = true;
 

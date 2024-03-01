@@ -138,6 +138,23 @@
             <p><b>Si por alguna razón no confirmas la llegada de este correo, no te eximirá de la responsabilidad de estar presente en la fecha y hora señalada.</b></p>
 
 
+            @php
+            $url = '';
+            if($sap->previus_sap_instalation){
+                $url = $sap->operating_system === 'Windows' ? env('APP_URL').'/guia_teamviewer_windows.pdf' : env('APP_URL').'/guia_mac_teamviewer.pdf';
+            }else{
+                $url = $sap->operating_system === 'Windows' ? 'https://cdn.liveconnect.chat/421/lc/1144/usuarios/4408/files/guia_pre_instalacion_sap_windows.pdf' : 'https://cdn.liveconnect.chat/421/lc/1144/usuarios/4408/files/guia_mac_1.pdf';
+            }
+            // echo $url;
+            @endphp
+
+
+
+            <p>Para descargar la guía de instalación, haga clic en el siguiente botón:</p>
+
+            <a href="{{$url}}" style="display: inline-block; padding: 10px 20px; background-color: #188859; color: #fff; text-decoration: none; border-radius: 5px;">Descargar guía de instalación</a>
+
+
                <p>Nos encantaría que pases por nuestras redes sociales:</p>
 
             <ul>

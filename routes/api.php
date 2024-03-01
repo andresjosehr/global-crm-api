@@ -265,3 +265,12 @@ Route::post('users/{id}/get-available-times', 'App\Http\Controllers\Traking\SapI
 
 Route::post('toggle-user-working-status', [ProcessesController::class, 'toggleUserWorkingStatus']);
 Route::get('toggle-user-working-status', [ProcessesController::class, 'toggleUserWorkingStatus']);
+
+Route::get('download-file/{file}', function ($file) {
+    // Public path
+    $path = public_path() . '/' . $file;
+    if (File::exists($path)) {
+        return Response::download($path);
+    }
+    return response()->json(['message' => 'File not found'], 404);
+});
