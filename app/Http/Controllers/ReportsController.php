@@ -23,7 +23,7 @@ class ReportsController extends Controller
         $start = Carbon::now()->startOfDay();
         $end = Carbon::now()->endOfDay();
         if ($request->start) {
-            $start = Carbon::parse($request->input('start'));
+            $start = Carbon::parse($request->input('start'))->startOfDay();
             $end = Carbon::parse($request->input('end'))->endOfDay();
         }
 

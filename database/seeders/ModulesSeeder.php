@@ -51,14 +51,14 @@ class ModulesSeeder extends Seeder
 
 
 
-            [
-                'name'        => 'Base General',
-                'description' => '',
-                'icon'        => 'heroicons_outline:list-bullet',
-                'path'        => 'lista/base-general',
-                'type'        => 'basic',
-                'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
-            ],
+            // [
+            //     'name'        => 'Base General',
+            //     'description' => '',
+            //     'icon'        => 'heroicons_outline:list-bullet',
+            //     'path'        => 'lista/base-general',
+            //     'type'        => 'basic',
+            //     'parent_id'   => DB::table('modules')->where('name', 'Ventas')->first()->id
+            // ],
             [
                 'name'        => 'Equipo de asesores',
                 'description' => '',
