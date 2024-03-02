@@ -180,56 +180,23 @@ class User extends Authenticatable implements JWTSubject
         return $unavailableTimes;
     }
 
-    public function getBussyTimesAttribute()
+
+    public function bussyTimes($user_id, $date)
     {
         // Obtén las asignaciones de este usuario
-        $assignments = $this->hasMany(SapInstalation::class, 'staff_id')
-            ->select([
-                DB::raw('DATE(start_datetime) as date'),
-                DB::raw('TIME(start_datetime) as start_time'),
-                DB::raw('TIME(end_datetime) as end_time')
-            ])
-            ->get()
-            ->groupBy('date');
-
-        // Formatea los resultados
-        $busyTimes = [];
-        foreach ($assignments as $date => $times) {
-            // Agrupa los tiempos por bloques de media hora
-            $timeBlocks = $times->groupBy(function ($date) {
-                return $date->start_time . '-' . $date->end_time;
-            });
-
-            // Filtra los bloques de tiempo que tienen menos de 2 asignaciones
-            $filteredTimeBlocks = $timeBlocks->filter(function ($block) {
-                return count($block) >= 2;
-            });
-
-            // Si hay bloques de tiempo ocupados para esta fecha, los añadimos al array resultante
-            if (!$filteredTimeBlocks->isEmpty()) {
-                $busyTimes[$date] = $filteredTimeBlocks->map(function ($block) {
-                    return [
-                        'start_time' => $block->first()->start_time,
-                        'end_time' => $block->first()->end_time,
-                    ];
-                })->values()->toArray();
-            }
-        }
-
-        return $busyTimes;
-    }
-
-    public function getBussyTimesForCalculateAttribute()
-    {
-        // Obtén las asignaciones de este usuario
-        $assignments = SapTry::where('staff_id', $this->id)
+        $assignments = SapTry::where('staff_id', $user_id)
             ->select([
                 DB::raw('MAX(id) as id')
             ])
+            ->whereDate('start_datetime', $date)
+            ->where('status', 'Pendiente')
             ->groupBy('sap_instalation_id')
             ->get()->pluck('id')->toArray();
 
+
+
         $assignments = SapTry::whereIn('id', $assignments)->get();
+
 
 
         $busyTimes = $assignments->reduce(function ($carry, $block) {
@@ -272,8 +239,10 @@ class User extends Authenticatable implements JWTSubject
 
 
         // Obtener los tiempos ocupados y no disponibles para ese día
-        $busyTimesForDay = data_get($this->append('bussyTimesForCalculate')->bussyTimesForCalculate, $date->format('Y-m-d'), []);
+        $busyTimesForDay = data_get($this->bussyTimes($this->id, $date->format('Y-m-d')), $date->format('Y-m-d'), []);
         $unavailableTimesForDay = data_get($this->unavailableTimes, $dayName, []);
+
+        log::info($busyTimesForDay);
 
         // Adicionar los tiempos ocupados enviados desde el frontend
         $additionalBusyTimes = data_get($datesBussy, $date->format('Y-m-d'), []);
@@ -285,12 +254,17 @@ class User extends Authenticatable implements JWTSubject
 
 
 
+
+
+
+
         $timeOccurrences = array_count_values($mergedBusyTimes);
 
         // Filtrar los intervalos de tiempo donde las ocurrencias son mayores o iguales a 2
         $finalBusyTimes = array_filter($timeOccurrences, function ($occurrence) {
             return $occurrence >= 2;
         });
+
 
 
         // Función para verificar si un intervalo de tiempo está ocupado o no disponible
