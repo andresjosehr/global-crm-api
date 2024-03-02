@@ -300,7 +300,6 @@ class ProcessesController extends Controller
         $emptyRow = array_search(1, $rows) + 2; // Suponiendo que la primera columna debe estar vacía
 
         $order = Order::where('id', $order_id)->with('createdBy', 'orderCourses.course', 'dues.paymentMethod', 'currency', 'student.user', 'student.documentType')->first();
-        Log::info($order);
 
         // Sort $orderCourses by type ASC
         $order->orderCourses = $order->orderCourses->sortByDesc('type');

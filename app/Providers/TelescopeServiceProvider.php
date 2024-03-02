@@ -24,11 +24,9 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 
             if (isset($entry->content['name'])) {
                 if ($entry->content['name'] === 'App\Events\CallActivityEvent') {
-                    Log::info('GeneralJob');
                     return false;
                 }
                 if (strpos($entry->content['name'], 'App\Jobs\GeneralJob') !== false) {
-                    Log::info('GeneralJob');
                 }
             }
             if ($this->app->environment('local') || $this->app->environment('testing')) {

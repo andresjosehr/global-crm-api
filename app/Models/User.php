@@ -131,7 +131,11 @@ class User extends Authenticatable implements JWTSubject
 
         $unavailableTimes = [];
 
-        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+
+
+        foreach ($days as $day) {
             if ($availability->has($day)) {
                 $unavailableTimes[$day] = [];
 
@@ -159,6 +163,21 @@ class User extends Authenticatable implements JWTSubject
                 }
             }
         }
+
+
+        // add days that are not in the availability
+        foreach ($days as $day) {
+            if (!isset($unavailableTimes[$day])) {
+                $unavailableTimes[$day] = [
+                    [
+                        'start_time' => '00:00:00',
+                        'end_time' => '23:59:59',
+                    ]
+                ];
+            }
+        }
+
+        Log::info($unavailableTimes);
 
         return $unavailableTimes;
     }
@@ -241,6 +260,8 @@ class User extends Authenticatable implements JWTSubject
         // Obtener el nombre del día en inglés en minúscula para ese día
         $dayName = strtolower($date->format('l'));
 
+
+
         // Iniciar con todos los intervalos de 30 minutos del día como disponibles
         $intervals = [];
         for ($time = Carbon::parse('00:00:00'); $time < Carbon::parse('24:00:00'); $time->addMinutes(30)) {
@@ -276,8 +297,6 @@ class User extends Authenticatable implements JWTSubject
 
         // Función para verificar si un intervalo de tiempo está ocupado o no disponible
         $isIntervalAvailable = function ($interval) use ($finalBusyTimes, $unavailableTimesForDay) {
-            // Log::info('interval', $finalBusyTimes);
-            // Log::info('unavailableTimesForDay', $unavailableTimesForDay);
             $startTime = Carbon::parse($interval['start_time']);
             $endTime = Carbon::parse($interval['end_time']);
 

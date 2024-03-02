@@ -208,9 +208,7 @@ class ImportStudentsServiceCO
             }
 
             $coursesStatus = [];
-            if ($student['CORREO'] == 'pauls_88@hotmail.com') {
-                Log::info($sapNumber);
-            }
+
             if ($sapNumber > 1) {
 
                 $statusCol = $student['ESTADO'];
@@ -238,9 +236,6 @@ class ImportStudentsServiceCO
                 $coursesStatus[$unicSap] = $student['USUARIO AULA'];
             }
 
-            if ($student['CORREO'] == 'pauls_88@hotmail.com') {
-                Log::info($coursesStatus);
-            }
 
 
             $free_courses = [];

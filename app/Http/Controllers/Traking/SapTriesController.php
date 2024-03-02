@@ -55,8 +55,7 @@ class SapTriesController extends Controller
         $sapTryNext = SapTry::where('sap_instalation_id', $sap_instalation_id)->where('id', '>', $id)->first();
         $sapInstalationNext = SapInstalation::where('id', '>', $sap_instalation_id)->where('order_id', $sapTry->sapInstalation->order_id)->first();
 
-        Log::info('sapTryNext', [$sapTryNext]);
-        Log::info('sapInstalationNext', [$sapInstalationNext]);
+
         if ($request->status === 'Reprogramada' && !$sapTryNext && !$sapInstalationNext) {
 
             $sapInstalationsCount = Order::where('id', $sapTry->sapInstalation->order_id)->with('sapInstalations')->first()->sapInstalations->count();

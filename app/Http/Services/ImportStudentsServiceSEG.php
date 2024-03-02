@@ -318,13 +318,7 @@ class ImportStudentsServiceSEG
                             $end = self::__parseDate($end);
                         } catch (\Throwable $th) {
 
-                            Log::info([
-                                'email' => $student['CORREO'],
-                                'start' => $start,
-                                'end' => $end,
-                                'course' => $course_name,
-                                'error' => $th->getMessage()
-                            ]);
+
 
                             $start = null;
                             $end   = null;
@@ -361,13 +355,7 @@ class ImportStudentsServiceSEG
                         $end = self::__parseDate($end);
                     } catch (\Throwable $th) {
 
-                        Log::info([
-                            'email' => $student['CORREO'],
-                            'start' => $start,
-                            'end' => $end,
-                            'course' => $course_name,
-                            'error' => $th->getMessage()
-                        ]);
+
 
 
                         $start = null;

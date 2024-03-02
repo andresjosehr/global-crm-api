@@ -45,7 +45,6 @@ class SapTry extends Model
 
     protected static function booted()
     {
-        Log::info('booted');
         static::created(function ($sapTry) {
             $sapTry->sapInstalation->update(['last_sap_try_id' => $sapTry->id]);
         });
