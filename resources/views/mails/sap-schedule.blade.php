@@ -31,7 +31,7 @@
     @php
                 $sapType = $sap->instalation_type;
                 if($sapType === 'Instalación completa'){
-                    $sapType = 'primera';
+                    $sapType = 'instalación sap';
                 }
 
             @endphp

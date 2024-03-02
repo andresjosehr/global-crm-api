@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Log;
 
 class SendUnfreezingRemainder extends Command
 {
+
+
+
     /**
      * The name and signature of the console command.
      *
