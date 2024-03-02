@@ -28,6 +28,15 @@
 </head>
 <body>
 
+    @php
+                $sapType = $sap->instalation_type;
+                if($sapType === 'Instalación completa'){
+                    $sapType = 'primera';
+                }
+
+            @endphp
+
+
     <div class="container">
         <!-- BANER DE GLOBAL TECNOLOGÍAS ACADEMY -->
         <div class="banner">
@@ -36,7 +45,7 @@
         </div>
 
         <div style="text-align: center">
-            <h1 style='margin: 0px'>Notificación de {{$retry ? 're' : ''}}agendamiento de instalación SAP:</h1>
+            <h1 style='margin: 0px'>Notificación de {{$retry ? 're' : ''}}agendamiento de {{$sapType}}:</h1>
             {{-- <h1 style='margin: 0px'></h1> --}}
         </div>
 
@@ -47,13 +56,6 @@
                 <div>{{$sap->student->name}}</div>
             </p>
 
-            @php
-                $sapType = $sap->instalation_type;
-                if($sapType === 'Instalación completa'){
-                    $sapType = 'primera';
-                }
-
-            @endphp
 
             <p>
                 <b>¡Has {{$retry ? 're' : ''}}agendado correctamente tu {{$sapType}}!</b>
