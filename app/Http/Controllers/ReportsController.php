@@ -245,7 +245,6 @@ class ReportsController extends Controller
 
     public function getSalesStats(Request $request)
     {
-
         // Inicializar las consultas sin filtros por ID
         $salesQuery = Order::query();
 
@@ -267,7 +266,7 @@ class ReportsController extends Controller
 
         // Total de ventas del mejor mes
         $totalSales = Order::whereYear('created_at', $monthlySales->year)
-            ->whereBetween('created_at', [$request->input('start'), $request->input('end')])
+            ->whereBetween('created_at', [$request->input('start') . ' 00:00:00', $request->input('end') . ' 23:59:59'])
             ->when($request->input('user_id'), function ($query) use ($request) {
                 return $query->where('created_by', $request->input('user_id'));
             })
@@ -275,12 +274,11 @@ class ReportsController extends Controller
 
         $salesQuery = Order::withCount(['orderCourses' => function ($query) {
             $query->where('type', 'paid');
-        }])->whereBetween('created_at', [$request->input('start'), $request->input('end')])
+        }])
+            ->whereBetween('created_at', [$request->input('start') . ' 00:00:00', $request->input('end') . ' 23:59:59'])
             ->when($request->input('user_id'), function ($query) use ($request) {
                 return $query->where('created_by', $request->input('user_id'));
             })->get();
-
-
 
 
         $data = [
@@ -292,6 +290,7 @@ class ReportsController extends Controller
                 'plus_sales' => $salesQuery->where('order_courses_count', 1)->count(),
                 'premium_sales' => $salesQuery->where('order_courses_count', 2)->count(),
                 'platinum_sales' => $salesQuery->where('order_courses_count', 5)->count()
+
             ]
         ];
 
@@ -345,8 +344,8 @@ class ReportsController extends Controller
             ->count();
 
         $data = [
-            'totalCallsToday'                => $totalCallsToday,
-            'totalCallsCurrentMonth'         => $totalCallsCurrentMonth,
+            'totalCallsToday'        => $totalCallsToday,
+            'totalCallsCurrentMonth' => $totalCallsCurrentMonth,
         ];
         return $data;
     }
@@ -381,7 +380,6 @@ class ReportsController extends Controller
             ->groupBy(DB::raw('DATE(created_at)'))
             ->whereBetween('created_at', [$request->start . ' 00:00:00', $request->end . ' 23:59:59'])
             ->get()->toArray();
-
 
 
 
