@@ -624,4 +624,29 @@ class StudentsController extends Controller
 
         return ApiResponseController::response('Ubicación actualizada con éxito', 200, $student);
     }
+
+    public function exportEstudentToExcel($student_id)
+    {
+
+        $student = Student::where('id', $student_id)->with('users', 'orders')->first();
+        $order = Order::where('id', $student->orders[0]->id)->with('orderCourses.course', 'dues', 'student.users', 'currency')->first();
+
+        $excel = [
+            'production' => [
+                'excel_id' => '1U5mbiPnRfpOnD336Sio-3n2X6J_xQs0E3Pspme6eiUc',
+                'tab_id' => '641223835',
+                'tab_label' => 'MARZO 24'
+            ],
+            'test' => [
+                'excel_id' => '1if36irD9uuJDWcPpYY6qElfdeTiIlEVsUZNmrwDdxWs',
+                'tab_id' => '1438941447',
+                'tab_label' => 'FEBRERO 24'
+            ]
+        ];
+
+        $processesController = new ProcessesController();
+        $processesController->updateSellsExcel($order->id, $excel);
+
+        return ApiResponseController::response('Exito', 200);
+    }
 }

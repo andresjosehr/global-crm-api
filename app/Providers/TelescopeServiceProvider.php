@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Laravel\Telescope\IncomingEntry;
 use Laravel\Telescope\Telescope;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
@@ -20,9 +21,22 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         // $this->hideSensitiveRequestDetails();
 
         Telescope::filter(function (IncomingEntry $entry) {
+
+            if (isset($entry->content['name'])) {
+                if ($entry->content['name'] === 'App\Events\CallActivityEvent') {
+                    Log::info('GeneralJob');
+                    return false;
+                }
+                if (strpos($entry->content['name'], 'App\Jobs\GeneralJob') !== false) {
+                    Log::info('GeneralJob');
+                }
+            }
             if ($this->app->environment('local') || $this->app->environment('testing')) {
                 return true;
             }
+
+            // Get job info
+
 
             return $entry->isReportableException() ||
                 $entry->isFailedRequest() ||

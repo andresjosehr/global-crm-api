@@ -7,6 +7,7 @@ use App\Http\Services\ImportStudentsService;
 use App\Http\Services\ImportStudentsServiceSEG;
 use App\Http\Services\LiveConnectService;
 use App\Http\Services\ZohoService;
+use App\Jobs\GeneralJob;
 use App\Models\Currency;
 use App\Models\Due;
 use App\Models\Order;
@@ -31,14 +32,24 @@ class TestController extends Controller
      */
     public function index()
     {
-        $sap = SapInstalation::with('sapTries', 'lastSapTry')->where('id', 216)->first();
-        $otherSapInstalations = SapInstalation::where('id', '!=', 216)->get();
-        $first = true;
 
-        $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first, 'otherSapInstalations' => $otherSapInstalations])->render();
+        $params = [];
 
-        return $content;
+        GeneralJob::dispatch(TestController::class, 'epale', $params)->onQueue('default');
+
+        // $live = new LiveConnectService();
+        // // return $live->getToken();
+        // // return $live->getChannelsList();
+        // return $live->sendMessage(521, 584140339097, 'Hola');
+
+        // return [$live];
     }
+
+    public function epale($params = null)
+    {
+        echo 'yep';
+    }
+
     public function index2()
     {
 
