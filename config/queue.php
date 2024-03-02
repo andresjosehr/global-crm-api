@@ -15,6 +15,8 @@ return [
 
     'default' => env('QUEUE_CONNECTION', 'sync'),
 
+    'liveconnect' => env('QUEUE_CONNECTION', 'sync'),
+
     /*
     |--------------------------------------------------------------------------
     | Queue Connections

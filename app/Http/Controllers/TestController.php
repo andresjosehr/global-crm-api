@@ -10,6 +10,7 @@ use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
 use App\Models\Currency;
 use App\Models\Due;
+use App\Models\Holiday;
 use App\Models\Order;
 use App\Models\OrderCourse;
 use App\Models\SapInstalation;
@@ -33,16 +34,22 @@ class TestController extends Controller
     public function index()
     {
 
-        $params = [];
+        $nextDay = Carbon::now()->addDay();
 
-        GeneralJob::dispatch(TestController::class, 'epale', $params)->onQueue('default');
+        $holidays = Holiday::all();
 
-        // $live = new LiveConnectService();
-        // // return $live->getToken();
-        // // return $live->getChannelsList();
-        // return $live->sendMessage(521, 584140339097, 'Hola');
+        // or sunday
+        while ($holidays->contains('date', $nextDay->format('Y-m-d')) || $nextDay->isSunday()) {
+            $nextDay->addDay();
+        }
 
-        // return [$live];
+        return $sapInstalation = SapInstalation::with('lastSapTry', 'order.student')
+            ->where('status', 'Pendiente')
+            ->whereHas('lastSapTry', function ($query) use ($nextDay) {
+                $query->where('status', 'Por programar')
+                    ->whereDate('start_datetime', $nextDay->format('Y-m-d'));
+            })
+            ->get()->count();
     }
 
     public function epale($params = null)

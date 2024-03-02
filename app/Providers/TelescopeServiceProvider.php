@@ -22,18 +22,21 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 
         Telescope::filter(function (IncomingEntry $entry) {
 
+
             if (isset($entry->content['name'])) {
                 if ($entry->content['name'] === 'App\Events\CallActivityEvent') {
                     return false;
                 }
                 if (strpos($entry->content['name'], 'App\Jobs\GeneralJob') !== false) {
+                    $entry->tags(['class:' . $entry->content['data']['controllerClass'], 'method:' . $entry->content['data']['methodName']]);
                 }
             }
+
+
             if ($this->app->environment('local') || $this->app->environment('testing')) {
                 return true;
             }
 
-            // Get job info
 
 
             return $entry->isReportableException() ||

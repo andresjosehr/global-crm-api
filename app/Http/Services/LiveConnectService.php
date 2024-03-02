@@ -34,7 +34,7 @@ class LiveConnectService
         $res = $client->request('GET', $this->baseUrl . "/channels/list", [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'PageGearToken' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX2tleSI6IjNkOTg4OGQ0YTcyNmI3NzM4YjM3YjA4ODAxYWFkZTU1IiwiaWRfcGdlIjo0MjEsImlkX2N1ZW50YSI6MTE0NCwibm9tYnJlIjoiR0FDQUFNIEdMT0JBTCBURUNOT0xPR0lBUyBBQ0FERU1ZIFNBQyIsImlhdCI6MTcwOTI1NTAwNCwiZXhwIjoxNzA5MjgzODA0fQ.-CTEv8lviOvr1HGtSiNK6rw3m3ALtXyT5h20kvk3sZk'
+                'PageGearToken' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX2tleSI6IjNkOTg4OGQ0YTcyNmI3NzM4YjM3YjA4ODAxYWFkZTU1IiwiaWRfcGdlIjo0MjEsImlkX2N1ZW50YSI6MTE0NCwibm9tYnJlIjoiR0FDQUFNIEdMT0JBTCBURUNOT0xPR0lBUyBBQ0FERU1ZIFNBQyIsImlhdCI6MTcwOTM5NjE3OSwiZXhwIjoxNzA5NDI0OTc5fQ.5gxhJplpK341dgVkrggTU8iJHtXKxz0AZOBauHfCFYI'
             ]
         ]);
 
@@ -42,14 +42,18 @@ class LiveConnectService
     }
 
 
-    public function sendMessage($channel_id, $phone, $message, $trigg)
+    public function sendMessage($channel_id = 521, $phone, $message, $student_id, $trigger = 'SCHEDULED', $message_type = NULL, $tiggered_by = null)
     {
+
+        if (env('APP_ENV') != 'production') {
+            $phone = '584140339097';
+        }
 
         $client = new GuzzleHttp\Client();
         $res = $client->request('POST', $this->baseUrl . "/direct/wa/sendMessage", [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'PageGearToken' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX2tleSI6IjNkOTg4OGQ0YTcyNmI3NzM4YjM3YjA4ODAxYWFkZTU1IiwiaWRfcGdlIjo0MjEsImlkX2N1ZW50YSI6MTE0NCwibm9tYnJlIjoiR0FDQUFNIEdMT0JBTCBURUNOT0xPR0lBUyBBQ0FERU1ZIFNBQyIsImlhdCI6MTcwOTMzMTk1NCwiZXhwIjoxNzA5MzYwNzU0fQ.o4PKu6ZafBgvVKR9-bZad1UDK7hdY7BQvC1HXyc2HVA'
+                'PageGearToken' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX2tleSI6IjNkOTg4OGQ0YTcyNmI3NzM4YjM3YjA4ODAxYWFkZTU1IiwiaWRfcGdlIjo0MjEsImlkX2N1ZW50YSI6MTE0NCwibm9tYnJlIjoiR0FDQUFNIEdMT0JBTCBURUNOT0xPR0lBUyBBQ0FERU1ZIFNBQyIsImlhdCI6MTcwOTM5NjE3OSwiZXhwIjoxNzA5NDI0OTc5fQ.5gxhJplpK341dgVkrggTU8iJHtXKxz0AZOBauHfCFYI'
             ],
             'json' => [
                 'id_canal' => $channel_id,
@@ -58,14 +62,16 @@ class LiveConnectService
             ]
         ]);
 
+        // stdClass Object to array
         LiveconnectMessagesLog::create([
-            'channel_id' => $channel_id,
-            'phone' => $phone,
-            'message' => $message,
-            'trigger' => $trigg,
-            'message_type' => 'whatsapp',
-            'tiggered_by' => auth()->user()->id,
-            'liveconnect_response' => json_decode($res->getBody())
+            'channel_id'           => $channel_id,
+            'phone'                => $phone,
+            'message'              => $message,
+            'trigger'              => $trigger,
+            'student_id'           => $student_id,
+            'message_type'         => $message_type,
+            'tiggered_by'          => $tiggered_by,
+            'liveconnect_response' => $res->getBody()
         ]);
 
         return json_decode($res->getBody());

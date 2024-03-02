@@ -19,4 +19,10 @@ class LiveconnectMessagesLog extends Model
         'tiggered_by',
         'liveconnect_response'
     ];
+
+    // accessor to transform the liveconnect_response to an array
+    public function getLiveconnectResponseAttribute($value)
+    {
+        return json_decode($value);
+    }
 }

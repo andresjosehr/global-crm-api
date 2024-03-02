@@ -86,6 +86,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
     Route::resource('students', StudentsController::class);
     Route::put('students/delegate-academic-area/{id}', [StudentsController::class, 'delegateAcademicArea']);
     Route::get('students/export-to-excel/{id}', [StudentsController::class, 'exportEstudentToExcel']);
+    Route::get('students/get-liveconnect-messages/{id}', [StudentsController::class, 'getLiveConnectMessages']);
 
     Route::resource('orders', OrdersController::class);
     Route::resource('order-courses', OrdersCoursesController::class);

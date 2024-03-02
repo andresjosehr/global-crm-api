@@ -8,6 +8,8 @@ use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Jobs\GeneralJob;
 use App\Models\Car;
 use App\Models\DocumentType;
+use App\Models\LiveconnectMessagesLog;
+use App\Models\LiveConnectRequest;
 use App\Models\Order;
 use App\Models\Student;
 use App\Models\User;
@@ -648,5 +650,13 @@ class StudentsController extends Controller
         $processesController->updateSellsExcel($order->id, $excel);
 
         return ApiResponseController::response('Exito', 200);
+    }
+
+    public function getLiveConnectMessages(Request $request, $id)
+    {
+        $paginate = $request->input('paginate') ? $request->input('paginate') : 10;
+
+        $messagess = LiveconnectMessagesLog::where('student_id', $id)->orderBy('id', 'desc')->paginate($paginate);
+        return ApiResponseController::response('Consulta exitosa', 200, $messagess);
     }
 }

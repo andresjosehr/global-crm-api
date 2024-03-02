@@ -70,6 +70,11 @@ class SapInstalationsController extends Controller
                     ->whereNotNull('payment_receipt')
                     ->whereNull('payment_verified_at');
             })
+            ->when($request->user_id, function ($query) use ($request) {
+                $query->whereHas('lastSapTry', function ($query) use ($request) {
+                    $query->where('staff_id', $request->user_id);
+                });
+            })
             ->paginate(1000);
 
         // sort by start_datetime

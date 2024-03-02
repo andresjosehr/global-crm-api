@@ -177,8 +177,6 @@ class User extends Authenticatable implements JWTSubject
             }
         }
 
-        Log::info($unavailableTimes);
-
         return $unavailableTimes;
     }
 

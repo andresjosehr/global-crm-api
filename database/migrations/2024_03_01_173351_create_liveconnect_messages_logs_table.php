@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('phone');
             $table->longText('message');
             $table->bigInteger('student_id')->nullable();
-            $table->string('trigger')->nullable()->default('Manual');
+            $table->enum('trigger', ['SCHEDULED', 'MANUAL'])->nullable()->default('MANUAL');
             $table->string('message_type')->nullable();
             $table->bigInteger('tiggered_by')->nullable();
             $table->json('liveconnect_response')->nullable();
