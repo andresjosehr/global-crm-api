@@ -453,7 +453,7 @@ class SapInstalationsController extends Controller
             $sapTry->staff_id = self::findAvailableStaff($request->date)->id;
             $sapTry->save();
 
-            $availableTimes = User::find($sapTry->staff_id)->first()->getAvailableTimesForDate($request->date, $request->datesBussy);
+            $availableTimes = User::find($sapTry->staff_id)->getAvailableTimesForDate($request->date, $request->datesBussy);
         }
 
         return ApiResponseController::response('Consulta Exitosa', 200, $availableTimes);

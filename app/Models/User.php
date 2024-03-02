@@ -255,11 +255,6 @@ class User extends Authenticatable implements JWTSubject
         // Obtener los tiempos ocupados y no disponibles para ese día
         $busyTimesForDay = data_get($this->append('bussyTimesForCalculate')->bussyTimesForCalculate, $date->format('Y-m-d'), []);
         $unavailableTimesForDay = data_get($this->unavailableTimes, $dayName, []);
-        // Log::info($unavailableTimesForDay);
-        // Log::info($date->format('Y-m-d'));
-
-
-        // Log::info($this->append('bussyTimesForCalculate')->bussyTimesForCalculate);
 
         // Adicionar los tiempos ocupados enviados desde el frontend
         $additionalBusyTimes = data_get($datesBussy, $date->format('Y-m-d'), []);
