@@ -6,11 +6,13 @@ use App\Http\Controllers\Mails\CoreMailsController;
 use App\Http\Services\ImportStudentsService;
 use App\Http\Services\ImportStudentsServiceSEG;
 use App\Http\Services\LiveConnectService;
+use App\Http\Services\ResendService;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
 use App\Models\Currency;
 use App\Models\Due;
 use App\Models\Holiday;
+use App\Models\LiveconnectMessagesLog;
 use App\Models\Order;
 use App\Models\OrderCourse;
 use App\Models\SapInstalation;
@@ -23,6 +25,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Zadarma_API\Api;
 use GuzzleHttp;
+use Illuminate\Support\Facades\Mail;
+use Resend;
 
 class TestController extends Controller
 {
@@ -33,6 +37,29 @@ class TestController extends Controller
      */
     public function index()
     {
+
+        $sap = SapInstalation::with('lastSapTry', 'order.student')
+            ->where('status', 'Pendiente')->whereHas('lastSapTry', function ($query) {
+                $query->where('status', 'Por programar');
+            })->where('id', 8)->first();
+
+        return view("mails.remainders.sap-instalations.daily.1")->with(['sap' => $sap])->render();
+        // $mails = [
+        //     [
+        //         'from' => 'No contestar <noreply@globaltecnoacademy.com>',
+        //         'to' => ['interlinevzla@gmail.com'],
+        //         'subject' => 'hello world 2',
+        //         'html' => '<h1>it works 2!</h1>',
+        //     ],
+        //     [
+        //         'from' => 'No contestar <noreply@globaltecnoacademy.com>',
+        //         'to' => ['interlinevzla@gmail.com'],
+        //         'subject' => 'world hello 2',
+        //         'html' => '<p>it works 2!</p>',
+        //     ]
+        // ];
+
+        return ResendService::sendBatchMail($mails);
 
         // $nextDay = Carbon::now()->addDay();
 
@@ -51,15 +78,15 @@ class TestController extends Controller
         //     })
         //     ->get()->count();
 
-        return SapInstalation::with('lastSapTry')
-            ->where('status', 'Pendiente')
-            ->whereHas('lastSapTry', function ($query) {
-                $query->where('status', 'Realizada');
-            })->get()->map(function ($sapInstalation) {
-                $sapInstalation->status = 'Realizada';
-                $sapInstalation->save();
-                return $sapInstalation;
-            })->values();
+        // return SapInstalation::with('lastSapTry')
+        //     ->where('status', 'Pendiente')
+        //     ->whereHas('lastSapTry', function ($query) {
+        //         $query->where('status', 'Realizada');
+        //     })->get()->map(function ($sapInstalation) {
+        //         $sapInstalation->status = 'Realizada';
+        //         $sapInstalation->save();
+        //         return $sapInstalation;
+        //     })->values();
     }
 
     public function epale($params = null)

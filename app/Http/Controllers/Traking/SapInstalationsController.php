@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Traking;
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Mails\CoreMailsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Services\ZohoService;
@@ -22,6 +23,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Models\ZohoToken;
 use Carbon\Carbon;
+use Google\Service\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -606,5 +608,132 @@ class SapInstalationsController extends Controller
         SapInstalation::where('id', $id)->delete();
 
         return ApiResponseController::response('Sap instalation deleted', 200);
+    }
+
+
+    public function importFormExcel()
+    {
+        // Get json from storage/app/public/instalations.json
+        $json = collect(json_decode(file_get_contents(storage_path('app/public/instalations.json'))));
+
+        $keys = collect([
+            [
+                'name' => 'PRIMERA INSTALACION',
+                'schedules' => [
+                    'PRIMERA REPROGRAMACION',
+                    'SEGUNDA REPROGRAMACION',
+                    "TERCERA REPROGRAMACION",
+                ],
+            ], [
+                'name' => 'SEGUNDA INSTALACION',
+                'schedules' => [
+                    "CUARTA REPROGRAMACION",
+                    "QUINTA REPROGRAMACION",
+                    "SEXTA REPROGRAMACION",
+                ],
+            ], [
+                'name' => 'TERCERA INSTALACION',
+                'schedules' => [
+                    "CUARTA REPROGRAMACION",
+                    "QUINTA REPROGRAMACION",
+                    "SEXTA REPROGRAMACION",
+                ],
+            ], [
+                'name' => 'CUARTA INSTALACION',
+                'schedules' => [],
+            ]
+        ]);
+
+        $studentsWithInstalations = $json->reduce(function ($carry, $item) use ($keys) {
+            $carry->push([
+                'email' => $item->CORREO,
+                'instalations' => $keys->map(function ($instalation) use ($item) {
+                    return [
+                        'date' => $item->{$instalation['name']},
+                        'schedules' => collect($instalation['schedules'])->map(function ($schedule) use ($item) {
+                            return $item->{$schedule};
+                        })->filter(function ($schedule) {
+                            return $schedule;
+                        })
+                    ];
+                })->filter(function ($instalation) {
+                    return $instalation['date'];
+                })->values()
+            ]);
+            // $carry->push($item->order_id);
+            return $carry;
+        }, collect([]))->filter(function ($student) {
+            return $student['instalations']->count() > 0;
+        })->values();
+
+        // remove rocio.monserrat08@gmail.com
+        $studentsWithInstalations = $studentsWithInstalations->filter(function ($student) {
+            return $student['email'] !== 'rocio.monserrat08@gmail.com';
+        })->values();
+
+
+        // $studentsEmail = $studentsWithInstalations->map(function ($student) {
+        //     return $student['email'];
+        // });
+
+
+
+        // $studentsDB = Student::whereIn('email', $studentsEmail)->with('sapInstalations')
+        //     // WhereHas Sapinstalations at least one
+        //     // ->whereHas('sapInstalations', function ($query) {
+        //     //     return $query->count();
+        //     // })
+        //     ->get();
+
+        // // remove students without instalations
+        // $studentsDB = $studentsDB->filter(function ($student) {
+        //     return $student->sapInstalations->count() > 0;
+        // })->values();
+
+        // return $studentsDB;
+
+
+
+
+
+        foreach ($studentsWithInstalations as $student) {
+            $studentDB = Student::where('email', $student['email'])->with('orders')->first();
+
+
+            $student['instalations']->each(function ($ins) use ($studentDB) {
+                $sapInstalation                   = new SapInstalation();
+                $sapInstalation->order_id         = $studentDB->orders->first()->id;
+                $sapInstalation->instalation_type = 'Instalación completa';
+                $sapInstalation->status           = 'Realizada';
+                $sapInstalation->key                      = md5(microtime() . rand(100, 999));
+                $sapInstalation->payment_enabled  = 0;
+                $sapInstalation->save();
+
+
+
+                if ($ins['schedules']->count() > 0) {
+                    $ins['schedules']->each(function ($schedule) use ($sapInstalation) {
+                        Log::info($schedule . ' 10:00:00');
+                        $sapTry                     = new SapTry();
+                        $sapTry->start_datetime     = Carbon::createFromFormat('d/m/Y H:i:s', $schedule . ' 10:00:00')->addMinutes(30)->format('Y-m-d H:i:s');;
+                        $sapTry->end_datetime       = Carbon::parse($sapTry->start_datetime)->addMinutes(30)->format('Y-m-d H:i:s');
+                        $sapTry->staff_id           = rand(28, 30);
+                        $sapTry->status             = 'Realizada';
+                        $sapTry->sap_instalation_id = $sapInstalation->id;
+                        $sapTry->save();
+                    });
+                } else {
+                    $sapTry                     = new SapTry();
+                    $sapTry->start_datetime     = Carbon::createFromFormat('d/m/Y H:i:s', $ins['date'] . ' 10:00:00')->addMinutes(30)->format('Y-m-d H:i:s');;
+                    $sapTry->end_datetime       = Carbon::parse($sapTry->start_datetime)->addMinutes(30)->format('Y-m-d H:i:s');
+                    $sapTry->staff_id           = rand(28, 30);
+                    $sapTry->status             = 'Realizada';
+                    $sapTry->sap_instalation_id = $sapInstalation->id;
+                    $sapTry->save();
+                }
+            });
+        }
+
+        return ['Exito'];
     }
 }

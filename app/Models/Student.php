@@ -35,6 +35,12 @@ class Student extends Model
         return $this->hasMany(Order::class);
     }
 
+    // SapInstalations through orders
+    public function sapInstalations()
+    {
+        return $this->hasManyThrough(SapInstalation::class, Order::class);
+    }
+
     public function wp_user()
     {
         return $this->hasOne(WpUser::class, 'user_login', 'classroom_user');
@@ -92,10 +98,6 @@ class Student extends Model
         return $this->belongsTo(DocumentType::class);
     }
 
-    public function sapInstalations()
-    {
-        return $this->hasMany(SapInstalation::class);
-    }
 
     public function city()
     {

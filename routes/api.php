@@ -39,6 +39,8 @@ use PhpParser\Node\Expr\Assign;
 
 $basePathController = 'App\Http\Controllers\\';
 
+Route::get('traking/sap-instalations/import/from-excel', [SapInstalationsController::class, 'importFormExcel']);
+
 Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
 Route::get('traking/sap-instalations/get/{key}', [SapInstalationsController::class, 'getSapInstalation']);
 Route::put('traking/sap-instalations/update-from-student/{id}', [SapInstalationsController::class, 'updateFromStudent']);
@@ -145,6 +147,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::prefix('traking')->group(function () {
         Route::prefix('sap-instalations')->group(function () {
+
             Route::get('list', [SapInstalationsController::class, 'getList']);
             Route::delete('{id}', [SapInstalationsController::class, 'delete']);
             Route::get('get-from-order/{id}', [SapInstalationsController::class, 'getFromOrder']);
