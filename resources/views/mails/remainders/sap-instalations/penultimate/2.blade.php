@@ -46,21 +46,23 @@
             <img style="width: 100%" src="https://globaltecnologiasacademy.com/wp-content/uploads/2023/08/banner-email.png" alt="Global Tecnologías Academy">
         </div>
 
+
+        @php
+        $instalation_type = $sap->instalation_type == 'Instalación completa' ? 'instalación sap' : $sap->instalation_type;
+        $instalation_type = $instalation_type ? $instalation_type : 'instalación sap';
+        @endphp
+
         <div class="header">
-            <h1>Recordatorio de Agendamiento</h1>
+            <h1>¡Ya casi es la fecha de tu {{$instalation_type}}!
         </div>
         <div class="content">
-            <p>¡Hola! 👋 {{$sap->order->student->name}}
+            <p>Saludos! 👋 {{$sap->order->student->name}}
 
-               @php
-                $instalation_type = $sap->instalation_type == 'Instalación completa' ? 'instalación sap' : $sap->instalation_type;
-                $instalation_type = $instalation_type ? $instalation_type : 'instalación sap';
-                @endphp
 
-            <p>Te recordamos que tienes tu <strong>{{$instalation_type}}</strong> pendiente de agendar. Para asegurar un servicio óptimo, es importante que termines de agendar a la brevedad.</p>
-            <p>Puedes hacerlo fácilmente a través de nuestro enlace de agendamiento. Haciendo clic en el botón de abajo, podrás seleccionar la hora que mejor se ajuste a tus necesidades.</p>
+            <p>¡Ya casi es la fecha de tu {{$instalation_type}}! Te recordamos que es sumamente importante que realices tu agendamiento para que puedas disfrutar de los beneficios de tu curso SAP.</p>
+            <p>Para agendar tu {{$instalation_type}}, haz clic en el siguiente botón:</p>
             <a href="https://terminos.globaltecnoacademy.com/agendamiento-instalacion-sap/{{$sap->key}}" class="button">Agendar Ahora</a>
-            <p style="margin-top: 30px">¿Hay algo más en lo que te podamos ayudar? No dudes en contactarnos si tienes preguntas o necesitas asistencia adicional.</p>
+            <p style="margin-top: 30px">Estamos muy atentos de que agendes tu {{$instalation_type}}. Nuestro equipo esta preparado para brindarte el soporte necesario para que puedas disfrutar de tu curso de SAP solo si terminas tu agendamiento.</p>
         </div>
 
         @php

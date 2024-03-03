@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('subject');
             $table->longText('html');
             $table->string('status');
+            $table->bigInteger('student_id')->nullable();
             $table->json('response');
             $table->timestamps();
         });

@@ -47,7 +47,7 @@
         </div>
 
         <div class="header">
-            <h1>Recordatorio de Agendamiento</h1>
+            <h1>¡Tu agendamiento es para mañana!
         </div>
         <div class="content">
             <p>¡Hola! 👋 {{$sap->order->student->name}}
@@ -57,8 +57,9 @@
                 $instalation_type = $instalation_type ? $instalation_type : 'instalación sap';
                 @endphp
 
-            <p>Te recordamos que tienes tu <strong>{{$instalation_type}}</strong> pendiente de agendar. Para asegurar un servicio óptimo, es importante que termines de agendar a la brevedad.</p>
-            <p>Puedes hacerlo fácilmente a través de nuestro enlace de agendamiento. Haciendo clic en el botón de abajo, podrás seleccionar la hora que mejor se ajuste a tus necesidades.</p>
+            <p>Mañana es el día para tu <strong>{{$instalation_type}}</strong>, sin embargo aún no has escogido la hora para tu instalación. Te recordamos que es importante que termines de agendar a la brevedad.</p>
+            <p>Asegúrate de tener todo listo para que nuestro equipo pueda brindarte el mejor servicio posible.</p>
+            <p>Puedes escoger la hora de tu instalacionh haciendo clic en el botón de abajo para seleccionar la hora que mejor se ajuste a tus necesidades.</p>
             <a href="https://terminos.globaltecnoacademy.com/agendamiento-instalacion-sap/{{$sap->key}}" class="button">Agendar Ahora</a>
             <p style="margin-top: 30px">¿Hay algo más en lo que te podamos ayudar? No dudes en contactarnos si tienes preguntas o necesitas asistencia adicional.</p>
         </div>
