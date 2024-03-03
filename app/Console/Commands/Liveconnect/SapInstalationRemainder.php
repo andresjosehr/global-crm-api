@@ -94,9 +94,13 @@ class SapInstalationRemainder extends Command
             ->get()->each(function ($instalation) {
                 $student_id = $instalation->order->student->id;
                 $phone      = $instalation->order->student->phone;
-                $message    = self::messageDaily(Carbon::now()->hour);
+                $message    = $this->texts['daily'][rand(0, 4)];
 
-                $instalation_type = $instalation->type == 'Instalación completa' ? 'instalación de SAP' : $instalation->type;
+                $instalation_type = $instalation->instalation_type == 'Instalación completa' ? 'instalación SAP' : $instalation->instalation_type;
+                $instalation_type = $instalation->instalation_type ? $instalation->instalation_type : 'instalación SAP';
+
+                Log::info('Sending daily message to ' . $instalation_type);
+
                 $message          = str_replace('{instalation_type}', $instalation_type, $message);
 
                 $liveconnectService = new LiveConnectService();
@@ -122,7 +126,7 @@ class SapInstalationRemainder extends Command
         SapInstalation::with('lastSapTry', 'order.student')
             ->where('status', 'Pendiente')
             ->whereHas('lastSapTry', function ($query) use ($nextDay) {
-                $query->whereIsNull('schedule_at')
+                $query->whereNull('schedule_at')
                     ->whereDate('start_datetime', $nextDay->format('Y-m-d'));
             })
             ->get()->each(function ($instalation) {
@@ -130,7 +134,8 @@ class SapInstalationRemainder extends Command
                 $phone      = $instalation->order->student->phone;
                 $message    = self::messageLastDay(Carbon::now()->hour);
 
-                $instalation_type = $instalation->type == 'Instalación completa' ? 'instalación de SAP' : $instalation->type;
+                $instalation_type = $instalation->instalation_type == 'Instalación completa' ? 'instalación de SAP' : $instalation->instalation_type;
+                $instalation_type = $instalation->instalation_type ? $instalation->instalation_type : 'instalación SAP';
                 $message          = str_replace('{instalation_type}', $instalation_type, $message);
 
                 $liveconnectService = new LiveConnectService();

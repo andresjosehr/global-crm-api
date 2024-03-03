@@ -34,32 +34,32 @@ class TestController extends Controller
     public function index()
     {
 
-        $nextDay = Carbon::now()->addDay();
+        // $nextDay = Carbon::now()->addDay();
 
-        $holidays = Holiday::all();
+        // $holidays = Holiday::all();
 
-        // or sunday
-        while ($holidays->contains($nextDay->format('Y-m-d')) || $nextDay->isSunday()) {
-            $nextDay->addDay();
-        }
+        // // or sunday
+        // while ($holidays->contains($nextDay->format('Y-m-d')) || $nextDay->isSunday()) {
+        //     $nextDay->addDay();
+        // }
 
-        return SapInstalation::with('lastSapTry', 'order.student')
-            ->where('status', 'Pendiente')
-            ->whereHas('lastSapTry', function ($query) use ($nextDay) {
-                $query->where('status', 'Por programar')
-                    ->whereDate('start_datetime', $nextDay->format('Y-m-d'));
-            })
-            ->get()->count();
-
-        // return SapInstalation::with('lastSapTry')
+        // return SapInstalation::with('lastSapTry', 'order.student')
         //     ->where('status', 'Pendiente')
-        //     ->whereHas('lastSapTry', function ($query) {
-        //         $query->where('status', 'Realizada');
-        //     })->get()->map(function ($sapInstalation) {
-        //         $sapInstalation->status = 'Realizada';
-        //         $sapInstalation->save();
-        //         return $sapInstalation;
-        //     })->values();
+        //     ->whereHas('lastSapTry', function ($query) use ($nextDay) {
+        //         $query->where('status', 'Por programar')
+        //             ->whereDate('start_datetime', $nextDay->format('Y-m-d'));
+        //     })
+        //     ->get()->count();
+
+        return SapInstalation::with('lastSapTry')
+            ->where('status', 'Pendiente')
+            ->whereHas('lastSapTry', function ($query) {
+                $query->where('status', 'Realizada');
+            })->get()->map(function ($sapInstalation) {
+                $sapInstalation->status = 'Realizada';
+                $sapInstalation->save();
+                return $sapInstalation;
+            })->values();
     }
 
     public function epale($params = null)
