@@ -81,7 +81,7 @@ class SapInstalationRemainder extends Command
         }
 
         $index = [
-            'daily' => $this->texts['daily'][Carbon::now()->dayOfWeek],
+            'daily' => $this->texts['daily'][rand(0, 6)],
             'penultimate' => $this->messagePenultimateDat(),
             'last_day' => $this->messagesLastDay()
         ];
