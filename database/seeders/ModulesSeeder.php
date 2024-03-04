@@ -29,6 +29,14 @@ class ModulesSeeder extends Seeder
                 'path'        => 'alumnos',
                 'type'        => 'basic',
             ],
+
+            [
+                'name'        => 'Mensajes automaticos',
+                'description' => 'Mensajes Automaticos',
+                'icon'        => 'heroicons_outline:inbox',
+                'path'        => 'log-mensajes',
+                'type'        => 'basic',
+            ],
             [
                 'name'        => 'Usuarios',
                 'description' => 'Gestor de Usuarios',
