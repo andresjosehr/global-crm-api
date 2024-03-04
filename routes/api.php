@@ -155,6 +155,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
             Route::post('save-draft', [SapInstalationsController::class, 'saveDraft']);
             Route::put('update/{id}', [SapInstalationsController::class, 'update']);
+            Route::get('set-link-as-sent/{id}', [SapInstalationsController::class, 'setLinkAsSent']);
 
 
 

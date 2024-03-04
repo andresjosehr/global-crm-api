@@ -743,4 +743,18 @@ class SapInstalationsController extends Controller
 
         return ['Exito'];
     }
+
+
+    public function setLinkAsSent(Request $request, $id)
+    {
+
+        $sapInstalation = SapInstalation::find($id);
+        $sapTry = SapTry::where('id', $sapInstalation->last_sap_try_id)->first();
+        if (!$sapTry->link_sent_at) {
+            $sapTry->link_sent_at = Carbon::now();
+            $sapTry->save();
+        }
+
+        return ApiResponseController::response('Exito', 200, $sapInstalation);
+    }
 }

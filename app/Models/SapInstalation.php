@@ -25,6 +25,7 @@ class SapInstalation extends Model implements Auditable
         "price_id",
         "restrictions",
         "price_amount",
+        "link_sent_at",
         "sap_user",
         "last_sap_try_id",
         "currency_id",
