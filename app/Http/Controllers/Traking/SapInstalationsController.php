@@ -755,6 +755,7 @@ class SapInstalationsController extends Controller
         $sapTry = SapTry::where('id', $sapInstalation->last_sap_try_id)->first();
         if (!$sapTry->link_sent_at) {
             $sapTry->link_sent_at = Carbon::now();
+            $sapTry->link_sent_by = $user->id;
             $sapTry->save();
         }
 

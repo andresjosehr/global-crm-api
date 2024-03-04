@@ -20,8 +20,7 @@ class SapTry extends Model implements Auditable
         "staff_id",
         "status",
         "schedule_at",
-
-
+        'link_sent_by',
         'price_id',
         'payment_date',
         'price_amount',
