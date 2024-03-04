@@ -38,7 +38,7 @@ class SapInstalationsController extends Controller
 
         $user = $request->user();
 
-        $perPage = $request->input('perPage') ? $request->input('perPage') : 1000;
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 100;
 
 
 
@@ -76,8 +76,15 @@ class SapInstalationsController extends Controller
                 $query->whereHas('lastSapTry', function ($query) use ($request) {
                     $query->where('staff_id', $request->user_id);
                 });
+            })->when($request->student, function ($query) use ($request) {
+                $query->whereHas('student', function ($query) use ($request) {
+                    $query->where('name', 'like', '%' . $request->student . '%')
+                        ->orWhere('phone', 'like', '%' . $request->student . '%')
+                        ->orWhere('email', 'like', '%' . $request->student . '%');
+                });
             })
-            ->paginate(1000);
+            // order by last try start_datetime
+            ->paginate($perPage);
 
         // sort by start_datetime
         // $saps = $saps->sortBy('start_datetime');

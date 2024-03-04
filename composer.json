@@ -14,6 +14,7 @@
         "laravel/sanctum": "^3.0",
         "laravel/telescope": "^4.17",
         "laravel/tinker": "^2.7",
+        "owen-it/laravel-auditing": "^13.6",
         "pusher/pusher-php-server": "^7.2",
         "resend/resend-laravel": "^0.9.0",
         "resend/resend-php": "^0.11.0",

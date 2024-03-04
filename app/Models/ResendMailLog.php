@@ -13,6 +13,7 @@ class ResendMailLog extends Model
         'from',
         'to',
         'subject',
+        'student_id',
         'html',
         'status',
         'response'

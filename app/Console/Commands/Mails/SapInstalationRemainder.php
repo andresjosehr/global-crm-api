@@ -106,11 +106,15 @@ class SapInstalationRemainder extends Command
                     'from'    => 'No contestar <noreply@globaltecnoacademy.com>',
                     'to'      => [$instalation->order->student->email],
                     'subject' => 'Recordatorio de agendamiento SAP',
-                    'html'    => $html,
+                    'student_id' => $instalation->order->student->id,
+                    'date' => $instalation->lastSapTry->start_datetime,
+                    'status' => $instalation->lastSapTry->status,
+                    // 'html'    => $html
                 ];
-            });
+            })->values()->toArray();
 
-        Log::info($mails->toArray());
+        Log::info($mails);
+        // ResendService::sendBatchMail($mails);
     }
 
 

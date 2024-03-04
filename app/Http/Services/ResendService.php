@@ -38,27 +38,34 @@ class ResendService
 
         if (env('APP_ENV') != 'production') {
             $mails = array_map(function ($mail) {
-                $mail['to'] = ['andresjosehr@gmail.com'];
+                $mail['to'] = ['delivered@resend.dev'];
                 return $mail;
             }, $mails);
         }
 
         $resend = Resend::client(env('RESEND_API_KEY'));
+        // Get body
 
-        $data = $resend->batch->send($mails);
+        // Chunk the array of mails into arrays of 100 mails
+        $chukMails = array_chunk($mails, 100);
 
-        $i = 0;
-        foreach ($mails as $mail) {
-            $mails[$i]['to'] = implode(',', $mail['to']);
-            $mails[$i]['response'] = json_encode($data['data'][$i]);
-            $mails[$i]['status'] = 'Enviado';
+        foreach ($chukMails as $chunk) {
+            $data = $resend->batch->send($chunk);
 
-            $resendMailLog = new ResendMailLog();
-            $resendMailLog->fill($mails[$i]);
-            $resendMailLog->save();
-            $i++;
+
+            $i = 0;
+            foreach ($chunk as $mail) {
+                $mails[$i]['to'] = implode(',', $mail['to']);
+                $mails[$i]['response'] = json_encode($data['data'][$i]);
+                $mails[$i]['status'] = 'Enviado';
+
+                $resendMailLog = new ResendMailLog();
+                $resendMailLog->fill($mails[$i]);
+                $resendMailLog->save();
+                $i++;
+            }
+
+            return 'Yep';
         }
-
-        return 'Yep';
     }
 }

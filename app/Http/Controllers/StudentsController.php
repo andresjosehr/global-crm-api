@@ -11,6 +11,7 @@ use App\Models\DocumentType;
 use App\Models\LiveconnectMessagesLog;
 use App\Models\LiveConnectRequest;
 use App\Models\Order;
+use App\Models\ResendMailLog;
 use App\Models\Student;
 use App\Models\User;
 use Carbon\Carbon;
@@ -657,6 +658,15 @@ class StudentsController extends Controller
         $paginate = $request->input('paginate') ? $request->input('paginate') : 10;
 
         $messagess = LiveconnectMessagesLog::where('student_id', $id)->orderBy('id', 'desc')->paginate($paginate);
+        return ApiResponseController::response('Consulta exitosa', 200, $messagess);
+    }
+
+
+    public function getMails(Request $request, $id)
+    {
+        $paginate = $request->input('paginate') ? $request->input('paginate') : 10;
+
+        $messagess = ResendMailLog::where('student_id', $id)->orderBy('id', 'desc')->paginate($paginate);
         return ApiResponseController::response('Consulta exitosa', 200, $messagess);
     }
 }
