@@ -189,7 +189,7 @@ class User extends Authenticatable implements JWTSubject
                 DB::raw('MAX(id) as id')
             ])
             ->whereDate('start_datetime', $date)
-            ->where('status', 'Pendiente')
+            ->where('status', 'Programada')
             ->groupBy('sap_instalation_id')
             ->get()->pluck('id')->toArray();
 
