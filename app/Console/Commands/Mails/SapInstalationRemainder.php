@@ -91,7 +91,6 @@ class SapInstalationRemainder extends Command
                         $query->whereDate('start_datetime', Carbon::now()->format('Y-m-d'));
                     });
             })->get()->map(function ($instalation) use ($type) {
-                // $student_id = $instalation->order->student->id;
 
                 $instalation_type = $instalation->instalation_type == 'Instalación completa' ? 'instalación SAP' : $instalation->instalation_type;
                 $instalation_type = $instalation_type ? $instalation_type : 'instalación SAP';
@@ -103,18 +102,15 @@ class SapInstalationRemainder extends Command
                 }
 
                 return [
-                    'from'    => 'No contestar <noreply@globaltecnoacademy.com>',
-                    'to'      => [$instalation->order->student->email],
-                    'subject' => 'Recordatorio de agendamiento SAP',
+                    'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
+                    'to'         => [$instalation->order->student->email],
+                    'subject'    => 'Recordatorio de agendamiento SAP',
                     'student_id' => $instalation->order->student->id,
-                    'date' => $instalation->lastSapTry->start_datetime,
-                    'status' => $instalation->lastSapTry->status,
-                    // 'html'    => $html
+                    'html'    => $html
                 ];
             })->values()->toArray();
 
-        Log::info($mails);
-        // ResendService::sendBatchMail($mails);
+        ResendService::sendBatchMail($mails);
     }
 
 

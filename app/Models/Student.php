@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Wordpress\WpUser;
 use App\Models\Wordpress\WpLearnpressUserItem;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Contracts\Auditable;
+use \OwenIt\Auditing\Auditable as AuditableTrait;
 
-class Student extends Model
+class Student extends Model implements Auditable
 {
 
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, AuditableTrait;
 
     protected $fillable = [
         'name',
