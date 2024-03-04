@@ -301,8 +301,10 @@ class SapInstalationsController extends Controller
             }
         }
 
+        $instalation_type = $sapNew->instalation_type == 'Instalación completa' ? 'Instalación SAP' : $sapNew->instalation_type;
+        $instalation_type = $instalation_type ? $instalation_type : 'Instalación SAP';
 
-        $title = $first ? 'Agendamiento de instalación SAP' : 'Reagendamiento de instalación SAP';
+        $title = $first ? "Agendamiento de $instalation_type" : "Reagendamiento de $instalation_type";
 
 
         $attendees = [
