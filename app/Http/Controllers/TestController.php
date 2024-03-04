@@ -38,8 +38,17 @@ class TestController extends Controller
     public function index()
     {
 
-        $live = new LiveConnectService();
-        $live->sendMessage(521, '584140339097', 'Hola', 1, 'SCHEDULED', 'text', 1);
+        $mail = [
+            'from' => 'No responder <noreply@globaltecnoacademy.com>',
+            'to' => ['andresjosehr@gmail.com'],
+            'subject' => 'hello world',
+            'html' => 'it works!',
+        ];
+
+        return $resend = ResendService::sendSigleMail($mail);
+
+        // $live = new LiveConnectService();
+        // $live->sendMessage(521, '584140339097', 'Hola', 1, 'SCHEDULED', 'text', 1);
 
         // return SapInstalation::with('lastSapTry')
         //     ->where('status', 'Pendiente')

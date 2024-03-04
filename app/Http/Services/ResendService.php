@@ -12,25 +12,27 @@ use Resend;
 class ResendService
 {
 
-    static public function sendSigleMail()
+    static public function sendSigleMail($mail)
     {
 
         $resend = Resend::client(env('RESEND_API_KEY'));
 
-        return $resend->batch->send([
-            [
-                'from' => 'No contestar <noreply@globaltecnoacademy.com>',
-                'to' => ['andresjosehr@gmail.com'],
-                'subject' => 'hello world',
-                'html' => '<h1>it works!</h1>',
-            ],
-            [
-                'from' => 'No contestar <noreply@globaltecnoacademy.com>',
-                'to' => ['interlinevzla@gmail.com'],
-                'subject' => 'world hello',
-                'html' => '<p>it works!</p>',
-            ]
-        ]);
+        // [
+        //     'from' => 'Acme <onboarding@resend.dev>',
+        //     'to' => ['delivered@resend.dev'],
+        //     'subject' => 'hello world',
+        //     'html' => 'it works!',
+        //   ]
+        $data = $resend->emails->send($mail);
+
+        $mail['response'] = json_encode($data);
+        $mail['to'] = implode(',', $mail['to']);
+        $mail['status'] = 'Enviado';
+        $resendMailLog = new ResendMailLog();
+        $resendMailLog->fill($mail);
+        $resendMailLog->save();
+
+        return 'Yep';
     }
 
     static public function sendBatchMail($mails)

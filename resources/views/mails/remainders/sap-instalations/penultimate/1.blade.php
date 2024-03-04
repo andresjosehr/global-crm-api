@@ -47,7 +47,7 @@
         </div>
 
         <div class="header">
-            <h1>¡Tu agendamiento es para mañana!
+            <h1>¡Tu agendamiento ya casi está listo!</h1>
         </div>
         <div class="content">
             <p>¡Hola! 👋 {{$sap->order->student->name}}
