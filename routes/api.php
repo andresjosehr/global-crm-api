@@ -3,6 +3,7 @@
 use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CountriesController;
+use App\Http\Controllers\MessagesLogsController;
 use App\Http\Controllers\OptionsController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\OrdersCoursesController;
@@ -63,6 +64,9 @@ Route::post('sales/call-activity', 'App\Http\Controllers\PusherController@callAc
 Route::post('sales/disconnect-call-activity', 'App\Http\Controllers\LeadsController@diconnectCallActivity');
 
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
+
+    Route::get('messages-log/liveconnect', [MessagesLogsController::class, 'getLiveConnectMessagesList']);
+    Route::get('messages-log/mails', [MessagesLogsController::class, 'getMailsList']);
 
     Route::resource('users-activities', UsersActivitiesControllers::class);
 

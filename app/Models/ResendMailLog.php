@@ -18,4 +18,9 @@ class ResendMailLog extends Model
         'status',
         'response'
     ];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
 }

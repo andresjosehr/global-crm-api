@@ -25,4 +25,9 @@ class LiveconnectMessagesLog extends Model
     {
         return json_decode($value);
     }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
 }
