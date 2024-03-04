@@ -5,11 +5,12 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
+use OwenIt\Auditing\Contracts\Auditable;
+use \OwenIt\Auditing\Auditable as AuditableTrait;
 
-class SapTry extends Model
+class SapTry extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, AuditableTrait;
 
     protected $fillable = [
         "start_datetime",
