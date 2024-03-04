@@ -385,7 +385,7 @@ class SapInstalationsController extends Controller
     public function getSapInstalation(Request $request, $key)
     {
         $sapInstalation = SapInstalation::where('key', $key)
-            ->with('student.city', 'student.state', 'staff', 'sapTries')
+            ->with('student.city', 'student.state', 'staff', 'sapTries', 'student')
             ->first();
 
         if (!$sapInstalation) {
@@ -747,7 +747,10 @@ class SapInstalationsController extends Controller
 
     public function setLinkAsSent(Request $request, $id)
     {
-
+        $user = $request->user();
+        if (!collect([1, 2, 3])->contains($user->role_id)) {
+            return ApiResponseController::response('No tienes permisos para realizar esta acción', 400);
+        }
         $sapInstalation = SapInstalation::find($id);
         $sapTry = SapTry::where('id', $sapInstalation->last_sap_try_id)->first();
         if (!$sapTry->link_sent_at) {
