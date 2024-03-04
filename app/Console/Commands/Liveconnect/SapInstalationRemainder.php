@@ -109,14 +109,8 @@ class SapInstalationRemainder extends Command
                 $instalation_type = $instalation_type ? $instalation_type : 'instalación SAP';
                 $message          = str_replace('{instalation_type}', $instalation_type, $message);
 
-                Log::info([
-                    'student_id' => $student_id,
-                    'phone'      => $phone,
-                    'message'    => $message,
-                    'type'       => $type
-                ]);
                 $liveconnectService = new LiveConnectService();
-                $liveconnectService->sendMessage(521, $phone, $message, $student_id, 'SCHEDULED', 'SAP_INSTALATION_REMAINDER_DAILY');
+                $liveconnectService->sendMessage(521, $phone, $message, $student_id, 'SCHEDULED', 'SAP_INSTALATION_REMAINDER_' . strtoupper($type), 1);
                 sleep(rand(12, 20));
             });
 
