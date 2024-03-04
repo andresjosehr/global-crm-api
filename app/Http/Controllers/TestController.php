@@ -38,15 +38,18 @@ class TestController extends Controller
     public function index()
     {
 
-        return SapInstalation::with('lastSapTry')
-            ->where('status', 'Pendiente')
-            ->whereHas('lastSapTry', function ($query) {
-                $query->where('status', 'Realizada');
-            })->get()->map(function ($sapInstalation) {
-                $sapInstalation->status = 'Realizada';
-                $sapInstalation->save();
-                return $sapInstalation;
-            })->values();
+        $live = new LiveConnectService();
+        $live->sendMessage(521, '584140339097', 'Hola', 1, 'SCHEDULED', 'text', 1);
+
+        // return SapInstalation::with('lastSapTry')
+        //     ->where('status', 'Pendiente')
+        //     ->whereHas('lastSapTry', function ($query) {
+        //         $query->where('status', 'Realizada');
+        //     })->get()->map(function ($sapInstalation) {
+        //         $sapInstalation->status = 'Realizada';
+        //         $sapInstalation->save();
+        //         return $sapInstalation;
+        //     })->values();
     }
 
     public function epale($params = null)

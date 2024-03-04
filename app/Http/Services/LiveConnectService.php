@@ -5,6 +5,7 @@ namespace App\Http\Services;
 use App\Http\Controllers\NotificationController;
 use App\Models\LiveconnectMessagesLog;
 use App\Models\Student;
+use App\Models\Token;
 use App\Models\ZohoToken;
 use Carbon\Carbon;
 use GuzzleHttp;
@@ -36,7 +37,7 @@ class LiveConnectService
         $res = $client->request('GET', $this->baseUrl . "/channels/list", [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'PageGearToken' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX2tleSI6IjNkOTg4OGQ0YTcyNmI3NzM4YjM3YjA4ODAxYWFkZTU1IiwiaWRfcGdlIjo0MjEsImlkX2N1ZW50YSI6MTE0NCwibm9tYnJlIjoiR0FDQUFNIEdMT0JBTCBURUNOT0xPR0lBUyBBQ0FERU1ZIFNBQyIsImlhdCI6MTcwOTM5NjE3OSwiZXhwIjoxNzA5NDI0OTc5fQ.5gxhJplpK341dgVkrggTU8iJHtXKxz0AZOBauHfCFYI'
+                'PageGearToken' => Token::where('service', 'liveconnect')->first()->token
             ]
         ]);
 
@@ -55,7 +56,7 @@ class LiveConnectService
         $res = $client->request('POST', $this->baseUrl . "/direct/wa/sendMessage", [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'PageGearToken' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX2tleSI6IjNkOTg4OGQ0YTcyNmI3NzM4YjM3YjA4ODAxYWFkZTU1IiwiaWRfcGdlIjo0MjEsImlkX2N1ZW50YSI6MTE0NCwibm9tYnJlIjoiR0FDQUFNIEdMT0JBTCBURUNOT0xPR0lBUyBBQ0FERU1ZIFNBQyIsImlhdCI6MTcwOTQzNjQ4NywiZXhwIjoxNzA5NDY1Mjg3fQ.G-Ia6mY4ytlfwcYNiYx7JWUpbJfNc3Cxk86D5T-sK34'
+                'PageGearToken' => Token::where('service', 'liveconnect')->first()->token
             ],
             'json' => [
                 'id_canal' => $channel_id,
