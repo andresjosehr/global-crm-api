@@ -37,53 +37,15 @@ class TestController extends Controller
      */
     public function index()
     {
-
-
-        $nextDay = Carbon::now()->addDay();
-
-        $holidays = Holiday::all();
-
-        // or sunday
-        while ($holidays->contains($nextDay->format('Y-m-d')) || $nextDay->isSunday()) {
-            $nextDay->addDay();
-        }
-
-
-        return $mails = SapInstalation::with('lastSapTry', 'order.student')
+        return SapInstalation::with('lastSapTry')
             ->where('status', 'Pendiente')
-
-            ->whereHas('lastSapTry', function ($query) use ($nextDay) {
-                $query->whereNull('schedule_at')
-                    ->whereNotNull('link_sent_at')
-                    ->whereDate('start_datetime', Carbon::now()->format('Y-m-d'));
-                // ->when($type == 'daily', function ($query) use ($nextDay) {
-                //     $query->whereDate('start_datetime', '>', $nextDay->format('Y-m-d'));
-                // })
-                // ->when($type == 'penultimate', function ($query) use ($nextDay) {
-                //     $query->whereDate('start_datetime', $nextDay->format('Y-m-d'));
-                // })
-                // ->when($type == 'last_day', function ($query) {
-                //     $query->whereDate('start_datetime', Carbon::now()->format('Y-m-d'));
-                // });
-            })
-            ->get()
-            // pluck students name
-            ->map(function ($instalation) {
-                return $instalation->order->student->name;
-            });
-
-        // $live = new LiveConnectService();
-        // $live->sendMessage(521, '584140339097', 'Hola', 1, 'SCHEDULED', 'text', 1);
-
-        // return SapInstalation::with('lastSapTry')
-        //     ->where('status', 'Pendiente')
-        //     ->whereHas('lastSapTry', function ($query) {
-        //         $query->where('status', 'Realizada');
-        //     })->get()->map(function ($sapInstalation) {
-        //         $sapInstalation->status = 'Realizada';
-        //         $sapInstalation->save();
-        //         return $sapInstalation;
-        //     })->values();
+            ->whereHas('lastSapTry', function ($query) {
+                $query->where('status', 'Realizada');
+            })->get()->map(function ($sapInstalation) {
+                $sapInstalation->status = 'Realizada';
+                $sapInstalation->save();
+                return $sapInstalation;
+            })->values();
     }
 
     public function epale($params = null)
