@@ -622,8 +622,29 @@ class SapInstalationsController extends Controller
 
     public function importFormExcel()
     {
-        // Get json from storage/app/public/instalations.json
-        $json = collect(json_decode(file_get_contents(storage_path('app/public/instalations.json'))));
+
+        // execution time
+        ini_set('max_execution_time', -1);
+
+        $googleSheet = new GoogleSheetController();
+
+
+        $sheet = '1zyxrdz3Brkm9N7n-1WYDzEja2KGNk5_db0SNQuB56Ac';
+
+
+
+        $ranges = ['CURSOS!A1:ZZZ50000'];
+
+        $response = $googleSheet->service->spreadsheets_values->batchGet($sheet, ['ranges' => $ranges]);
+        $coursesSheet = $response[0]->getValues();
+
+        // Set headers as keys
+        $headers = collect($coursesSheet[0]);
+        $data = collect($coursesSheet)->map(function ($row) use ($headers) {
+            return collect($row)->mapWithKeys(function ($item, $key) use ($headers) {
+                return [$headers[$key] => $item];
+            });
+        });
 
         $keys = collect([
             [
@@ -643,24 +664,44 @@ class SapInstalationsController extends Controller
             ], [
                 'name' => 'TERCERA INSTALACION',
                 'schedules' => [
-                    "CUARTA REPROGRAMACION",
-                    "QUINTA REPROGRAMACION",
-                    "SEXTA REPROGRAMACION",
+                    "SEPTIMA REPROGRAMACION",
+                    "OCTAVA REPROGRAMACION",
+                    "NOVENA REPROGRAMACION",
                 ],
             ], [
                 'name' => 'CUARTA INSTALACION',
                 'schedules' => [],
+            ],
+            [
+                'name' => 'PRIMERA ASIGNACION DE USUARIO',
+                'schedules' => [
+                    'PRIMERA REPROGRAMACION',
+                    'SEGUNDA REPROGRAMACION',
+                    "TERCERA REPROGRAMACION",
+                ],
+            ],
+            [
+                'name' => 'SEGUNDA ASIGNACION DE USUARIO',
+                'schedules' => [],
+            ],
+            [
+                'name' => 'TERCERA ASIGNACION DE USUARIO',
+                'schedules' => [],
             ]
+
         ]);
 
-        $studentsWithInstalations = $json->reduce(function ($carry, $item) use ($keys) {
+        $studentsWithInstalations = $data->reduce(function ($carry, $item) use ($keys) {
+            Log::info($item);
             $carry->push([
-                'email' => $item->CORREO,
+                'email' => $item['CORREO'],
                 'instalations' => $keys->map(function ($instalation) use ($item) {
                     return [
-                        'date' => $item->{$instalation['name']},
+                        'date' => $item[$instalation['name']],
+                        // if include
+                        'type' => collect(['PRIMERA INSTALACION', 'SEGUNDA INSTALACION', 'TERCERA INSTALACION', 'CUARTA INSTALACION'])->contains($instalation['name']) ? 'Instalación completa' : 'Asignación de usuario y contraseña',
                         'schedules' => collect($instalation['schedules'])->map(function ($schedule) use ($item) {
-                            return $item->{$schedule};
+                            return $item[$schedule];
                         })->filter(function ($schedule) {
                             return $schedule;
                         })
@@ -680,24 +721,29 @@ class SapInstalationsController extends Controller
             return $student['email'] !== 'rocio.monserrat08@gmail.com';
         })->values();
 
+        // return $studentsWithInstalations;
 
-        // $studentsEmail = $studentsWithInstalations->map(function ($student) {
-        //     return $student['email'];
-        // });
+
+        $studentsEmail = $studentsWithInstalations->map(function ($student) {
+            return $student['email'];
+        });
 
 
 
         // $studentsDB = Student::whereIn('email', $studentsEmail)->with('sapInstalations')
         //     // WhereHas Sapinstalations at least one
-        //     // ->whereHas('sapInstalations', function ($query) {
-        //     //     return $query->count();
-        //     // })
+        //     ->whereHas('sapInstalations', function ($query) {
+        //         // At least one instalation
+        //         $query->whereRaw('true');
+        //     })
         //     ->get();
 
         // // remove students without instalations
         // $studentsDB = $studentsDB->filter(function ($student) {
         //     return $student->sapInstalations->count() > 0;
-        // })->values();
+        // })->values()->map(function ($student) {
+        //     return $student->email;
+        // });
 
         // return $studentsDB;
 
@@ -708,11 +754,20 @@ class SapInstalationsController extends Controller
         foreach ($studentsWithInstalations as $student) {
             $studentDB = Student::where('email', $student['email'])->with('orders')->first();
 
+            if (!$studentDB) {
+                continue;
+            }
+
 
             $student['instalations']->each(function ($ins) use ($studentDB) {
+
+                if (!count($studentDB->orders)) {
+                    return;
+                }
+
                 $sapInstalation                   = new SapInstalation();
                 $sapInstalation->order_id         = $studentDB->orders->first()->id;
-                $sapInstalation->instalation_type = 'Instalación completa';
+                $sapInstalation->instalation_type = $ins['type'];
                 $sapInstalation->status           = 'Realizada';
                 $sapInstalation->key                      = md5(microtime() . rand(100, 999));
                 $sapInstalation->payment_enabled  = 0;
@@ -722,7 +777,6 @@ class SapInstalationsController extends Controller
 
                 if ($ins['schedules']->count() > 0) {
                     $ins['schedules']->each(function ($schedule) use ($sapInstalation) {
-                        Log::info($schedule . ' 10:00:00');
                         $sapTry                     = new SapTry();
                         $sapTry->start_datetime     = Carbon::createFromFormat('d/m/Y H:i:s', $schedule . ' 10:00:00')->addMinutes(30)->format('Y-m-d H:i:s');;
                         $sapTry->end_datetime       = Carbon::parse($sapTry->start_datetime)->addMinutes(30)->format('Y-m-d H:i:s');
