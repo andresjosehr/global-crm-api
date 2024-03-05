@@ -81,6 +81,7 @@ class SapInstalationRemainder extends Command
             ->where('status', 'Pendiente')
             ->whereHas('lastSapTry', function ($query) use ($nextDay, $type) {
                 $query->whereNull('schedule_at')
+                    ->whereNotNull('link_sent_at')
                     ->when($type == 'daily', function ($query) use ($nextDay) {
                         $query->whereDate('start_datetime', '>', $nextDay->format('Y-m-d'));
                     })
