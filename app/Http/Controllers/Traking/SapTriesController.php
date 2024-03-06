@@ -144,9 +144,7 @@ class SapTriesController extends Controller
         }
 
 
-        if ($sapTry->payment_enabled) {
-            self::updatePayment($request, $id);
-        }
+
 
         return ApiResponseController::response('Sap instalation tries', 200, $sapTry);
     }
