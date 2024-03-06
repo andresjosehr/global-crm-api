@@ -86,6 +86,11 @@ class ModulesRolesSeeder extends Seeder
                 'role_id'   => self::role('Asesor academico de cobranza'),
             ],
 
+            [
+                'module_id' => self::module('Instalaciones SAP'),
+                'role_id'   => self::role('Asesor academico de cobranza'),
+            ],
+
 
             [
                 'module_id' => self::module('Alumnos'),
@@ -94,6 +99,10 @@ class ModulesRolesSeeder extends Seeder
 
             [
                 'module_id' => self::module('Mensajes automaticos'),
+                'role_id'   => self::role('Asesor academico'),
+            ],
+            [
+                'module_id' => self::module('Instalaciones SAP'),
                 'role_id'   => self::role('Asesor academico'),
             ],
 

@@ -83,6 +83,12 @@ class SapInstalationsController extends Controller
                         ->orWhere('email', 'like', '%' . $request->student . '%');
                 });
             })
+            ->when($user->role_id === 3 || $user->role_id === 4, function ($query) use ($request) {
+                $studentsIds = Student::where('user_id', $request->user()->id)->get()->pluck('id');
+                $query->whereHas('student', function ($query) use ($studentsIds) {
+                    $query->whereIn('students.id', $studentsIds);
+                });
+            })
             // order by last try start_datetime
             ->paginate($perPage);
 
