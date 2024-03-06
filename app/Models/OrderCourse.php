@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\DB;
 use OwenIt\Auditing\Contracts\Auditable;
 use \OwenIt\Auditing\Auditable as AuditableTrait;
 
-class OrderCourse extends Model implements AuditableTrait
+class OrderCourse extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, AuditableTrait;
 
     protected $fillable = [
         'course_id',
