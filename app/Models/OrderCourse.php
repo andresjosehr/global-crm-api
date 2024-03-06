@@ -7,8 +7,10 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use OwenIt\Auditing\Contracts\Auditable;
+use \OwenIt\Auditing\Auditable as AuditableTrait;
 
-class OrderCourse extends Model
+class OrderCourse extends Model implements AuditableTrait
 {
     use HasFactory;
 

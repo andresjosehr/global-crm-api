@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
+use App\Models\SapInstalation;
+use App\Models\Student;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AssignmentsController extends Controller
@@ -24,7 +27,48 @@ class AssignmentsController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
-        return ApiResponseController::response('Exitoso', 200, $assignments);
+
+        $students = Student::with('orders.orderCourses', 'orders.dues')
+            ->whereHas('orders', function ($query) {
+                $query->whereHas('orderCourses', function ($query) {
+                    $query->where('start', '<=', Carbon::now()->addHours(72)->format('Y-m-d'))
+                        ->where('start', '>=', Carbon::now()->format('Y-m-d'));
+                });
+            })
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
+            ->get()->filter(function ($student) {
+                $amount_payed = $student->orders->last()->dues->where('paid', 1)->sum('amount');
+                if ($amount_payed < $student->orders->last()->price_amount) {
+                    return false;
+                }
+                return true;
+            })->values()->pluck('id')->toArray();
+
+
+
+        // SapInstalations
+        $sapInstalations = SapInstalation::with('lastSapTry', 'student.user')
+            ->where('status', 'Pendiente')
+            ->whereHas('lastSapTry', function ($query) {
+                $query->where('status', 'Por programar')
+                    ->whereNull('link_sent_at');
+            })
+
+            ->whereHas('student', function ($query) use ($students) {
+
+                $query->whereIn('students.id', $students);
+            })
+            ->get();
+
+        $data = [
+            'sapInstalations' => $sapInstalations,
+            'assignments'     => $assignments
+        ];
+
+
+        return ApiResponseController::response('Exitoso', 200, $data);
     }
 
     /**
@@ -103,5 +147,10 @@ class AssignmentsController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+
+    public function getAllAssignments(Request $request)
+    {
     }
 }
