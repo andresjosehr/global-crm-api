@@ -463,7 +463,6 @@ class SapInstalationsController extends Controller
         $sapTry = $sap->lastSapTry;
         $time = Carbon::parse($sapTry->start_datetime)->format('H:i:s');
         if (count($availableTimes) === 0 && $time === '00:00:00') {
-            Log::info('No hay horarios disponibles');
             // reasignar el staff
 
             $sapTry->staff_id = self::findAvailableStaff($request->date)->id;

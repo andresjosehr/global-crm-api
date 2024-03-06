@@ -142,8 +142,8 @@ class User extends Authenticatable implements JWTSubject
                 $previousEnd = Carbon::parse('00:00:00');
 
                 foreach ($availability[$day] as $slot) {
-                    $start = Carbon::parse($slot->start_time);
-                    $end = Carbon::parse($slot->end_time);
+                    $start = Carbon::parse($slot->start_time)->subMinutes(30);
+                    $end = Carbon::parse($slot->end_time)->addMinutes(30);
 
                     if ($previousEnd->lt($start)) {
                         $unavailableTimes[$day][] = [
