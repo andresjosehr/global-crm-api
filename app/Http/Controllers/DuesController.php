@@ -13,9 +13,24 @@ class DuesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // Paginate
+        $perPage = $request->input('perPage') ? $request->input('perPage') : 100;
+
+        $dues = Due::with('student', 'currency')
+            ->when($request->date, function ($query) use ($request) {
+                $query->whereDate('date', $request->date);
+            })
+            ->when($request->payment_verified, function ($query) use ($request) {
+                $query->where('payment_verified_at', $request->payment_verified == 'Sin verificar' ? null : '!=', null);
+            })
+            ->when($request->payment_reason, function ($query) use ($request) {
+                $query->where('payment_reason', $request->payment_reason);
+            })
+
+            ->paginate($perPage);
+        return ApiResponseController::response('Dues', 200, $dues);
     }
 
     /**
@@ -81,7 +96,7 @@ class DuesController extends Controller
      */
     public function destroy($id)
     {
-        if(!$due = Due::find($id)){
+        if (!$due = Due::find($id)) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
 

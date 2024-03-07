@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
 use App\Models\Currency;
+use App\Models\Due;
 use App\Models\Holiday;
 use App\Models\Message;
 use App\Models\OrderCourse;
@@ -42,7 +43,7 @@ class SapInstalationsController extends Controller
 
 
 
-        $saps = SapInstalation::with('sapTries', 'student', 'lastSapTry.staff')
+        $saps = SapInstalation::with('sapTries', 'student', 'lastSapTry.staff', 'due')
             ->when($user->role_id === 5, function ($query) use ($user, $request) {
                 $query->whereHas('lastSapTry', function ($query) use ($user) {
                     return $query->where('status', 'Programada')
@@ -68,9 +69,10 @@ class SapInstalationsController extends Controller
             })
             ->when($request->searchTerm === 'Pendiente de verificacion de pago', function ($query) {
 
-                $query->where('payment_enabled', 1)
-                    ->whereNotNull('payment_receipt')
-                    ->whereNull('payment_verified_at');
+                $query->whereNotNull('due_id')->whereHas('due', function ($query) {
+                    $query->whereNotNull('payment_receipt')
+                        ->whereNull('payment_verified_at');
+                });
             })
             ->when($request->user_id, function ($query) use ($request) {
                 $query->whereHas('lastSapTry', function ($query) use ($request) {
@@ -126,7 +128,8 @@ class SapInstalationsController extends Controller
         $sap['status'] = 'Pendiente';
 
         if ($otherSaps > 1) {
-            $sap['payment_enabled'] = 1;
+            $due = Due::create(['payment_reason' => 'Instalación SAP',]);
+            $sap['due_id'] = $due->id;
         }
 
         $sapInstalation->fill($sap);
@@ -176,12 +179,18 @@ class SapInstalationsController extends Controller
         $sapData = collect($data)->only($sapFillable)->toArray();
 
         if ($sapData['instalation_type'] === 'Desbloqueo SAP') {
-            $sapData['payment_enabled'] = 1;
             $sapData['staff_id'] = 30;
+
+            if (!$sapDB->due_id) {
+                $due = Due::create(['payment_reason' => 'Desbloqueo SAP',]);
+                $sapData['due_id'] = $due->id;
+            }
         }
 
         if ($sapData['instalation_type'] === 'Asignación de usuario y contraseña') {
-            $sapData['payment_enabled'] = 0;
+            if ($sapDB->due_id) {
+                Due::where('id', $sapDB->due_id)->delete();
+            }
         }
 
         // iterate over fillable fields
@@ -194,11 +203,11 @@ class SapInstalationsController extends Controller
 
         // $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
 
-        if ($sapDB->payment_enabled) {
+        if ($sapDB->due_id) {
             self::updatePayment($request, $id);
         }
 
-        $sapDB = SapInstalation::with('sapTries')->where('id', $id)->first();
+        $sapDB = SapInstalation::with('sapTries', 'due')->where('id', $id)->first();
         return ApiResponseController::response('Sap instalation updated', 200, $sapDB);
     }
 
@@ -393,7 +402,7 @@ class SapInstalationsController extends Controller
     public function getSapInstalation(Request $request, $key)
     {
         $sapInstalation = SapInstalation::where('key', $key)
-            ->with('student.city', 'student.state', 'staff', 'sapTries', 'student')
+            ->with('student.city', 'student.state', 'staff', 'sapTries', 'student', 'due')
             ->first();
 
         if (!$sapInstalation) {
@@ -552,19 +561,22 @@ class SapInstalationsController extends Controller
 
     public function updatePayment(Request $request, $id)
     {
-        $sapPayment = SapInstalation::with('order.student')->where('id', $id)->first();
+        $sap = SapInstalation::with('order.student')->where('id', $id)->first();
+        $due = Due::find(SapInstalation::find($id)->due_id);
         // only payment_fields
         $data = array_filter($request->all(), function ($key) {
-            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_date', 'payment_method_id']);
+            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_method_id', 'amount']);
         }, ARRAY_FILTER_USE_KEY);
 
-        $sapPayment->fill($data);
-
-        if ($data['price_id']) {
-            $sapPayment->price_amount = Price::find($data['price_id'])->amount;
+        if ($request->payment_date) {
+            $due->date = $request->payment_date;
         }
 
-        $student = Student::with('userAssigned')->where('id', $sapPayment->order->student->id)->with('city', 'state')->first();
+        $due->fill($data);
+
+
+
+        $student = Student::with('userAssigned')->where('id', $sap->order->student->id)->with('city', 'state')->first();
         $user = $student->user;
 
         $noti = new NotificationController();
@@ -580,20 +592,9 @@ class SapInstalationsController extends Controller
             ]
         ]);
 
-        $sapPayment->save();
+        $due->save();
 
-
-        $data = [
-            "icon"        => 'computer',
-            "user_id"     => $sapPayment->order->student->user_id,
-            "title"       => $sapPayment->order->student->name,
-            "description" => 'El alumno ' . $sapPayment->order->student->name . ' ha realizado el pago de la instalación, por favor revisar el comprobante de pago y confirmar la instalación.',
-            "link"        => '#',
-        ];
-        $assignment = new AssignmentsController();
-        $assignment->store($data);
-
-        return ApiResponseController::response('Sap try instalation updated', 200, $sapPayment);
+        return ApiResponseController::response('Sap try instalation updated', 200, $sap);
     }
 
     public function verifiedPayment(Request $request, $id)
@@ -603,10 +604,10 @@ class SapInstalationsController extends Controller
             return ApiResponseController::response('No tienes permisos para realizar esta acción', 400);
         }
 
-        $sapInstalation = SapInstalation::find($id);
-        $sapInstalation->payment_verified_at = Carbon::now();
-        $sapInstalation->payment_verified_by = $user->id;
-        $sapInstalation->save();
+        $sapInstalation = SapInstalation::with('due')->where('id', $id)->first();
+        $sapInstalation->due->payment_verified_at = Carbon::now();
+        $sapInstalation->due->payment_verified_by = $user->id;
+        $sapInstalation->due->save();
 
         return ApiResponseController::response('Sap try instalation updated', 200, $sapInstalation);
     }
@@ -618,8 +619,13 @@ class SapInstalationsController extends Controller
             return ApiResponseController::response('No tienes permisos para realizar esta acción', 400);
         }
 
-        SapTry::where('sap_instalation_id', $id)->delete();
-        SapInstalation::where('id', $id)->delete();
+        $sapInstalation = SapInstalation::find($id);
+        if ($sapInstalation->due_id) {
+            Due::where('id', $sapInstalation->due_id)->delete();
+        }
+
+        $sapInstalation->sapTries()->delete();
+        $sapInstalation->delete();
 
         return ApiResponseController::response('Sap instalation deleted', 200);
     }
@@ -775,7 +781,7 @@ class SapInstalationsController extends Controller
                 $sapInstalation->instalation_type = $ins['type'];
                 $sapInstalation->status           = 'Realizada';
                 $sapInstalation->key                      = md5(microtime() . rand(100, 999));
-                $sapInstalation->payment_enabled  = 0;
+                // $sapInstalation->payment_enabled  = 0;
                 $sapInstalation->save();
 
 

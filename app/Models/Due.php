@@ -19,9 +19,15 @@ class Due extends Model implements Auditable
         'date',
         'amount',
         'paid',
+        'price_id',
+        'currency_id',
         'payment_method_id',
         'position',
         'payment_receipt',
+        'payment_verified_at',
+        'payment_verified_by',
+        'student_id',
+        'payment_reason',
     ];
 
     public function setDateAttribute($value)
@@ -65,5 +71,10 @@ class Due extends Model implements Auditable
     public function currency()
     {
         return $this->hasOneThrough(Currency::class, Order::class, 'id', 'id', 'order_id', 'currency_id');
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
     }
 }

@@ -82,9 +82,6 @@ class SapTriesController extends Controller
                     ->get()
                     ->count();
 
-                if ($otherSaps > 1) {
-                    $sapInstalation->payment_enabled = 1;
-                }
 
                 $sapInstalation->status = 'Pendiente';
                 $sapInstalation->key    = md5(microtime());
@@ -111,7 +108,6 @@ class SapTriesController extends Controller
             $try->staff_id           = SapInstalationsController::findAvailableStaff($try->start_datetime)->id;
             $try->sap_instalation_id = $sap_instalation_id;
             $try->status             = "Por programar";
-            $try->payment_enabled    = SapTry::where('sap_instalation_id', $sap_instalation_id)->count() >= 3  ? 1 : 0;
             $try->save();
         }
 
@@ -147,56 +143,5 @@ class SapTriesController extends Controller
 
 
         return ApiResponseController::response('Sap instalation tries', 200, $sapTry);
-    }
-
-
-    public function updatePayment(Request $request, $id)
-    {
-        $sapTry = SapTry::find($id);
-        // only payment_fields
-        $data = array_filter($request->all(), function ($key) {
-            return in_array($key, ['price_id', 'currency_id', 'payment_receipt', 'payment_method_id', 'payment_date']);
-        }, ARRAY_FILTER_USE_KEY);
-
-        $sapTry->fill($data);
-
-        if ($data['price_id']) {
-            $sapTry->price_amount = Price::find($data['price_id'])->amount;
-        }
-
-        $student = Student::with('userAssigned')->where('id', $sapTry->sapInstalation->order->student->id)->with('city', 'state')->first();
-        $user = $student->userAssigned[0];
-
-        $noti = new NotificationController();
-        $noti = $noti->store([
-            'title'      => 'Pago de agendamiento de instalación',
-            'body'       => 'El alumno ' . $student->name . ' ha realizado el pago de la instalación, por favor revisar el comprobante de pago y confirmar la instalación.',
-            'icon'       => 'check_circle_outline',
-            'url'        => '#',
-            'user_id'    => $user->id,
-            'use_router' => false,
-            'custom_data' => [
-                []
-            ]
-        ]);
-
-        $sapTry->save();
-
-        return ApiResponseController::response('Sap try instalation updated', 200, $sapTry);
-    }
-
-    public function verifiedPayment(Request $request, $id)
-    {
-        $user = $request->user();
-        if ($user->role_id !== 1) {
-            return ApiResponseController::response('No tienes permisos para realizar esta acción', 400);
-        }
-
-        $sapTry = SapTry::find($id);
-        $sapTry->payment_verified_at = Carbon::now();
-        $sapTry->payment_verified_by = $user->id;
-        $sapTry->save();
-
-        return ApiResponseController::response('Sap try instalation updated', 200, $sapTry);
     }
 }

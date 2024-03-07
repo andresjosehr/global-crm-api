@@ -15,6 +15,7 @@ use App\Models\Holiday;
 use App\Models\LiveconnectMessagesLog;
 use App\Models\Order;
 use App\Models\OrderCourse;
+use App\Models\Price;
 use App\Models\SapInstalation;
 use App\Models\Student;
 use App\Models\User;
@@ -23,10 +24,6 @@ use App\Models\ZohoToken;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Zadarma_API\Api;
-use GuzzleHttp;
-use Illuminate\Support\Facades\Mail;
-use Resend;
 
 class TestController extends Controller
 {
@@ -37,15 +34,42 @@ class TestController extends Controller
      */
     public function index()
     {
-        return SapInstalation::with('lastSapTry')
-            ->where('status', 'Pendiente')
-            ->whereHas('lastSapTry', function ($query) {
-                $query->where('status', 'Realizada');
-            })->get()->map(function ($sapInstalation) {
-                $sapInstalation->status = 'Realizada';
-                $sapInstalation->save();
-                return $sapInstalation;
-            })->values();
+
+        Due::all()->map(function ($due) {
+            $order = Order::withTrashed()->where('id', $due->order_id)->first();
+            if (!Student::where('id', $order->student_id)->exists()) {
+                $order->student_id = NULL;
+            }
+            $due->student_id = $order->student_id;
+            $due->payment_reason = 'Curso';
+            $due->currency_id = $order->currency_id;
+            $due->save();
+        });
+        // return DB::connection('second')->table('sap_instalations')->where('payment_enabled', 1)->get();
+        DB::connection('second')->table('sap_instalations')->where('payment_enabled', 1)->get()->map(function ($instalation) {
+
+            $currency_id = null;
+            if ($instalation->price_id) {
+                $currency_id = Price::where('id', $instalation->price_id)->first()->currency_id;
+            }
+
+            $due = Due::create([
+                'date'   => $instalation->payment_date,
+                'amount' => $instalation->price_amount,
+                'payment_method_id' => NULL,
+                'currency_id' => $currency_id,
+                'price_id' => $instalation->price_id,
+                'payment_receipt' => $instalation->payment_receipt,
+                'payment_verified_at' => $instalation->payment_verified_at,
+                'payment_verified_by' => $instalation->payment_verified_by,
+                'payment_reason' => $instalation->instalation_type == 'Desbloqueo SAP' ? 'Desbloqueo SAP' : 'Instalación SAP',
+                'student_id' => Order::withTrashed()->where('id', $instalation->order_id)->first()->student_id,
+            ]);
+
+            SapInstalation::where('id', $instalation->id)->update(['due_id' => $due->id]);
+        });
+
+        return 'Exito';
     }
 
     public function epale($params = null)

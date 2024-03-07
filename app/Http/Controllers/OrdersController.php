@@ -165,9 +165,16 @@ class OrdersController extends Controller
         }
 
 
+        $dues = array_map(function ($item) use ($order) {
+            $item['currency_id'] = $order->currency_id;
+            $item['student_id'] = $order->student_id;
+            $item['payment_reason'] = 'Curso';
+            $item['currency_id'] = $order->currency_id;
+            return $item;
+        }, $request->dues);
 
         // Dues
-        $order->dues()->createMany($request->dues);
+        $order->dues()->createMany($dues);
 
 
         $freeCourses = [6, 7, 8, 9];
@@ -247,7 +254,7 @@ class OrdersController extends Controller
 
 
         // Get id
-        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'orderCourses.sapInstalations', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
+        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'orderCourses.sapInstalations.due', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
 
         $params = [
             'order' => $order,
@@ -300,7 +307,7 @@ class OrdersController extends Controller
     public function show($id)
     {
 
-        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses', 'orderCourses.freezings', 'orderCourses.dateHistory', 'sapInstalations.staff', 'sapInstalations.student', 'currency', 'dues', 'createdBy', 'invoice')->find($id);
+        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses', 'orderCourses.freezings', 'orderCourses.dateHistory', 'sapInstalations.staff', 'sapInstalations.student', 'sapInstalations.due', 'currency', 'dues', 'createdBy', 'invoice')->find($id);
         if (!$order) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }

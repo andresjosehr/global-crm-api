@@ -21,26 +21,11 @@ class SapTry extends Model implements Auditable
         "status",
         "schedule_at",
         'link_sent_by',
-        'price_id',
-        'payment_date',
-        'price_amount',
-        'currency_id',
-        'payment_receipt',
-        'payment_method_id',
     ];
 
     protected $appends = [
         'time',
         'date',
-    ];
-
-    public $payment_fields = [
-        'price_id',
-        'payment_date',
-        'price_amount',
-        'currency_id',
-        'payment_receipt',
-        'payment_method_id',
     ];
 
     protected static function booted()
@@ -65,32 +50,7 @@ class SapTry extends Model implements Auditable
         return $this->belongsTo(User::class, 'staff_id');
     }
 
-    public function setPaymentReceiptAttribute($payment_receipt)
-    {
 
-        $base64Types = [
-            'data:image/jpeg;base64' => 'jpeg',
-            'data:image/png;base64' => 'png',
-            'data:application/pdf;base64' => 'pdf',
-        ];
-
-
-        $firstPart = explode(',', $payment_receipt)[0];
-        if ($payment_receipt && isset($base64Types[$firstPart])) {
-
-            $extension = $base64Types[$firstPart];
-
-            $file = $payment_receipt;
-            $file = str_replace($firstPart . ',', '', $file);
-            $file = str_replace(' ', '+', $file);
-            $date = date('Y-m-d-H-i-s');
-            $newFileName = 'payment_receipt_' . Carbon::now()->format('Y-m-d-H-i-s') . '.' . $extension;
-            \File::put(storage_path() . '/app/public/payment_receipts/' . $newFileName, base64_decode($file));
-            $payment_receipt = $newFileName;
-        }
-
-        $this->attributes['payment_receipt'] = $payment_receipt;
-    }
 
     public function getTimeAttribute()
     {
@@ -100,10 +60,5 @@ class SapTry extends Model implements Auditable
     public function getDateAttribute()
     {
         return Carbon::parse($this->start_datetime)->format('Y-m-d');
-    }
-
-    public function setPaymentDateAttribute($payment_date)
-    {
-        $this->attributes['payment_date'] = Carbon::parse($payment_date)->format('Y-m-d');
     }
 }
