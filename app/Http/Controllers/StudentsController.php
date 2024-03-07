@@ -262,13 +262,14 @@ class StudentsController extends Controller
 
         $student = Student::find($order->student->id);
 
-        $student->name       = $request->input('name');
-        $student->country_id = $request->input('country_id');
-        $student->phone      = $request->input('phone');
-        $student->document   = $request->input('document');
-        $student->city_id    = $request->input('city_id');
-        $student->state_id   = $request->input('state_id');
-        $student->email      = $request->input('email');
+        $student->name             = $request->input('name');
+        $student->country_id       = $request->input('country_id');
+        $student->phone            = $request->input('phone');
+        $student->document         = $request->input('document');
+        $student->document_type_id = $request->input('document_type_id');
+        $student->city_id          = $request->input('city_id');
+        $student->state_id         = $request->input('state_id');
+        $student->email            = $request->input('email');
 
         $student->save();
 
@@ -279,6 +280,7 @@ class StudentsController extends Controller
             'phone' => $request->input('phone'),
             'email' => $request->input('email'),
             'document' => $request->input('document'),
+            'document_type_id' => $request->input('document_type_id'),
             'country_id' => $request->input('country_id'),
             'state_id' => $request->input('state_id'),
             'city_id' => $request->input('city_id'),
