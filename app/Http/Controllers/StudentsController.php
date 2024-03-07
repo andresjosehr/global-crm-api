@@ -8,6 +8,7 @@ use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Jobs\GeneralJob;
 use App\Models\Car;
 use App\Models\DocumentType;
+use App\Models\Lead;
 use App\Models\LiveconnectMessagesLog;
 use App\Models\LiveConnectRequest;
 use App\Models\Order;
@@ -264,12 +265,24 @@ class StudentsController extends Controller
         $student->name       = $request->input('name');
         $student->country_id = $request->input('country_id');
         $student->phone      = $request->input('phone');
-        $student->phone      = $request->input('phone');
+        $student->document   = $request->input('document');
         $student->city_id    = $request->input('city_id');
         $student->state_id   = $request->input('state_id');
         $student->email      = $request->input('email');
 
         $student->save();
+
+        // Get lead
+
+        Lead::where('id', $student->lead_id)->update([
+            'name' => 'Matriculado',
+            'phone' => $request->input('phone'),
+            'email' => $request->input('email'),
+            'document' => $request->input('document'),
+            'country_id' => $request->input('country_id'),
+            'state_id' => $request->input('state_id'),
+            'city_id' => $request->input('city_id'),
+        ]);
 
         $student = Student::find($student->id)->with('user')->first();
 
