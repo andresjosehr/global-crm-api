@@ -38,6 +38,16 @@ class TestController extends Controller
     public function index()
     {
 
+        return SapInstalation::with('lastSapTry')
+            ->where('status', 'Pendiente')
+            ->whereHas('lastSapTry', function ($query) {
+                $query->where('status', 'Realizada');
+            })->get()->map(function ($sapInstalation) {
+                $sapInstalation->status = 'Realizada';
+                $sapInstalation->save();
+                return $sapInstalation;
+            })->values();
+
         $holidays = Holiday::all();
 
         return Order::with('orderCourses', 'student')->get()->map(function ($order) use ($holidays) {
@@ -141,15 +151,15 @@ class TestController extends Controller
 
 
 
-        // return SapInstalation::with('lastSapTry')
-        //     ->where('status', 'Pendiente')
-        //     ->whereHas('lastSapTry', function ($query) {
-        //         $query->where('status', 'Realizada');
-        //     })->get()->map(function ($sapInstalation) {
-        //         $sapInstalation->status = 'Realizada';
-        //         $sapInstalation->save();
-        //         return $sapInstalation;
-        //     })->values();
+        return SapInstalation::with('lastSapTry')
+            ->where('status', 'Pendiente')
+            ->whereHas('lastSapTry', function ($query) {
+                $query->where('status', 'Realizada');
+            })->get()->map(function ($sapInstalation) {
+                $sapInstalation->status = 'Realizada';
+                $sapInstalation->save();
+                return $sapInstalation;
+            })->values();
     }
 
     public function epale($params = null)
