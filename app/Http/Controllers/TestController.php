@@ -9,6 +9,7 @@ use App\Http\Services\LiveConnectService;
 use App\Http\Services\ResendService;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
+use App\Models\Course;
 use App\Models\Currency;
 use App\Models\Due;
 use App\Models\Holiday;
@@ -90,40 +91,214 @@ class TestController extends Controller
         return $allData;
     }
 
-    public function epale($params = null)
-    {
-        echo 'yep';
-    }
+
 
     public function index2()
     {
+        // max execution time
+        ini_set('max_execution_time', -1);
+        // Get unificacion_1.json from storage/app
+        $json = file_get_contents(storage_path('app/unificacion_1.csv'));
+        $json = explode("\n", $json);
+        foreach ($json as $key => $value) {
+            $json[$key] = explode(";", $value);
+        }
 
-        event(new \App\Events\CallActivityEvent(1, 'LAST_CALL_ACTIVITY', ["Culito" => 'Esta es una prueba']));
-        return;
-        // return self::getUserWithCount(null, [3, 4]);
-
-        return Student::with('orders')->get()->filter(function ($student) {
-            return $student->orders->count() > 0;
-        })->values()->map(function ($student) {
-            $student->role = $student->orders[0]->dues->where('paid', 1)->sum('amount') == $student->orders[0]->price_amount ? 4 : 3;
-            $student->role_name = $student->role == 4 ? 'Seguimiento' : 'Cobranza';
-            return $student;
-        })
-            ->filter(function ($student) {
-                return $student->start_date;
-            })->values()
-            ->map(function ($student) {
-
-                $user = self::getUserWithCount($student->start_date, [$student->role])->first();
-                Student::where('id', $student->id)->update(['user_id' => $user->id]);
-                DB::table('user_student')->insert([
-                    'student_id' => $student->id,
-                    'user_id' => $user->id
-                ]);
-
-                return $student;
+        // set headers as keys
+        $headers = collect($json[0]);
+        $data = collect($json)->map(function ($row) use ($headers) {
+            return collect($row)->mapWithKeys(function ($item, $key) use ($headers) {
+                return [$headers[$key] => $item];
             });
-        return 'Exito';
+        });
+
+
+        // remove headers
+        $data->slice(1)->values()->filter(function ($item) {
+            return Student::whereName($item['Nombre y apellido'])->exists();
+        }, $data)->values();
+
+        // Se remueven los headers
+        $data = $data->slice(1)->values();
+
+
+        // Se mapea la data
+        $data = $data->map(function ($item) {
+            $courses = [];
+            for ($i = 1; $i < 9; $i++) {
+
+
+
+
+                try {
+
+                    $licencia = $item['licencia_' . $i] ? trim($item['licencia_' . $i]) : null;
+                    if ($licencia != null) {
+                        $licencia = explode(' ', $licencia)[0] . ' Meses';
+                    }
+
+
+                    $courses[] = [
+                        'curso'        => $item['curso_' . $i] ? trim($item['curso_' . $i]) : null,
+                        'estado'       => $item['estado_' . $i] ? trim($item['estado_' . $i]) : null,
+                        'licencia'     => $licencia,
+                        'fecha_inicio' => $item['fecha_inicio_' . $i] ? trim($item['fecha_inicio_' . $i]) : null,
+                        'fecha_fin'    => $item['fecha_fin_' . $i] ? trim($item['fecha_fin_' . $i]) : null,
+                    ];
+                } catch (\Throwable $th) {
+                }
+            }
+            $newData = [
+                'name' => $item['Nombre y apellido'],
+                'courses' => array_filter($courses, function ($course) {
+                    return $course['curso'] != null;
+                })
+            ];
+            return $newData;
+        });
+
+        $courses_ids = [
+            'SAP PP' => 1,
+            'SAP MM' => 2,
+            'SAP PM' => 3,
+            'SAP HCM' => 4,
+            'SAP INTEGRAL' => 5,
+            'EXCEL' => 6,
+            'EXCEL EMPRESARIAL' => 6,
+            'POWER BI' => 7,
+            'PBI' => 7,
+            'POWER BI AVANZADO' => 8,
+            'POWER BI  AVANZADO ' => 8,
+            'PBI AVANZADO' => 8,
+            'MS PROJECT' => 9,
+            'MSPROJECT' => 9,
+            'MS  PROJECT' => 9,
+            'SAP FI' => 10,
+
+        ];
+
+
+        // Se quitan todos los cursos que no tengan estado, o que tengan estado 'No aplica' o 'NO APLICA'
+        $data = $data->map(function ($item) {
+            $item['courses'] = array_filter($item['courses'], function ($course) {
+                return $course['estado'] != null && $course['estado'] != 'No aplica' && $course['estado'] != 'NO APLICA';
+            });
+            return $item;
+        });
+
+        $data = $data->map(function ($item) use ($courses_ids) {
+            $student = Student::whereName($item['name'])->with('orders.orderCourses')->first();
+
+            if (!$student) {
+                return $item;
+            }
+
+            // Se dividen los cursos si en la cadena de texto hay un '+', ya que significa que hay varios cursos con una misma licencia, fecha de inicio y fecha de fin
+            $item['courses'] = array_reduce($item['courses'], function ($carry, $course) use ($courses_ids, $student) {
+                if (strpos($course['curso'], '+') !== false) {
+                    $courses = explode('+', $course['curso']);
+                    foreach ($courses as $c_name) {
+                        $carry[] = [
+                            'curso'        => trim($c_name),
+                            'estado'       => $course['estado'],
+                            'licencia'     => $course['licencia'],
+                            'fecha_inicio' => $course['fecha_inicio'],
+                            'fecha_fin'    => $course['fecha_fin']
+                        ];
+                    }
+                } else {
+                    $carry[] = $course;
+                }
+
+                return $carry;
+            }, []);
+
+
+            // Find SAP QM and remove it
+            $item['courses'] = array_filter($item['courses'], function ($course) {
+                return $course['curso'] != 'SAP QM';
+            });
+            $item['courses'] = array_values($item['courses']);
+
+
+            $item['courses'] = array_map(function ($course) use ($courses_ids, $student, $item) {
+
+                if ($course['curso'] == 'SAP QM') {
+                    return $course;
+                }
+                $course['curso'] = preg_replace('/\s+/', ' ', $course['curso']);
+
+                if (!count($student->orders)) {
+
+                    Order::create([
+                        'student_id' => $student->id,
+                        'payment_mode' => 'Contado',
+                        'price_amount' => 0
+                    ]);
+                    $student = Student::whereName($item['name'])->with('orders.orderCourses')->first();
+                }
+                // Log::info($student);
+                $orderCourse = $student->orders[0]->orderCourses->where('course_id', $courses_ids[$course['curso']])->first();
+                $course['order_course'] = $orderCourse ? $orderCourse : null;
+                return $course;
+            }, $item['courses']);
+
+            return $item;
+        });
+
+
+
+        // return $data;
+        $data = $data->map(function ($item) use ($courses_ids) {
+            $student = Student::whereName($item['name'])->with('orders.orderCourses')->first();
+
+            if (!$student) {
+                return $item;
+            }
+
+
+            $item['courses'] = array_map(function ($course) use ($courses_ids, $student) {
+
+                // Remove all spaces
+                $start = preg_replace('/\s+/', '', $course['fecha_inicio']);
+                $end = preg_replace('/\s+/', '', $course['fecha_fin']);
+
+                Log::info($end);
+                if ($course['order_course'] != null) {
+                    OrderCourse::find($course['order_course']->id)->update([
+
+                        'classroom_status' =>  self::capitalize($course['estado']),
+                        'license'          => strtolower($course['licencia']),
+                        'start'            => $start ? Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
+                        'end'              => $end ? Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
+                    ]);
+                } else {
+                    OrderCourse::create([
+                        'order_id'         => $student->orders[0]->id,
+                        'course_id'        => $courses_ids[$course['curso']],
+                        'type'             => Course::find($courses_ids[$course['curso']])->type,
+                        'classroom_status' => self::capitalize($course['estado']),
+                        'license'          => strtolower($course['licencia']),
+                        'start'            => $start ? Carbon::createFromFormat('d/m/Y', $start)->format('Y-m-d') : null,
+                        'end'              => $end ? Carbon::createFromFormat('d/m/Y', $end)->format('Y-m-d') : null,
+                    ]);
+                }
+
+                return $course;
+            }, $item['courses']);
+
+            return $item;
+        });
+
+
+
+        return ['Exito' => $data];
+    }
+
+    // Capitaliza first letter and lower the rest of each word
+    public function capitalize($string)
+    {
+        return ucwords(strtolower($string));
     }
 
     public function getUserWithCount($date = null, $roles = [])
