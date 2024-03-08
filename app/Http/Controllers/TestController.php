@@ -45,7 +45,10 @@ class TestController extends Controller
             '14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs' => User::whereName('MC')->first()->id,
             '1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo' => User::whereName('MS')->first()->id,
             '1_CBoJ5JyCjtMeOA1KIniWNqvDNxQUTDwMwV-qAYtedI' => User::whereName('GD')->first()->id,
-            '15IgSGsDjfrJMLaVRwkpxkusiyNHc0nSaFRpuRJ1ywWk' => User::whereName('LJ')->first()->id
+            '15IgSGsDjfrJMLaVRwkpxkusiyNHc0nSaFRpuRJ1ywWk' => User::whereName('LJ')->first()->id,
+
+            '1blqfsvTck5sWfFd1AMLEt732Bo395R1GuFFZuuOk2Lk' => User::whereName('MR')->first()->id,
+            '1O46poG06FfnCCTuTNUuFr4NGbbzYstFICNCiGPezBpg' => User::whereName('JH')->first()->id,
         ];
 
         $googleSheet = new GoogleSheetController();
@@ -53,7 +56,20 @@ class TestController extends Controller
         $sheets = DB::table('sheets')
             ->whereNot('sheet_id', '17D-T9Gfs4DW4M-4TVabmWtuyosqrDaSuv7iH-Quc3eA')
             ->where('type', 'prod')
-            ->get();
+            ->get()->toArray();
+
+
+
+        // add aditional sheets
+        $sheets[] = (object) [
+            'sheet_id'      => '1blqfsvTck5sWfFd1AMLEt732Bo395R1GuFFZuuOk2Lk',
+            'course_tab_id' => 1487249389,
+        ];
+
+        $sheets[] = (object) [
+            'sheet_id'      => '1O46poG06FfnCCTuTNUuFr4NGbbzYstFICNCiGPezBpg',
+            'course_tab_id' => 1552535677,
+        ];
 
         $allData = [];
         foreach ($sheets as $sheet) {
@@ -93,12 +109,12 @@ class TestController extends Controller
 
 
 
-    public function index2()
+    public function index2($type)
     {
         // max execution time
         ini_set('max_execution_time', -1);
         // Get unificacion_1.json from storage/app
-        $json = file_get_contents(storage_path('app/unificacion_1.csv'));
+        $json = file_get_contents(storage_path('app/unificacion_' . $type . '.csv'));
         $json = explode("\n", $json);
         foreach ($json as $key => $value) {
             $json[$key] = explode(";", $value);
@@ -123,9 +139,10 @@ class TestController extends Controller
 
 
         // Se mapea la data
-        $data = $data->map(function ($item) {
+        $data = $data->map(function ($item) use ($type) {
             $courses = [];
-            for ($i = 1; $i < 9; $i++) {
+            $limit = $type == 1 ? 10 : 4;
+            for ($i = 1; $i < $limit; $i++) {
 
 
 
@@ -163,6 +180,7 @@ class TestController extends Controller
             'SAP PM' => 3,
             'SAP HCM' => 4,
             'SAP INTEGRAL' => 5,
+            'SAP Integral' => 5,
             'EXCEL' => 6,
             'EXCEL EMPRESARIAL' => 6,
             'POWER BI' => 7,
@@ -174,6 +192,7 @@ class TestController extends Controller
             'MSPROJECT' => 9,
             'MS  PROJECT' => 9,
             'SAP FI' => 10,
+            'FI' => 10,
 
         ];
 
@@ -301,35 +320,121 @@ class TestController extends Controller
         return ucwords(strtolower($string));
     }
 
-    public function getUserWithCount($date = null, $roles = [])
+    public function excludeInvalidDays()
     {
-        return User::when($roles, function ($query, $roles) {
-            return $query->whereIn('role_id', $roles);
-        })
-            ->withCount('studentsAssigned')->with('students.orders.orderCourses')
-            // ->where('role_id', $student->role)
-            ->get()->map(function ($user) use ($date) {
 
 
-                $user->students_assigned_date_count = $user->students->filter(function ($student) use ($date) {
-                    if (!$date) {
-                        return true;
-                    }
-                    if ($student->orders->count() > 0) {
-                        return $student->orders[0]->orderCourses[0]->start == $date;
-                    }
-                    return false;
-                })->count();
-                $user->date = $date;
-                unset($user->students);
+        $holidays = Holiday::all();
+
+        Order::with('orderCourses', 'student')->get()->map(function ($order) use ($holidays) {
+
+            $order->orderCourses->map(function ($orderCourse) use ($holidays) {
+
+                $orderCourse->startInfo = [
+                    'must_change' => false,
+                    'reason' => ''
+                ];
+
+                $orderCourse->endInfo = [
+                    'must_change' => false,
+                    'reason' => ''
+                ];
+
+                // Check if the start date is a holiday or sunday
+                if ($holidays->contains('date', $orderCourse->start) || Carbon::parse($orderCourse->start)->isSunday()) {
+                    $orderCourse->startInfo = [
+                        'must_change' => true,
+                        'reason' => $holidays->contains('date', $orderCourse->start) ? 'Feriado' : 'Domingo'
+                    ];
+                }
+
+                // Check if the end date is a holiday or sunday
+                if ($holidays->contains('date', $orderCourse->end) || Carbon::parse($orderCourse->end)->isSunday()) {
+                    $orderCourse->endInfo = [
+                        'must_change' => true,
+                        'reason' => $holidays->contains('date', $orderCourse->end) ? 'Feriado' : 'Domingo'
+                    ];
+                }
+                return $orderCourse;
+            });
+            return $order;
+        })->values()->filter(function ($order) {
+            return $order->orderCourses->some(function ($orderCourse) {
+                return $orderCourse->startInfo['must_change'] || $orderCourse->endInfo['must_change'];
+            });
+        })->values()->count();
+        // ->values()->each(function ($order) use ($holidays) {
 
 
-                return $user;
-            })
-            ->values()
-            ->sortBy([
-                ['students_assigned_date_count', 'asc'],
-                ['students_assigned_count', 'asc']
-            ])->values();
+        //     for ($i = 0; $i < $order->orderCourses->count(); $i++) {
+
+        //         $orderCourse = $order->orderCourses[$i];
+        //         $prevOrderCourse = $i > 0 ? $order->orderCourses[$i - 1] : null;
+
+        //         $start = Carbon::parse($orderCourse->start);
+        //         $end = Carbon::parse($orderCourse->end);
+
+        //         Log::info($orderCourse->start);
+
+        //         if (!$orderCourse->start || !$orderCourse->end) {
+        //             continue;
+        //         }
+
+        //         if ($prevOrderCourse) {
+        //             $start = $start->addDays(1);
+        //         }
+
+        //         $start = Carbon::parse($start);
+        //         Log::info($start);
+
+        //         while ($holidays->contains('date', $start->format('Y-m-d')) || $start->isSunday()) {
+        //             $start = Carbon::parse($start)->addDays(1);
+        //         }
+
+
+
+        //         if ($order->orderCourses->count() > 1 && $order->orderCourses->count() < 5) {
+        //             $end = Carbon::parse($start)->addMonths(3);
+        //         }
+
+        //         if ($order->orderCourses->count() == 5) {
+        //             $end = Carbon::parse($start)->addMonths(12);
+        //         }
+
+        //         if ($order->orderCourses->count() == 1) {
+        //             $diffMonths = Carbon::parse($end)->diffInMonths($start);
+        //             $plusMonths = $diffMonths > 4 ? 6 : 3;
+        //             $end = Carbon::parse($start)->addMonths($plusMonths);
+        //         }
+
+        //         while ($holidays->contains('date', $end->format('Y-m-d')) || $end->isSunday()) {
+        //             $end = Carbon::parse($end)->addDays(1);
+        //         }
+
+        //         $orderCourse->start = $start->format('Y-m-d');
+        //         $orderCourse->end = $end->format('Y-m-d');
+
+        //         // Remove startInfo and endInfo
+        //         unset($orderCourse->startInfo);
+        //         unset($orderCourse->endInfo);
+
+
+        //         $orderCourse->save();
+        //     }
+        // });
+
+        return "Exito";
+
+
+
+        return SapInstalation::with('lastSapTry')
+            ->where('status', 'Pendiente')
+            ->whereHas('lastSapTry', function ($query) {
+                $query->where('status', 'Realizada');
+            })->get()->map(function ($sapInstalation) {
+                $sapInstalation->status = 'Realizada';
+                $sapInstalation->save();
+                return $sapInstalation;
+            })->values();
     }
 }
