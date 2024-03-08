@@ -276,7 +276,7 @@ class StudentsController extends Controller
         // Get lead
 
         Lead::where('id', $student->lead_id)->update([
-            'name' => 'Matriculado',
+            'name' => $request->input('name'),
             'phone' => $request->input('phone'),
             'email' => $request->input('email'),
             'document' => $request->input('document'),

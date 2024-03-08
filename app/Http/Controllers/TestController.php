@@ -37,129 +37,57 @@ class TestController extends Controller
      */
     public function index()
     {
+        // execution time
+        ini_set('max_execution_time', -1);
 
-        return SapInstalation::with('lastSapTry')
-            ->where('status', 'Pendiente')
-            ->whereHas('lastSapTry', function ($query) {
-                $query->where('status', 'Realizada');
-            })->get()->map(function ($sapInstalation) {
-                $sapInstalation->status = 'Realizada';
-                $sapInstalation->save();
-                return $sapInstalation;
-            })->values();
+        $asesores = [
+            '14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs' => User::whereName('MC')->first()->id,
+            '1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo' => User::whereName('MS')->first()->id,
+            '1_CBoJ5JyCjtMeOA1KIniWNqvDNxQUTDwMwV-qAYtedI' => User::whereName('GD')->first()->id,
+            '15IgSGsDjfrJMLaVRwkpxkusiyNHc0nSaFRpuRJ1ywWk' => User::whereName('LJ')->first()->id
+        ];
 
-        $holidays = Holiday::all();
+        $googleSheet = new GoogleSheetController();
 
-        return Order::with('orderCourses', 'student')->get()->map(function ($order) use ($holidays) {
+        $sheets = DB::table('sheets')
+            ->whereNot('sheet_id', '17D-T9Gfs4DW4M-4TVabmWtuyosqrDaSuv7iH-Quc3eA')
+            ->where('type', 'prod')
+            ->get();
 
-            $order->orderCourses->map(function ($orderCourse) use ($holidays) {
+        $allData = [];
+        foreach ($sheets as $sheet) {
+            $ranges = ['CURSOS!A1:ZZZ50000'];
 
-                $orderCourse->startInfo = [
-                    'must_change' => false,
-                    'reason' => ''
-                ];
+            $response = $googleSheet->service->spreadsheets_values->batchGet($sheet->sheet_id, ['ranges' => $ranges]);
+            $coursesSheet = $response[0]->getValues();
 
-                $orderCourse->endInfo = [
-                    'must_change' => false,
-                    'reason' => ''
-                ];
-
-                // Check if the start date is a holiday or sunday
-                if ($holidays->contains('date', $orderCourse->start) || Carbon::parse($orderCourse->start)->isSunday()) {
-                    $orderCourse->startInfo = [
-                        'must_change' => true,
-                        'reason' => $holidays->contains('date', $orderCourse->start) ? 'Feriado' : 'Domingo'
-                    ];
-                }
-
-                // Check if the end date is a holiday or sunday
-                if ($holidays->contains('date', $orderCourse->end) || Carbon::parse($orderCourse->end)->isSunday()) {
-                    $orderCourse->endInfo = [
-                        'must_change' => true,
-                        'reason' => $holidays->contains('date', $orderCourse->end) ? 'Feriado' : 'Domingo'
-                    ];
-                }
-                return $orderCourse;
+            // Set headers as keys
+            $headers = collect($coursesSheet[0]);
+            $data = collect($coursesSheet)->map(function ($row) use ($headers) {
+                return collect($row)->mapWithKeys(function ($item, $key) use ($headers) {
+                    return [$headers[$key] => $item];
+                });
             });
-            return $order;
-        })->values()->filter(function ($order) {
-            return $order->orderCourses->some(function ($orderCourse) {
-                return $orderCourse->startInfo['must_change'] || $orderCourse->endInfo['must_change'];
+
+            $data = $data->map(function ($item) use ($sheet, $asesores) {
+                return [
+                    'asesor' => $asesores[$sheet->sheet_id],
+                    'email' => $item['CORREO'],
+                ];
             });
-        })->values()->count();
-        // ->values()->each(function ($order) use ($holidays) {
 
+            $allData = array_merge($allData, $data->toArray());
+        }
 
-        //     for ($i = 0; $i < $order->orderCourses->count(); $i++) {
+        foreach ($allData as $data) {
+            $student = Student::where('email', $data['email'])->first();
+            if ($student) {
+                $student->user_id = $data['asesor'];
+                $student->save();
+            }
+        }
 
-        //         $orderCourse = $order->orderCourses[$i];
-        //         $prevOrderCourse = $i > 0 ? $order->orderCourses[$i - 1] : null;
-
-        //         $start = Carbon::parse($orderCourse->start);
-        //         $end = Carbon::parse($orderCourse->end);
-
-        //         Log::info($orderCourse->start);
-
-        //         if (!$orderCourse->start || !$orderCourse->end) {
-        //             continue;
-        //         }
-
-        //         if ($prevOrderCourse) {
-        //             $start = $start->addDays(1);
-        //         }
-
-        //         $start = Carbon::parse($start);
-        //         Log::info($start);
-
-        //         while ($holidays->contains('date', $start->format('Y-m-d')) || $start->isSunday()) {
-        //             $start = Carbon::parse($start)->addDays(1);
-        //         }
-
-
-
-        //         if ($order->orderCourses->count() > 1 && $order->orderCourses->count() < 5) {
-        //             $end = Carbon::parse($start)->addMonths(3);
-        //         }
-
-        //         if ($order->orderCourses->count() == 5) {
-        //             $end = Carbon::parse($start)->addMonths(12);
-        //         }
-
-        //         if ($order->orderCourses->count() == 1) {
-        //             $diffMonths = Carbon::parse($end)->diffInMonths($start);
-        //             $plusMonths = $diffMonths > 4 ? 6 : 3;
-        //             $end = Carbon::parse($start)->addMonths($plusMonths);
-        //         }
-
-        //         while ($holidays->contains('date', $end->format('Y-m-d')) || $end->isSunday()) {
-        //             $end = Carbon::parse($end)->addDays(1);
-        //         }
-
-        //         $orderCourse->start = $start->format('Y-m-d');
-        //         $orderCourse->end = $end->format('Y-m-d');
-
-        //         // Remove startInfo and endInfo
-        //         unset($orderCourse->startInfo);
-        //         unset($orderCourse->endInfo);
-
-
-        //         $orderCourse->save();
-        //     }
-        // });
-
-        return "Exito";
-
-
-
-        return SapInstalation::with('lastSapTry')
-            ->where('status', 'Pendiente')
-            ->whereHas('lastSapTry', function ($query) {
-                $query->where('status', 'Realizada');
-            })->get()->map(function ($sapInstalation) {
-                $sapInstalation->status = 'Realizada';
-                $sapInstalation->save();
-                return $sapInstalation;
-            })->values();
+        return $allData;
     }
 
     public function epale($params = null)
