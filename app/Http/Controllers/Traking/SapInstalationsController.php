@@ -407,7 +407,7 @@ class SapInstalationsController extends Controller
 
         if (!$sapInstalation) {
             $sapInstalation = SapInstalation::where('id', $key)
-                ->with('student.city', 'student.state', 'staff', 'sapTries')
+                ->with('student.city', 'student.state', 'staff', 'sapTries', 'due')
                 ->first();
         }
 
