@@ -190,6 +190,7 @@ class SapInstalationsController extends Controller
         if ($sapData['instalation_type'] === 'Asignación de usuario y contraseña') {
             if ($sapDB->due_id) {
                 Due::where('id', $sapDB->due_id)->delete();
+                $sapData['due_id'] = null;
             }
         }
 
