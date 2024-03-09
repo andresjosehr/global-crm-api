@@ -202,6 +202,8 @@ class SapInstalationsController extends Controller
         });
         $sapDB->save();
 
+        $sapDB = SapInstalation::with('sapTries', 'due', 'lastSapTry')->where('id', $id)->first();
+
         // $data['staff_id'] = $this->findAvailableStaff(Carbon::parse($data['date'])->format('Y-m-d'))->id;
 
         if ($sapDB->due_id) {
