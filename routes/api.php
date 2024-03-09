@@ -227,6 +227,7 @@ Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');
 Route::get('get-state/{id}', 'App\Http\Controllers\CountriesController@getState');
 Route::get('test', 'App\Http\Controllers\TestController@index');
 Route::get('test2/{type}', 'App\Http\Controllers\TestController@index2');
+Route::get('test3', 'App\Http\Controllers\TestController@index3');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 
