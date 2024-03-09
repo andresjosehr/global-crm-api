@@ -14,6 +14,7 @@ class SapInstalation extends Model implements Auditable
     use HasFactory, AuditableTrait;
 
     public $fillable = [
+        "student_remember_sap_user",
         "order_id",
         "operating_system",
         "pc_type",
