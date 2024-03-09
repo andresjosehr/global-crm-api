@@ -29,6 +29,9 @@ class ZohoService
         $end = Carbon::parse($end)->addHours(5)->format('Ymd\THis\Z');
 
 
+        // Remove all non-alphanumeric, include spaces and accent
+        $title = preg_replace('/[^A-Za-z0-9áéíóúÁÉÍÓÚñÑ ]/', '', $title);
+
         $data = [
             "title" => $title,
             "dateandtime" => [
@@ -43,6 +46,8 @@ class ZohoService
         }
         // return $data;
         $data = self::arrayToJson($data);
+
+        Log::info($data);
 
         $client = new GuzzleHttp\Client();
         $res = $client->request('POST', "https://calendar.zoho.com/api/v1/calendars/$calendar/events?eventdata=$data", [

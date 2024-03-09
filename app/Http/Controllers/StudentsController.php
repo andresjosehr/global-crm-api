@@ -8,6 +8,7 @@ use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Jobs\GeneralJob;
 use App\Models\Car;
 use App\Models\DocumentType;
+use App\Models\Lead;
 use App\Models\LiveconnectMessagesLog;
 use App\Models\LiveConnectRequest;
 use App\Models\Order;
@@ -261,15 +262,29 @@ class StudentsController extends Controller
 
         $student = Student::find($order->student->id);
 
-        $student->name       = $request->input('name');
-        $student->country_id = $request->input('country_id');
-        $student->phone      = $request->input('phone');
-        $student->phone      = $request->input('phone');
-        $student->city_id    = $request->input('city_id');
-        $student->state_id   = $request->input('state_id');
-        $student->email      = $request->input('email');
+        $student->name             = $request->input('name');
+        $student->country_id       = $request->input('country_id');
+        $student->phone            = $request->input('phone');
+        $student->document         = $request->input('document');
+        $student->document_type_id = $request->input('document_type_id');
+        $student->city_id          = $request->input('city_id');
+        $student->state_id         = $request->input('state_id');
+        $student->email            = $request->input('email');
 
         $student->save();
+
+        // Get lead
+
+        Lead::where('id', $student->lead_id)->update([
+            'name' => $request->input('name'),
+            'phone' => $request->input('phone'),
+            'email' => $request->input('email'),
+            'document' => $request->input('document'),
+            'document_type_id' => $request->input('document_type_id'),
+            'country_id' => $request->input('country_id'),
+            'state_id' => $request->input('state_id'),
+            'city_id' => $request->input('city_id'),
+        ]);
 
         $student = Student::find($student->id)->with('user')->first();
 
