@@ -201,7 +201,6 @@ class TestController extends Controller
                     ]);
                     $student = Student::whereName($item['name'])->with('orders.orderCourses')->first();
                 }
-                // Log::info($student);
                 $orderCourse = $student->orders[0]->orderCourses->where('course_id', $courses_ids[$course['curso']])->first();
                 $course['order_course'] = $orderCourse ? $orderCourse : null;
                 return $course;
@@ -227,7 +226,7 @@ class TestController extends Controller
                 $start = preg_replace('/\s+/', '', $course['fecha_inicio']);
                 $end = preg_replace('/\s+/', '', $course['fecha_fin']);
 
-                Log::info($end);
+
                 if ($course['order_course'] != null) {
                     OrderCourse::find($course['order_course']->id)->update([
 
@@ -348,66 +347,70 @@ class TestController extends Controller
             return $order->orderCourses->some(function ($orderCourse) {
                 return $orderCourse->startInfo['must_change'] || $orderCourse->endInfo['must_change'];
             });
-        })->values()->count();
-        // ->values()->each(function ($order) use ($holidays) {
-
-
-        //     for ($i = 0; $i < $order->orderCourses->count(); $i++) {
-
-        //         $orderCourse = $order->orderCourses[$i];
-        //         $prevOrderCourse = $i > 0 ? $order->orderCourses[$i - 1] : null;
-
-        //         $start = Carbon::parse($orderCourse->start);
-        //         $end = Carbon::parse($orderCourse->end);
-
-        //         Log::info($orderCourse->start);
-
-        //         if (!$orderCourse->start || !$orderCourse->end) {
-        //             continue;
-        //         }
-
-        //         if ($prevOrderCourse) {
-        //             $start = $start->addDays(1);
-        //         }
-
-        //         $start = Carbon::parse($start);
-        //         Log::info($start);
-
-        //         while ($holidays->contains('date', $start->format('Y-m-d')) || $start->isSunday()) {
-        //             $start = Carbon::parse($start)->addDays(1);
-        //         }
+        })
+            ->values()->each(function ($order) use ($holidays) {
 
 
 
-        //         if ($order->orderCourses->count() > 1 && $order->orderCourses->count() < 5) {
-        //             $end = Carbon::parse($start)->addMonths(3);
-        //         }
+                // sort orderCourses by start date
+                $orderCourses = $order->orderCourses->whereNotNull('start')->sortBy('start')->values();
 
-        //         if ($order->orderCourses->count() == 5) {
-        //             $end = Carbon::parse($start)->addMonths(12);
-        //         }
+                for ($i = 0; $i < $orderCourses->count(); $i++) {
 
-        //         if ($order->orderCourses->count() == 1) {
-        //             $diffMonths = Carbon::parse($end)->diffInMonths($start);
-        //             $plusMonths = $diffMonths > 4 ? 6 : 3;
-        //             $end = Carbon::parse($start)->addMonths($plusMonths);
-        //         }
+                    $orderCourse = $orderCourses[$i];
+                    $prevOrderCourse = $i > 0 ? $orderCourses[$i - 1] : null;
 
-        //         while ($holidays->contains('date', $end->format('Y-m-d')) || $end->isSunday()) {
-        //             $end = Carbon::parse($end)->addDays(1);
-        //         }
-
-        //         $orderCourse->start = $start->format('Y-m-d');
-        //         $orderCourse->end = $end->format('Y-m-d');
-
-        //         // Remove startInfo and endInfo
-        //         unset($orderCourse->startInfo);
-        //         unset($orderCourse->endInfo);
+                    $start = Carbon::parse($orderCourse->start);
+                    $end = Carbon::parse($orderCourse->end);
 
 
-        //         $orderCourse->save();
-        //     }
-        // });
+                    if (!$orderCourse->start || !$orderCourse->end) {
+                        continue;
+                    }
+
+                    if ($prevOrderCourse && $orderCourses->count() != 5) {
+                        $start = $start->addDays(1);
+                    }
+
+                    $start = Carbon::parse($start);
+
+                    while ($holidays->contains('date', $start->format('Y-m-d')) || $start->isSunday()) {
+                        $start = Carbon::parse($start)->addDays(1);
+                    }
+
+
+
+                    if ($orderCourses->count() > 1 && $orderCourses->count() < 5) {
+                        $end = Carbon::parse($start)->addMonths(3);
+                    }
+
+                    if ($orderCourses->count() == 5) {
+                        $end = Carbon::parse($start)->addMonths(12);
+                    }
+
+                    if ($orderCourses->count() == 1) {
+                        $diffMonths = Carbon::parse($end)->diffInMonths($start);
+                        $plusMonths = $diffMonths > 4 ? 6 : 3;
+                        $end = Carbon::parse($start)->addMonths($plusMonths);
+                    }
+
+
+                    while ($holidays->contains('date', $end->format('Y-m-d')) || $end->isSunday()) {
+                        $end->addDays(1);
+                    }
+
+
+                    $orderCourse->start = $start->format('Y-m-d');
+                    $orderCourse->end = $end->format('Y-m-d');
+
+                    // Remove startInfo and endInfo
+                    unset($orderCourse->startInfo);
+                    unset($orderCourse->endInfo);
+
+
+                    $orderCourse->save();
+                }
+            });
 
         return "Exito";
 
