@@ -102,7 +102,7 @@ class SapInstalationsController extends Controller
 
     public function getFromOrder(Request $request, $id)
     {
-        $saps = SapInstalation::with('sapTries', 'student')
+        $saps = SapInstalation::with('sapTries', 'student', 'due')
             ->where('order_id', $id)
             ->get();
 
