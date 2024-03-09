@@ -164,7 +164,7 @@ class SapInstalationsController extends Controller
         $try->status = "Por programar";
         $try->save();
 
-        $sapInstalation = SapInstalation::with('sapTries', 'staff')->where('id', $sapInstalation->id)->first();
+        $sapInstalation = SapInstalation::with('sapTries', 'staff', 'due', 'lastSapTry')->where('id', $sapInstalation->id)->first();
         return ApiResponseController::response('Sap instalation saved', 200, $sapInstalation);
     }
 
@@ -207,7 +207,7 @@ class SapInstalationsController extends Controller
             self::updatePayment($request, $id);
         }
 
-        $sapDB = SapInstalation::with('sapTries', 'due')->where('id', $id)->first();
+        $sapDB = SapInstalation::with('sapTries', 'due', 'lastSapTry')->where('id', $id)->first();
         return ApiResponseController::response('Sap instalation updated', 200, $sapDB);
     }
 

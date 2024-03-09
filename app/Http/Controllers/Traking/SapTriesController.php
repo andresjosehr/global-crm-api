@@ -61,10 +61,9 @@ class SapTriesController extends Controller
             $sapInstalationsCount = Order::where('id', $sapTry->sapInstalation->order_id)->with('sapInstalations')->first()->sapInstalations->count();
             $sapStryCount = SapTry::where('sap_instalation_id', $sap_instalation_id)->get()->count();
 
-            if ($sapStryCount === 3) {
+            if ($sapStryCount === 3 && $sapTry->sapInstalation->instalation_type != 'Desbloqueo SAP') {
+
                 SapInstalation::where('id', $sap_instalation_id)->update(['status' => 'Cancelada']);
-
-
                 // create new sap instalation with the same data
                 $sapInstalation                   = new SapInstalation();
                 // get fillable fields

@@ -43,6 +43,11 @@ class Student extends Model implements Auditable
         return $this->hasManyThrough(SapInstalation::class, Order::class);
     }
 
+    public function liveConnectMessages()
+    {
+        return $this->hasMany(LiveconnectMessagesLog::class);
+    }
+
     public function wp_user()
     {
         return $this->hasOne(WpUser::class, 'user_login', 'classroom_user');

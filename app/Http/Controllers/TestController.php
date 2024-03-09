@@ -18,6 +18,7 @@ use App\Models\Order;
 use App\Models\OrderCourse;
 use App\Models\Price;
 use App\Models\SapInstalation;
+use App\Models\SapTry;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\ZadarmaStatistic;
@@ -36,72 +37,19 @@ class TestController extends Controller
     public function index()
     {
         // execution time
-        ini_set('max_execution_time', -1);
-
-        $asesores = [
-            '14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs' => User::whereName('MC')->first()->id,
-            '1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo' => User::whereName('MS')->first()->id,
-            '1_CBoJ5JyCjtMeOA1KIniWNqvDNxQUTDwMwV-qAYtedI' => User::whereName('GD')->first()->id,
-            '15IgSGsDjfrJMLaVRwkpxkusiyNHc0nSaFRpuRJ1ywWk' => User::whereName('LJ')->first()->id,
-
-            '1blqfsvTck5sWfFd1AMLEt732Bo395R1GuFFZuuOk2Lk' => User::whereName('MR')->first()->id,
-            '1O46poG06FfnCCTuTNUuFr4NGbbzYstFICNCiGPezBpg' => User::whereName('JH')->first()->id,
-        ];
-
-        $googleSheet = new GoogleSheetController();
-
-        $sheets = DB::table('sheets')
-            ->whereNot('sheet_id', '17D-T9Gfs4DW4M-4TVabmWtuyosqrDaSuv7iH-Quc3eA')
-            ->where('type', 'prod')
-            ->get()->toArray();
-
-
-
-        // add aditional sheets
-        $sheets[] = (object) [
-            'sheet_id'      => '1blqfsvTck5sWfFd1AMLEt732Bo395R1GuFFZuuOk2Lk',
-            'course_tab_id' => 1487249389,
-        ];
-
-        $sheets[] = (object) [
-            'sheet_id'      => '1O46poG06FfnCCTuTNUuFr4NGbbzYstFICNCiGPezBpg',
-            'course_tab_id' => 1552535677,
-        ];
-
-        $allData = [];
-        foreach ($sheets as $sheet) {
-            $ranges = ['CURSOS!A1:ZZZ50000'];
-
-            $response = $googleSheet->service->spreadsheets_values->batchGet($sheet->sheet_id, ['ranges' => $ranges]);
-            $coursesSheet = $response[0]->getValues();
-
-            // Set headers as keys
-            $headers = collect($coursesSheet[0]);
-            $data = collect($coursesSheet)->map(function ($row) use ($headers) {
-                return collect($row)->mapWithKeys(function ($item, $key) use ($headers) {
-                    return [$headers[$key] => $item];
-                });
-            });
-
-            $data = $data->map(function ($item) use ($sheet, $asesores) {
-                return [
-                    'asesor' => $asesores[$sheet->sheet_id],
-                    'email' => $item['CORREO'],
-                ];
-            });
-
-            $allData = array_merge($allData, $data->toArray());
-        }
-
-        foreach ($allData as $data) {
-            $student = Student::where('email', $data['email'])->first();
-            if ($student) {
-                $student->user_id = $data['asesor'];
-                $student->save();
-            }
-        }
-
-        return $allData;
+        return SapInstalation::with('lastSapTry')->whereHas('lastSapTry', function ($query) {
+            $query->where('status', 'Por programar')
+                ->whereNotNull('link_sent_at');
+        })
+            // Where have student.liveConnectMessages count gratter than 2
+            ->with(['student' => function ($query) {
+                $query->withCount('liveConnectMessages')
+                    ->where('live_connect_messages_count', '>', 2);
+            }])
+            // ->whereHas('student', function ($query) {
+            //     $query->where('live_connect_messages_count', '>', 2);
+            // })
+            ->get();
     }
 
 
