@@ -65,10 +65,10 @@
             <p><b>Fecha:
                 {{-- {{$sap->start_datetime_target_timezone}} --}}
                 {{-- format: YYYY-MM-DD HH:MM --}}
-                {{date('d/m/Y h:i A', strtotime($sap->start_datetime_target_timezone))}}
+                {{date('d/m/Y h:i A', strtotime($sap->lastSapTry->start_datetime_target_timezone))}}
 
             </b></p>
-            <p><b>Zona horaria: {{$sap->timezone}}</b></p>
+            <p><b>Zona horaria: {{$sap->lastSapTry->timezone}}</b></p>
 
             <p><b>Te recordamos los siguientes puntos:</p></b>
 

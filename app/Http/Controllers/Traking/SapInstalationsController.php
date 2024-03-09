@@ -258,7 +258,7 @@ class SapInstalationsController extends Controller
     public function triggerSapInstalationEvents($trypOld, $tryNew, $sapOld, $sapNew)
     {
 
-        $sap = SapInstalation::with('sapTries', 'student.user')->whereHas('sapTries', function ($query) use ($trypOld) {
+        $sap = SapInstalation::with('sapTries', 'student.user', 'lastSapTry')->whereHas('sapTries', function ($query) use ($trypOld) {
             $query->where('id', $trypOld->id);
         })->first();
 
@@ -341,20 +341,6 @@ class SapInstalationsController extends Controller
 
 
 
-        $data = [
-            "icon"        => 'computer',
-            "user_id"     => $sap->staff_id,
-            "title"       => $title . $aditionalText,
-            "description" => 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ' . ($first ? 'agendado' : 'reagendado') . ' agendado una instalación SAP',
-            "link"        => '/instalaciones-sap/' . $sap->id
-        ];
-        $data['title'] = $title;
-        $data['description'] = 'El alumno ' . $sap->student->name . ' ' . $sap->student->last_name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' una instalación SAP';
-
-        $assignment = new AssignmentsController();
-        $assignment->store($data);
-
-
         $title = $title . ' | ' . $sap->student->name;
         $body = 'El alumno ' . $sap->student->name . ' ha ' . ($first ? 'agendado' : 'reagendado') . ' su instalación SAP el ' . Carbon::parse($tryNew->start_datetime)->format('Y-m-d H:i:s') . ' ' . $aditionalText;
 
@@ -421,6 +407,10 @@ class SapInstalationsController extends Controller
             ->where('instalation_type', 'Instalación')
             ->where('id', '<>', $sapInstalation->id)
             ->count() === 0;
+
+        $sapInstalation->otherSapInstalations = SapInstalation::where('order_id', $sapInstalation->order_id)
+            ->where('id', '<>', $sapInstalation->id)
+            ->get();
 
         if (!$sapInstalation) {
             return ApiResponseController::response('No sap instalation found', 404);
