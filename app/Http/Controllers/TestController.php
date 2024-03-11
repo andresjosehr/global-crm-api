@@ -36,6 +36,8 @@ class TestController extends Controller
      */
     public function index()
     {
+
+        //
         // execution time
         return SapInstalation::with(['lastSapTry', 'student.liveConnectMessages' => function ($query) {
             return $query->where('message_type', 'LIKE', 'SAP_INSTALATION_REMAINDER_%')

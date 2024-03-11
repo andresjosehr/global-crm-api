@@ -17,12 +17,9 @@ class ResendService
 
         $resend = Resend::client(env('RESEND_API_KEY'));
 
-        // [
-        //     'from' => 'Acme <onboarding@resend.dev>',
-        //     'to' => ['delivered@resend.dev'],
-        //     'subject' => 'hello world',
-        //     'html' => 'it works!',
-        //   ]
+        if (env('APP_ENV') != 'production') {
+            $mail['to'] = ['delivered@resend.dev'];
+        }
         $data = $resend->emails->send($mail);
 
         $mail['response'] = json_encode($data);

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\GoogleSheetController;
 use App\Http\Controllers\Mails\CoreMailsController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Services\ResendService;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
 use App\Models\Currency;
@@ -340,7 +341,16 @@ class SapInstalationsController extends Controller
         $otherSapInstalations = SapInstalation::where('order_id', $sap->order_id)->get();
 
         $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first, 'otherSapInstalations' => $otherSapInstalations])->render();
-        CoreMailsController::sendMail($sap->student->email, $title, $content);
+
+        $mail = [
+            'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
+            'to'         => [$sap->student->email],
+            'subject'    => $title,
+            'student_id' => $sap->student->id,
+            'html'       => $content
+        ];
+
+        ResendService::sendSigleMail($mail);
 
 
 
