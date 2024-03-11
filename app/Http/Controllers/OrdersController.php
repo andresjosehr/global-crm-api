@@ -254,7 +254,7 @@ class OrdersController extends Controller
 
 
         // Get id
-        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'orderCourses.sapInstalations.due', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
+        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'sapInstalations.due', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
 
         $params = [
             'order' => $order,
