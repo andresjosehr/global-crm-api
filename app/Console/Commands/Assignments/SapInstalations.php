@@ -3,6 +3,8 @@
 namespace App\Console\Commands\Assignments;
 
 use App\Models\SapInstalation;
+use App\Models\Student;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SapInstalations extends Command
@@ -28,15 +30,24 @@ class SapInstalations extends Command
      */
     public function handle()
     {
-        $sap = SapInstalation::with('lastSapTry', 'student.liveConnectMessages')->whereHas('lastSapTry', function ($query) {
-            $query->where('status', 'Por programar')
-                ->whereNotNull('link_sent_at');
-        })
-            // Where have student.liveConnectMessages count gratter than 2
-            ->whereHas('student.liveConnectMessages', function ($query) {
-                $query->havingRaw('COUNT(*) > 2');
+        $sap = SapInstalation::with(['lastSapTry', 'student.orders.orderCourses', 'student.liveConnectMessages' => function ($query) {
+            return $query->where('message_type', 'LIKE', 'SAP_INSTALATION_REMAINDER_%')
+                ->whereCreatedAt('>', Carbon::now()->subDays(2))
+                ->orderBy('created_at', 'desc');
+        }])
+            ->whereHas('lastSapTry', function ($query) {
+                return $query->where('status', 'Por programar')
+                    ->whereNull('link_sent_at')
+                    ->where('start_datetime', '<=', Carbon::now()->addHours(16)->format('Y-m-d H:i:s'))
+                    ->whereDate('start_datetime', '>=', Carbon::now()->format('Y-m-d H:i:s'));
             })
             ->get();
-        return Command::SUCCESS;
+
+        // Filter where liveConnectMessages is graten than 2
+
+
+
+
+        $this->info($sap->pluck('student.email'));
     }
 }

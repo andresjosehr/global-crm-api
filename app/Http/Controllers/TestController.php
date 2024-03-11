@@ -37,29 +37,28 @@ class TestController extends Controller
     public function index()
     {
         // execution time
-        return SapInstalation::with('lastSapTry')->whereHas('lastSapTry', function ($query) {
-            $query->where('status', 'Por programar')
-                ->whereNotNull('link_sent_at');
-        })
-            // Where have student.liveConnectMessages count gratter than 2
-            ->with(['student' => function ($query) {
-                $query->withCount('liveConnectMessages')
-                    ->where('live_connect_messages_count', '>', 2);
-            }])
-            // ->whereHas('student', function ($query) {
-            //     $query->where('live_connect_messages_count', '>', 2);
-            // })
+        return SapInstalation::with(['lastSapTry', 'student.liveConnectMessages' => function ($query) {
+            return $query->where('message_type', 'LIKE', 'SAP_INSTALATION_REMAINDER_%')
+                ->whereCreatedAt('>', Carbon::now()->subDays(2))
+                ->orderBy('created_at', 'desc');
+        }])
+            ->whereHas('lastSapTry', function ($query) {
+                return $query->where('status', 'Por programar')
+                    ->whereNull('link_sent_at')
+                    ->where('start_datetime', '<=', Carbon::now()->addHours(24)->format('Y-m-d H:i:s'))
+                    ->whereDate('start_datetime', '>=', Carbon::now()->format('Y-m-d H:i:s'));
+            })
             ->get();
     }
 
 
 
-    public function index2($type)
+    public function index2()
     {
         // max execution time
         ini_set('max_execution_time', -1);
         // Get unificacion_1.json from storage/app
-        $json = file_get_contents(storage_path('app/unificacion_' . $type . '.csv'));
+        $json = file_get_contents(storage_path('app/jh.csv'));
         $json = explode("\n", $json);
         foreach ($json as $key => $value) {
             $json[$key] = explode(";", $value);
@@ -84,9 +83,9 @@ class TestController extends Controller
 
 
         // Se mapea la data
-        $data = $data->map(function ($item) use ($type) {
+        $data = $data->map(function ($item) {
             $courses = [];
-            $limit = $type == 1 ? 10 : 4;
+            $limit = 4;
             for ($i = 1; $i < $limit; $i++) {
 
 

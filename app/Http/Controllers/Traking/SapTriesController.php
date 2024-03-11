@@ -36,8 +36,16 @@ class SapTriesController extends Controller
 
     public function update(Request $request, $id)
     {
+
+        $user = $request->user();
+
+
         $sapTry = SapTry::with('sapInstalation')->where('id', $id)->first();
         $sap_instalation_id = $sapTry->sap_instalation_id;
+
+        if ($user->role_id == 5 && Carbon::parse($sapTry->start_datetime)->diffInMinutes(Carbon::now()) >= 60) {
+            return ApiResponseController::response('No puedes modificar una instalación que ya ha pasado mas de una hora', 400);
+        }
 
         if ($request->time) {
             $sapTry->start_datetime = Carbon::parse($request->date)->format('Y-m-d') . ' ' . $request->time['start_time'];

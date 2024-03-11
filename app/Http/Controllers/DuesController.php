@@ -18,7 +18,7 @@ class DuesController extends Controller
         // Paginate
         $perPage = $request->input('perPage') ? $request->input('perPage') : 100;
 
-        $dues = Due::with('student', 'currency')
+        $dues = Due::with('student', 'currency', 'paymentMethod')
             ->when($request->date, function ($query) use ($request) {
                 $query->whereDate('date', $request->date);
             })
@@ -27,6 +27,13 @@ class DuesController extends Controller
             })
             ->when($request->payment_reason, function ($query) use ($request) {
                 $query->where('payment_reason', $request->payment_reason);
+            })
+            ->when($request->student, function ($query) use ($request) {
+                $query->whereHas('student', function ($query) use ($request) {
+                    $query->where('name', 'like', '%' . $request->student . '%')
+                        ->orWhere('email', 'like', '%' . $request->student . '%')
+                        ->orWhere('phone', 'like', '%' . $request->student . '%');
+                });
             })
 
             ->paginate($perPage);

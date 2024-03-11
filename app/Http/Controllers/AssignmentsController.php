@@ -28,6 +28,7 @@ class AssignmentsController extends Controller
             ->paginate($perPage);
 
 
+        // Inicio alumnos que empiezan clase dentro de 72 horas y aun no se les ha enviado link de agendamiento
         $students = Student::with('orders.orderCourses', 'orders.dues')
             ->whereHas('orders', function ($query) {
                 $query->whereHas('orderCourses', function ($query) {
@@ -46,10 +47,7 @@ class AssignmentsController extends Controller
                 return true;
             })->values()->pluck('id')->toArray();
 
-
-
-        // SapInstalations
-        $sapInstalations = SapInstalation::with('lastSapTry', 'student.user')
+        $sapInstalationLinkNotSent = SapInstalation::with('lastSapTry', 'student.user')
             ->where('status', 'Pendiente')
             ->whereHas('lastSapTry', function ($query) {
                 $query->where('status', 'Por programar')
@@ -61,11 +59,32 @@ class AssignmentsController extends Controller
                 $query->whereIn('students.id', $students);
             })
             ->get();
+        // Fin alumnos que empiezan clase dentro de 72 horas y aun no se les ha enviado link de agendamiento
+
+
+
+        $sapInstalationNotSchedule = SapInstalation::with(['lastSapTry', 'student.user', 'student.liveConnectMessages' => function ($query) {
+            return $query->where('message_type', 'LIKE', 'SAP_INSTALATION_REMAINDER_%')
+                ->whereCreatedAt('>', Carbon::now()->subDays(2))
+                ->orderBy('created_at', 'desc');
+        }])
+            ->whereHas('lastSapTry', function ($query) {
+                return $query->where('status', 'Por programar')
+                    ->whereNull('link_sent_at')
+                    ->where('start_datetime', '<=', Carbon::now()->addHours(24)->format('Y-m-d H:i:s'))
+                    ->whereDate('start_datetime', '>=', Carbon::now()->format('Y-m-d H:i:s'));
+            })
+            ->get();
+
+
+
 
         $data = [
-            'sapInstalations' => $sapInstalations,
+            'sapInstalationLinkNotSent' => $sapInstalationLinkNotSent,
+            'sapInstalationNotSchedule'  => $sapInstalationNotSchedule,
             'assignments'     => $assignments
         ];
+
 
 
         return ApiResponseController::response('Exitoso', 200, $data);

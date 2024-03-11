@@ -188,7 +188,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
         });
         Route::prefix('extensions')->group(function () {
             Route::post('save-draft', 'App\Http\Controllers\Traking\ExtensionsController@saveDraft');
-            Route::put('update', 'App\Http\Controllers\Traking\ExtensionsController@update');
+            Route::put('update/{id}', 'App\Http\Controllers\Traking\ExtensionsController@update');
         });
 
         Route::prefix('freezings')->group(function () {
@@ -226,7 +226,7 @@ Route::get('get-city-by-state/{state_id}', 'App\Http\Controllers\CountriesContro
 Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');
 Route::get('get-state/{id}', 'App\Http\Controllers\CountriesController@getState');
 Route::get('test', 'App\Http\Controllers\TestController@index');
-Route::get('test2', 'App\Http\Controllers\TestController@excludeInvalidDays');
+Route::get('test2', 'App\Http\Controllers\TestController@index2');
 Route::get('mail', 'App\Http\Controllers\MailsController@index');
 
 

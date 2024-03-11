@@ -44,6 +44,6 @@ class Kernel extends ConsoleKernel
     private function sapInstalationAssignments($schedule)
     {
         // each 5 minutes custom function
-        $schedule->command('sap:installations-assignments')->everyFiveMinutes();
+        $schedule->command('assignments:sap-instalations')->everyFiveMinutes();
     }
 }
