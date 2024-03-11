@@ -144,6 +144,15 @@ class ModulesSeeder extends Seeder
                 'parent_id'   => null
             ],
 
+            [
+                'name'        => 'Pagos',
+                'description' => '',
+                'icon'        => 'heroicons_outline:credit-card',
+                'path'        => 'pagos',
+                'type'        => 'basic',
+                'parent_id'   => null
+            ],
+
 
         ]);
     }
