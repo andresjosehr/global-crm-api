@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traking\ExtensionsController;
 use App\Models\Due;
+use App\Models\Extension;
 use Illuminate\Http\Request;
 
 class DuesController extends Controller
@@ -135,6 +137,10 @@ class DuesController extends Controller
         if ($value === 'y') {
             $due->payment_verified_at = now();
             $due->payment_verified_by = $user->id;
+            if ($due->payment_reason == 'Extension') {
+                $extension = Extension::where('due_id', $due->id)->first();
+                ExtensionsController::sendNotificacion($extension->id);
+            }
         }
 
         if ($value === 'n') {

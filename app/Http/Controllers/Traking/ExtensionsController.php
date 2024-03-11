@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Traking;
 
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
+use App\Http\Services\LiveConnectService;
+use App\Http\Services\ResendService;
+use App\Jobs\GeneralJob;
 use App\Models\DatesHistory;
 use App\Models\Due;
 use App\Models\Extension;
@@ -131,5 +134,51 @@ class ExtensionsController extends Controller
         $due->save();
 
         return true;
+    }
+
+    static public function sendNotificacion($extension_id)
+    {
+        $extension = Extension::find($extension_id);
+
+        if ($extension->notification_sent_at) {
+            return ApiResponseController::response('Notificacion ya enviada', 200);
+        }
+
+
+        $extension = Extension::with('order.student', 'orderCourse.course')->first();
+        $content = view("mails.extension")->with(['extension' => $extension])->render();
+
+
+        $mail = [
+            'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
+            'to'         => [$extension->order->student->email],
+            'subject'    => 'Notificación de extensión de curso',
+            'student_id' => $extension->order->student->id,
+            'html'       => $content
+        ];
+
+        ResendService::sendSigleMail($mail);
+
+        $text = "Hola, le informo que hemos completado el proceso administrativo de extensión de su curso: " . $extension->orderCourse->course->name . ". \nSu nueva fecha de fin sería: " . $extension->orderCourse->end . ".\nLe hemos enviado la misma información a su correo registrado: " . $extension->order->student->email . ".\nAsimismo, tiene información relevante sobre la aprobación de su examen de certificación correspondiente.";
+
+        $params = [
+            'student_id' => $extension->order->student->id,
+            'phone' => $extension->order->student->phone,
+            'message' => $text,
+        ];
+
+        GeneralJob::dispatch(ExtensionsController::class, 'sendLiveConnectMessage', $params)->onQueue('liveconnect');
+
+        $extension->notification_sent_at = now();
+        $extension->save();
+
+        return ApiResponseController::response('Notificacion enviada', 200);
+    }
+
+    public function sendLiveConnectMessage($student_id, $phone, $message)
+    {
+        $liveconnectService = new LiveConnectService();
+        $liveconnectService->sendMessage(521, $phone, $message, $student_id, 'SCHEDULED', 'PROCESSED_EXTENSION', 1);
+        sleep(rand(12, 20));
     }
 }

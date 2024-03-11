@@ -59,4 +59,9 @@ class Extension extends Model implements Auditable
     {
         return $this->belongsTo(Due::class);
     }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
 }
