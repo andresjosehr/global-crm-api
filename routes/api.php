@@ -67,6 +67,7 @@ Route::post('sales/disconnect-call-activity', 'App\Http\Controllers\LeadsControl
 Route::group(['middleware' => ['api_access']], function () use ($basePathController) {
 
     Route::get('dues', [DuesController::class, 'index']);
+    Route::get('dues/verify-due/{id}/{value}', [DuesController::class, 'verifiedPayment']);
 
     Route::get('messages-log/liveconnect', [MessagesLogsController::class, 'getLiveConnectMessagesList']);
     Route::get('messages-log/mails', [MessagesLogsController::class, 'getMailsList']);

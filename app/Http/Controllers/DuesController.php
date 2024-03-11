@@ -35,6 +35,12 @@ class DuesController extends Controller
                         ->orWhere('phone', 'like', '%' . $request->student . '%');
                 });
             })
+            ->when($request->currency_id && $request->currency_id != 'all', function ($query) use ($request) {
+                $query->where('currency_id', $request->currency_id);
+            })
+            ->when($request->payment_method_id && $request->payment_method_id != 'all', function ($query) use ($request) {
+                $query->where('payment_method_id', $request->payment_method_id);
+            })
 
             ->paginate($perPage);
         return ApiResponseController::response('Dues', 200, $dues);
@@ -110,5 +116,31 @@ class DuesController extends Controller
         $due->delete();
 
         return ApiResponseController::response('Registro eliminado con exito', 200);
+    }
+
+
+
+    public function verifiedPayment(Request $request, $id, $value)
+    {
+        $user = $request->user();
+        $due = Due::find($id);
+
+        if (!$due) {
+            return ApiResponseController::response('No se encontro el registro', 204);
+        }
+
+        if ($value === 'y') {
+            $due->payment_verified_at = now();
+            $due->payment_verified_by = $user->id;
+        }
+
+        if ($value === 'n') {
+            $due->payment_verified_at = null;
+            $due->payment_verified_by = null;
+        }
+
+        $due->save();
+
+        return ApiResponseController::response('Pago verificado con exito', 200);
     }
 }

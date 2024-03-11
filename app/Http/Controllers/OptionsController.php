@@ -15,7 +15,7 @@ class OptionsController extends Controller
 {
     public function getCurrencies()
     {
-        return ApiResponseController::response('Exito', 200, Currency::all());
+        return ApiResponseController::response('Exito', 200, Currency::with('paymentMethods')->get());
     }
 
     public function getScheduleSapPrices()

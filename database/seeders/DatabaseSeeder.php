@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PricesSeeder::class);
         // $this->call(CoursesPricesSeeder::class);
         $this->call(PaymentMethodsSeeder::class);
-        $this->call(MessagesSeeder::class);
+        // $this->call(MessagesSeeder::class);
         $this->call(DocumentTypesSeeder::class);
         $this->call(HolidaysSeeder::class);
         $this->call(StaffAvailabilitySlotsSeeder::class);
