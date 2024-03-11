@@ -19,7 +19,6 @@ class SapInstalation extends Model implements Auditable
         "operating_system",
         "pc_type",
         "status",
-        "order_course_id",
         'previus_sap_instalation',
         "instalation_type",
         "key",
