@@ -23,7 +23,10 @@ class DuesController extends Controller
                 $query->whereDate('date', $request->date);
             })
             ->when($request->payment_verified, function ($query) use ($request) {
-                $query->where('payment_verified_at', $request->payment_verified == 'Sin verificar' ? null : '!=', null);
+                $query->where('payment_verified_at', $request->payment_verified == 'Sin verificar' ? null : '!=', null)
+                    ->when($request->payment_verified == 'Sin verificar', function ($query) {
+                        return $query->whereNotNull('payment_receipt');
+                    });
             })
             ->when($request->payment_reason, function ($query) use ($request) {
                 $query->where('payment_reason', $request->payment_reason);
