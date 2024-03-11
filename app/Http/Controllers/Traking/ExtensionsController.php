@@ -10,6 +10,7 @@ use App\Models\Extension;
 use App\Models\OrderCourse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ExtensionsController extends Controller
 {
@@ -40,10 +41,16 @@ class ExtensionsController extends Controller
                 $orderCourse = OrderCourse::where('id', $cert['order_course_id'])->first();
 
                 $holidays = DatesHistory::all();
-                $end = Carbon::parse($orderCourse->end)->addMonths($cert['months'])->format('Y-m-d');
-                if ($holidays->contains('date', $orderCourse->end) || Carbon::parse($orderCourse->end)->isSunday()) {
-                    $end = Carbon::parse($orderCourse->end)->addMonths($cert['months'])->addDay();
+                $end = Carbon::parse($orderCourse->end)->addMonths($cert['months']);
+                while ($holidays->contains('date', $orderCourse->end) || Carbon::parse($orderCourse->end)->isSunday()) {
+                    $end = Carbon::parse($orderCourse->end)->addDay();
                 }
+
+
+                $otherOrderCourses = OrderCourse::with('course')->where('order_id', $cert['order_id'])->where('start', '>', $orderCourse->start)->whereType($orderCourse->type)->get();
+
+                Log::info($otherOrderCourses);
+
 
 
                 DatesHistory::create([
@@ -61,6 +68,42 @@ class ExtensionsController extends Controller
                 OrderCourse::where('id', $cert['order_course_id'])->update([
                     'end' => $dateHistory->end_date
                 ]);
+
+                $end = $dateHistory->end_date;
+                $otherOrderCourses->each(function ($otherOrderCourse) use ($holidays, &$end) {
+                    $licenses = [
+                        '3 meses' => 3,
+                        '6 meses' => 6,
+                        '12 meses' => 12,
+                    ];
+
+                    $start = Carbon::parse($end)->addDay();
+
+                    while ($holidays->contains('date', $start) || Carbon::parse($start)->isSunday()) {
+                        $start = Carbon::parse($start)->addDay();
+                    }
+
+                    $end = Carbon::parse($start)->addMonths($licenses[$otherOrderCourse->license]);
+
+                    while ($holidays->contains('date', $end) || Carbon::parse($end)->isSunday()) {
+                        $end = Carbon::parse($end)->addDay();
+                    }
+
+                    Log::info("Curso a extender: " . $otherOrderCourse->course->name . ' Fecha de inicio: ' . $start->format('Y-m-d') . ' Fecha de fin: ' . $end->format('Y-m-d'));
+
+                    $otherOrderCourse->start = $start->format('Y-m-d');
+                    $otherOrderCourse->end = $end->format('Y-m-d');
+
+                    $otherOrderCourse->save();
+
+                    DatesHistory::create([
+                        'order_id'        => $otherOrderCourse->order_id,
+                        'order_course_id' => $otherOrderCourse->id,
+                        'start_date'      => $start->format('Y-m-d'),
+                        'end_date'        => $end->format('Y-m-d'),
+                        'type'            => 'Extension de un curso anterior',
+                    ]);
+                });
             }
         }
 

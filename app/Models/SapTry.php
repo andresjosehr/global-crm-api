@@ -50,6 +50,10 @@ class SapTry extends Model implements Auditable
         return $this->belongsTo(User::class, 'staff_id');
     }
 
+    public function linkSentBy()
+    {
+        return $this->belongsTo(User::class, 'link_sent_by');
+    }
 
 
     public function getTimeAttribute()

@@ -20,7 +20,7 @@ class SapTriesController extends Controller
 {
     public function getSapTries(Request $request, $id)
     {
-        $sapTry = SapTry::with('staff', 'sapInstalation')->where('sap_instalation_id', $id)->get();
+        $sapTry = SapTry::with('staff', 'sapInstalation', 'linkSentBy')->where('sap_instalation_id', $id)->get();
 
         return ApiResponseController::response('Sap instalation tries', 200, $sapTry);
     }
