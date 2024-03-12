@@ -144,10 +144,6 @@ class DuesController extends Controller
             }
         }
 
-        if ($value === 'n') {
-            $due->payment_verified_at = null;
-            $due->payment_verified_by = null;
-        }
 
         $due->save();
 
