@@ -46,6 +46,7 @@ class DuesController extends Controller
             ->when($request->payment_method_id && $request->payment_method_id != 'all', function ($query) use ($request) {
                 $query->where('payment_method_id', $request->payment_method_id);
             })
+            ->orderBy('date', 'desc')
 
             ->paginate($perPage);
         return ApiResponseController::response('Dues', 200, $dues);
