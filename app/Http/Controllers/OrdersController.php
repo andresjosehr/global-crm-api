@@ -417,13 +417,14 @@ class OrdersController extends Controller
             $orderCourse->freezings()->delete();
             $orderCourse->extensions()->delete();
 
-            $orderCourse->sapInstalations()->each(function ($item) {
-                $item->sapTries()->delete();
-                $item->delete();
-            });
+
             $orderCourse->dateHistory()->delete();
         }
 
+        $order->sapInstalations()->each(function ($item) {
+            $item->sapTries()->delete();
+            $item->delete();
+        });
         $order->orderCourses()->delete();
         $order->dues()->delete();
         // $order->invoice()->delete();
