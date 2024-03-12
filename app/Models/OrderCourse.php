@@ -67,6 +67,11 @@ class OrderCourse extends Model implements Auditable
         return $this->belongsTo(Order::class);
     }
 
+    // Has one through order
+    public function student()
+    {
+        return $this->hasOneThrough(Student::class, Order::class, 'id', 'id', 'order_id', 'student_id');
+    }
 
 
     public function setStartAttribute($value)

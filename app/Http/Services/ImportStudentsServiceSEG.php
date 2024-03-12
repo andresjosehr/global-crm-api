@@ -56,7 +56,7 @@ class ImportStudentsServiceSEG
     ];
 
 
-    public function index($sheet_type = 'test')
+    public function index()
     {
 
         // dermtz02@gmail.com
@@ -65,13 +65,27 @@ class ImportStudentsServiceSEG
         // set_time_limit
         set_time_limit(0);
 
-        self::createGoogleServiceInstance();
-        $data = self::getSheetsData($sheet_type);
-        $data = self::formatCourses($data);
-        $data = self::formatForImport($data);
-        $data = self::import($data);
 
-        return ['Exito'];
+        $sheets = [
+            '14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs',
+            '1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo',
+            '1_CBoJ5JyCjtMeOA1KIniWNqvDNxQUTDwMwV-qAYtedI',
+            '15IgSGsDjfrJMLaVRwkpxkusiyNHc0nSaFRpuRJ1ywWk'
+        ];
+
+
+
+        foreach ($sheets as $sheet) {
+
+            self::createGoogleServiceInstance();
+            $data = self::getSheetsData($sheet);
+            $data = self::formatCourses($data);
+            $data = self::formatForImport($data);
+        }
+        return "Exito";
+        // $data = self::import($data);
+
+        // return ['Exito'];
     }
 
 
@@ -104,6 +118,8 @@ class ImportStudentsServiceSEG
         $users = User::all()->pluck('id', 'name')->toArray();
         $created_by = User::where('email', 'asesor.prueba@gmail.com')->first()->id;
         $students = [];
+        $orderCourseNotFound = 0;
+        $orderCourseDifferent = 0;
         foreach ($data as $i => $student) {
             $studentData = [
                 'name'           => $student['NOMBRE'],
@@ -112,24 +128,34 @@ class ImportStudentsServiceSEG
                 'document'       => $student['DOCUMENTO'],
                 'classroom_user' => isset($student[$student['USUARIO_AULA_ULTIMATE']]) ? $student[$student['USUARIO_AULA_ULTIMATE']] : null,
                 'user_id'        => $student['wp_user_id'],
-                'user_id'        => isset($users[$student['COMP']]) ? $users[$student['COMP']] : null,
                 'created_by'     => $created_by,
                 'created_at'     => '2024-01-01 00:00:00',
                 'updated_at'     => '2024-01-01 00:00:00',
-                'order'          => [
-                    'payment_mode'               => 'X',
-                    'price_amount'               => 0,
-                    'sap_notes'                  => 'INSTALACIÓN: ' . $student['INSTALACIÓN'] . " -------- " . 'Notas: ' . $student['sap_notes'],
-                    'terms_confirmed_by_student' => 1,
-                    'order_courses'              => [],
-                    'created_at'                 => '2024-01-01 00:00:00',
-                    'updated_at'                 => '2024-01-01 00:00:00',
-                ]
+                'order_courses'          => []
             ];
 
             $coursesDB = DB::table('courses')->get()->pluck('type', 'id')->toArray();
             $orderCourses = [];
             foreach ($student['courses'] as $j => $course) {
+
+                $orderCourseDB = OrderCourse::where('course_id', $course['course_id'])
+                    ->whereHas('student', function ($q) use ($studentData) {
+                        $q->where('email', $studentData['email']);
+                    })->first();
+
+                if (!$orderCourseDB) {
+                    $orderCourseNotFound++;
+                    continue;
+                }
+
+                if (($orderCourseDB->start != $course['start'] || $orderCourseDB->end != $course['end']) && $course['start'] != null && $course['end'] != null) {
+                    $orderCourseDB->start = $course['start'];
+                    $orderCourseDB->end = $course['end'];
+                    $orderCourseDB->save();
+                    $orderCourseDifferent++;
+                }
+
+
                 $courseData = [
                     'course_id'        => $course['course_id'],
                     'classroom_status' => $course['status'] ? $course['status'] : '',
@@ -140,14 +166,16 @@ class ImportStudentsServiceSEG
                     'enabled'          => 1,
                     'created_at'       => '2024-01-01 00:00:00',
                     'updated_at'       => '2024-01-01 00:00:00',
+                    'order_course_db' => $orderCourseDB
                 ];
                 $orderCourses[] = $courseData;
             }
 
-            $studentData['order']['order_courses'] = $orderCourses;
+            $studentData['order_courses'] = $orderCourses;
 
             $students[] = $studentData;
         }
+        Log::info('Order Course Different: ' . $orderCourseDifferent);
         return $students;
     }
 
@@ -676,13 +704,12 @@ class ImportStudentsServiceSEG
         return $data;
     }
 
-    public function getSheetsData($sheet_type = 'test')
+    public function getSheetsData($sheet)
     {
-        $sheet = '1AR45Qf8_QU5L5DJ39WFpb5fK5jz6CL9WXap1KbBGHhk';
 
 
         $data = [];
-        $ranges = ['SEGUIMIENTO BASE!A1:ZZZ50000', 'SEGUIMIENTO CURSOS!A1:ZZZ50000'];
+        $ranges = ['BASE!A1:ZZZ50000', 'CURSOS!A1:ZZZ50000'];
 
         $response = $this->service->spreadsheets_values->batchGet($sheet, ['ranges' => $ranges]);
 

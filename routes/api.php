@@ -226,9 +226,8 @@ Route::get('get-state-by-country/{country_id}', 'App\Http\Controllers\CountriesC
 Route::get('get-city-by-state/{state_id}', 'App\Http\Controllers\CountriesController@getCityByState');
 Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');
 Route::get('get-state/{id}', 'App\Http\Controllers\CountriesController@getState');
-Route::get('test', 'App\Http\Controllers\TestController@index');
-Route::get('test2', 'App\Http\Controllers\TestController@index2');
-Route::get('mail', 'App\Http\Controllers\MailsController@index');
+Route::get('test', 'App\Http\Controllers\TestController@index3');
+Route::get('test2', 'App\Http\Controllers\TestController@excludeInvalidDays');
 
 
 
