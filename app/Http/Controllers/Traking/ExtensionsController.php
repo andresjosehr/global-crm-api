@@ -138,14 +138,13 @@ class ExtensionsController extends Controller
 
     static public function sendNotificacion($extension_id)
     {
-        $extension = Extension::find($extension_id);
+        $extension = Extension::with('order.student', 'orderCourse.course')->where('id', $extension_id)->first();
 
         if ($extension->notification_sent_at) {
             return ApiResponseController::response('Notificacion ya enviada', 200);
         }
 
 
-        $extension = Extension::with('order.student', 'orderCourse.course')->first();
         $content = view("mails.extension")->with(['extension' => $extension])->render();
 
 
