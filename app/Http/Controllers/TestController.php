@@ -38,6 +38,43 @@ class TestController extends Controller
     public function index()
     {
 
+        $data = [];
+        Student::with('orders.orderCourses.course')->get()->map(function ($student) {
+            $student->orders->map(function ($order) {
+                $order->orderCourses->map(function ($orderCourse) {
+                    $orderCourse->course = $orderCourse->course;
+                    return $orderCourse;
+                });
+                return $order;
+            });
+            return $student;
+        })
+            // csv with student.name, student.email, student.order[0].orderCourses.course.name, student.order[0].orderCourses.start, student.order[0].orderCourses.end, student.order[0].orderCourses.license
+            ->map(function ($student) use (&$data) {
+                return $student->orders->map(function ($order) use (&$data) {
+                    return $order->orderCourses->map(function ($orderCourse) use ($order, &$data) {
+                        $epa = [
+                            'student_name' => $order->student->name,
+                            'student_email' => $order->student->email,
+                            'course_name' => $orderCourse->course->name,
+                            'license' => $orderCourse->license,
+                            'start' => $orderCourse->start,
+                            'end' => $orderCourse->end,
+                        ];
+                        $data[] = $epa;
+                    });
+                });
+                return $student;
+            });
+
+        // conver to csv
+        $csv = '';
+        $csv .= 'student_name,student_email,course_name,license,start,end' . "\n";
+        foreach ($data as $key => $value) {
+            $csv .= $value['student_name'] . ',' . $value['student_email'] . ',' . $value['course_name'] . ',' . $value['license'] . ',' . $value['start'] . ',' . $value['end'] . "\n";
+        }
+        return $csv;
+
         $extension = Extension::with('order.student', 'orderCourse.course')->first();
         $content = view("mails.extension")->with(['extension' => $extension])->render();
 
