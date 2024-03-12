@@ -342,9 +342,9 @@ class OrdersController extends Controller
             $order->currency_id                = $request->currency_id;
             $order->enrollment_sheet           = $request->enrollment_sheet;
             $order->comunication_type          = $request->comunication_type;
-            $order->payment_mode               = $request->payment_mode;
-            $order->price_id                   = $request->price_id;
-            $order->price_amount               = $request->price_amount;
+            // $order->payment_mode               = $request->payment_mode;
+            // $order->price_id                   = $request->price_id;
+            // $order->price_amount               = $request->price_amount;
             $order->terms_confirmed_by_student = $request->terms_confirmed_by_student;
             $order->observations               = $request->observations;
             $order->free_courses_date          = $request->free_courses_date;
