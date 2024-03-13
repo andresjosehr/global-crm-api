@@ -95,17 +95,17 @@
                 </a>
              </div>
 
-             <div style="margin-bottom: 40px">
+             {{-- <div style="margin-bottom: 40px">
                 <b> Acceso al <u>SOFTWARE DE SAP:</u></b>
                 <li style="margin-left: 30px">Usuario:
-                    @if(count($freezing->orderCourse->sapInstalations)==0)
+                    @if(count($freezing->order->sapInstalations)==0)
                         No se ha instalado aún
                     @else
                         {{$freezing->orderCourse->sapInstalations->orderBy('id', 'desc')->first()->user}}
                     @endif
                 </li>
                 <li style="margin-left: 30px">Contraseña: CREADA POR TI, desde el inicio de tu capacitación. La misma te indicamos que debías conservar hasta el momento de tu retorno.</li>
-             </div>
+             </div> --}}
 
              <div style="margin-bottom: 40px">
                 <b> <B>Tendrás habilitada nuevamente la licencia original de SAP y tu aula virtual:</B></b>

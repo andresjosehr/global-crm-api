@@ -148,15 +148,15 @@ class ExtensionsController extends Controller
         $content = view("mails.extension")->with(['extension' => $extension])->render();
 
 
-        $mail = [
+        $mail = [[
             'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
             'to'         => [$extension->order->student->email],
             'subject'    => 'Notificación de extensión de curso',
             'student_id' => $extension->order->student->id,
             'html'       => $content
-        ];
+        ]];
 
-        ResendService::sendSigleMail($mail);
+        ResendService::sendBatchMail($mail);
 
         $text = "Hola, le informo que hemos completado el proceso administrativo de extensión de su curso: " . $extension->orderCourse->course->name . ". \nSu nueva fecha de fin sería: " . $extension->orderCourse->end . ".\nLe hemos enviado la misma información a su correo registrado: " . $extension->order->student->email . ".\nAsimismo, tiene información relevante sobre la aprobación de su examen de certificación correspondiente.";
 

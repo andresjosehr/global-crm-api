@@ -167,11 +167,7 @@ class FreezingsController extends Controller
 
         $order_courses = OrderCourse::where('order_id', $last_freezing->order_id)->where('type', 'paid')->get();
 
-        $params = [
-            'freezing' => $last_freezing
-        ];
-        GeneralJob::dispatch(FreezingsController::class, 'sendUnfreezingEmail', $params)->onQueue('default');
-
+        self::sendUnfreezingEmail($last_freezing);
 
         return ApiResponseController::response('Exito', 200, ['last_freezing' => $last_freezing, 'order_courses' => $order_courses]);
     }
