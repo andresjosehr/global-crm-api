@@ -80,6 +80,7 @@ class ImportStudentsServiceSEG
             self::createGoogleServiceInstance();
             $data = self::getSheetsData($sheet);
             $data = self::formatCourses($data);
+            // Log::info($data);
             $data = self::formatForImport($data);
         }
         return "Exito";
@@ -149,9 +150,17 @@ class ImportStudentsServiceSEG
                 }
 
                 if (($orderCourseDB->start != $course['start'] || $orderCourseDB->end != $course['end']) && $course['start'] != null && $course['end'] != null) {
-                    $orderCourseDB->start = $course['start'];
-                    $orderCourseDB->end = $course['end'];
-                    $orderCourseDB->save();
+                    Log::info([
+                        'student_name' => $student['NOMBRE'],
+                        'course_name' => $course['name'],
+                        'old_start' => $orderCourseDB->start,
+                        'old_end' => $orderCourseDB->end,
+                        'new_start' => $course['start'],
+                        'new_end' => $course['end'],
+                    ]);
+                    // $orderCourseDB->start = $course['start'];
+                    // $orderCourseDB->end = $course['end'];
+                    // $orderCourseDB->save();
                     $orderCourseDifferent++;
                 }
 
@@ -168,14 +177,13 @@ class ImportStudentsServiceSEG
                     'updated_at'       => '2024-01-01 00:00:00',
                     'order_course_db' => $orderCourseDB
                 ];
-                $orderCourses[] = $courseData;
             }
 
             $studentData['order_courses'] = $orderCourses;
 
             $students[] = $studentData;
         }
-        Log::info('Order Course Different: ' . $orderCourseDifferent);
+        // Log::info('Order Course Different: ' . $orderCourseDifferent);
         return $students;
     }
 
@@ -337,7 +345,7 @@ class ImportStudentsServiceSEG
                     }
 
 
-                    if ($sapNumber == 1 || $s == 'Cursando') {
+                    if ($sapNumber == 1 || $s == 'Cursando' || $s == 'Congelado') {
                         $start = $student['INICIO'];
                         $end = $student['FIN'];
 
@@ -345,8 +353,6 @@ class ImportStudentsServiceSEG
                             $start = self::__parseDate($start);
                             $end = self::__parseDate($end);
                         } catch (\Throwable $th) {
-
-
 
                             $start = null;
                             $end   = null;

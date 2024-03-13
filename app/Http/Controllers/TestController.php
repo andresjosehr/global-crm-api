@@ -540,17 +540,18 @@ class TestController extends Controller
                 $currency_id = Price::where('id', $instalation->price_id)->first()->currency_id;
             }
 
+            // prettier-ignore
             $due = Due::create([
-                'date'   => $instalation->payment_date,
-                'amount' => $instalation->price_amount,
-                'payment_method_id' => NULL,
-                'currency_id' => $currency_id,
-                'price_id' => $instalation->price_id,
-                'payment_receipt' => $instalation->payment_receipt,
+                'date'                => $instalation->payment_date,
+                'amount'              => $instalation->price_amount,
+                'payment_method_id'   => NULL,
+                'currency_id'         => $currency_id,
+                'price_id'            => $instalation->price_id,
+                'payment_receipt'     => $instalation->payment_receipt,
                 'payment_verified_at' => $instalation->payment_verified_at,
                 'payment_verified_by' => $instalation->payment_verified_by,
-                'payment_reason' => $instalation->instalation_type == 'Desbloqueo SAP' ? 'Desbloqueo SAP' : 'Instalación SAP',
-                'student_id' => Order::withTrashed()->where('id', $instalation->order_id)->first()->student_id,
+                'payment_reason'      => $instalation->instalation_type == 'Desbloqueo SAP' ? 'Desbloqueo SAP' : 'Instalación SAP',
+                'student_id'          => Order::withTrashed()->where('id', $instalation->order_id)->first()->student_id,
             ]);
 
             SapInstalation::where('id', $instalation->id)->update(['due_id' => $due->id]);

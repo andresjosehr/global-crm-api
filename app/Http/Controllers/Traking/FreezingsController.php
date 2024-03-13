@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Traking;
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Mails\CoreMailsController;
+use App\Http\Services\ResendService;
 use App\Jobs\GeneralJob;
 use App\Models\DatesHistory;
 use App\Models\Freezing;
+use App\Models\Holiday;
 use App\Models\OrderCourse;
 use App\Models\Process;
 use Carbon\Carbon;
@@ -55,7 +57,7 @@ class FreezingsController extends Controller
 
             $order_course_id = $request->all()[0]['order_course_id'];
 
-            // Check if current date is between start_date and return_date
+            // Check if start_date and return_date exists
             if (isset($free['start_date']) && isset($free['return_date'])) {
 
                 $dateHistory = DatesHistory::where('freezing_id', $free_id)->first();
@@ -70,13 +72,6 @@ class FreezingsController extends Controller
                         'type'            => 'Congelamiento',
                     ]);
 
-                    Process::create([
-                        'name'              => 'Congelamiento de curso',
-                        'command'           => 'php artisan course:update-status ' . $free['order_course_id'] . ' Congelado',
-                        'related_entity'    => 'freezing',
-                        'related_entity_id' => $free_id,
-                        'datetime_to_execute' => Carbon::parse($free['start_date'])->format('Y-m-d H:i:s')
-                    ]);
 
                     // Get date_history created
                     $dateHistory = DatesHistory::where('freezing_id', $free_id)->first();
@@ -167,7 +162,7 @@ class FreezingsController extends Controller
         self::moveNextCoursesDate($freezingDB, 'backward');
 
         $last_freezing = Freezing::where('order_course_id', $order_course_id)
-            ->with('orderCourse.course', 'orderCourse.sapInstalations', 'orderCourse.order.currency', 'orderCourse.order.orderCourses', 'orderCourse.order.student')
+            ->with('orderCourse.course', 'orderCourse.order.currency', 'orderCourse.order.orderCourses', 'orderCourse.order.student')
             ->orderBy('id', 'desc')->first();
 
         $order_courses = OrderCourse::where('order_id', $last_freezing->order_id)->where('type', 'paid')->get();
@@ -185,7 +180,7 @@ class FreezingsController extends Controller
     {
         $finish_date = $to == 'forward' ? $freezing->finish_date : $freezing->new_finish_date;
         $orderCourse = OrderCourse::where('id', $freezing->order_course_id)->first();
-        $nextCourses = OrderCourse::where('order_id', $orderCourse->order_id)->where('id', '>', $orderCourse->id)->where('type', 'paid')->orderBy('id', 'asc')->get();
+        $nextCourses = OrderCourse::where('order_id', $orderCourse->order_id)->where('start', '>', $orderCourse->start)->where('type', $orderCourse->type)->orderBy('start', 'asc')->get();
         if (count($nextCourses) == 5 || count($nextCourses) == 0) {
             return;
         }
@@ -197,7 +192,19 @@ class FreezingsController extends Controller
         $finish_date = Carbon::parse($finish_date);
         foreach ($nextCourses as $order_course) {
             $newStartDate = Carbon::parse($finish_date)->addDays(1);
+
+            $holidays = Holiday::all();
+            // if new start date is a holiday or sunday, add one day
+            while ($holidays->contains('date', $newStartDate->format('Y-m-d')) || $newStartDate->dayOfWeek == 0) {
+                $newStartDate->addDays(1);
+            }
+
             $newEndDate = Carbon::parse($newStartDate)->addMonths(3);
+
+            while ($holidays->contains('date', $newEndDate->format('Y-m-d')) || $newEndDate->dayOfWeek == 0) {
+                $newEndDate->addDays(1);
+            }
+
             $finish_date = $newEndDate;
             OrderCourse::where('id', $order_course->id)->update(['start' => $newStartDate, 'end' => $newEndDate]);
             DatesHistory::create([
@@ -245,36 +252,32 @@ class FreezingsController extends Controller
             'remainFreezingDurationAvaliable' => $remainFreezingDurationAvaliable
         ])->render();
 
-        $scheduleTime = null;
+        Freezing::where('id', $freezing->id)->update(['mail_status' => 'Enviado']);
 
-        if (Carbon::parse($freezing->start_date)->format('Y-m-d') <= Carbon::now()->format('Y-m-d')) {
-            Freezing::where('id', $freezing->id)->update(['mail_status' => 'Enviado']);
-        }
+        $mail = [[
+            'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
+            'to'         => [$student->email],
+            'subject'    => 'Tomalo con calma, ¡Congelamos tu curso!',
+            'student_id' => $student->id,
+            'html'    => $content
+        ]];
 
-        if (Carbon::parse($freezing->start_date) > Carbon::now()) {
-            $scheduleTime = Carbon::parse($freezing->start_date)->format('m/d/Y');
-            Freezing::where('id', $freezing->id)->update(['mail_status' => 'Programado']);
-        }
-
-        $params = [
-            'email'        => 'andresjosehr@gmail.com',
-            'subject'      => 'Tómalo con Calma ¡Te congelamos tu curso!',
-            'content'      => $content,
-            'scheduleTime' => $scheduleTime,
-            'freezing_id'  => $freezing->id
-        ];
-
-        GeneralJob::dispatch(FreezingsController::class, 'dispatchMail', $params)->onQueue('default');
+        ResendService::sendBatchMail($mail);
     }
 
     public function sendUnfreezingEmail($freezing)
     {
 
-        $subject = 'Continúa con tu Capacitación de ' . $freezing->orderCourse->course->name . ' con ¡Global Tecnologías Academy!';
-        $email   = $freezing->orderCourse->order->student->email;
-        $content = view('mails.unfreezing_new')->with(['freezing' => $freezing])->render();
-        $message = CoreMailsController::sendMail($email, $subject, $content);
-        Freezing::where('id', $freezing->id)->update(['mail_unfreeze_id' => $message->messageId]);
+
+        $mail = [[
+            'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
+            'to'         => [$freezing->orderCourse->order->student->email],
+            'subject'    => 'Continúa con tu Capacitación de ' . $freezing->orderCourse->course->name . ' con ¡Global Tecnologías Academy!',
+            'student_id' => $freezing->orderCourse->order->student->id,
+            'html'    => view('mails.unfreezing_new')->with(['freezing' => $freezing])->render()
+        ]];
+
+        ResendService::sendBatchMail($mail);
     }
 
     public function dispatchMail($email, $subject, $content, $scheduleTime, $freezing_id)

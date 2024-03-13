@@ -342,15 +342,15 @@ class SapInstalationsController extends Controller
 
         $content = view('mails.sap-schedule')->with(['sap' => $sap, 'retry' => !$first, 'otherSapInstalations' => $otherSapInstalations])->render();
 
-        $mail = [
+        $mail = [[
             'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
             'to'         => [$sap->student->email],
             'subject'    => $title,
             'student_id' => $sap->student->id,
             'html'       => $content
-        ];
+        ]];
 
-        ResendService::sendSigleMail($mail);
+        ResendService::sendBatchMail($mail);
 
 
 

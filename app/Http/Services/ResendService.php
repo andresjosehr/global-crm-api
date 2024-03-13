@@ -23,9 +23,9 @@ class ResendService
         $data = $resend->emails->send($mail);
 
         $mail['response'] = json_encode($data);
-        $mail['to'] = implode(',', $mail['to']);
-        $mail['status'] = 'Enviado';
-        $resendMailLog = new ResendMailLog();
+        $mail['to']       = implode(',', $mail['to']);
+        $mail['status']   = 'Enviado';
+        $resendMailLog    = new ResendMailLog();
         $resendMailLog->fill($mail);
         $resendMailLog->save();
 
