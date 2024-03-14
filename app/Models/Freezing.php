@@ -14,6 +14,9 @@ class Freezing extends Model
         'months',
         'start_date',
         'finish_date',
+        'set',
+        'due_id',
+
         'return_date',
         'payment_date',
         'order_id',
@@ -44,5 +47,10 @@ class Freezing extends Model
     public function orderCourse()
     {
         return $this->belongsTo(OrderCourse::class);
+    }
+
+    public function due()
+    {
+        return $this->belongsTo(Due::class);
     }
 }

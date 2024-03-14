@@ -254,7 +254,7 @@ class OrdersController extends Controller
 
 
         // Get id
-        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings', 'sapInstalations.due', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
+        $order = Order::with('orderCourses.course', 'orderCourses.certificationTests', 'orderCourses.freezings.due', 'sapInstalations.due', 'orderCourses.dateHistory', 'dues', 'student', 'currency', 'price')->find($order->id);
 
         $params = [
             'order' => $order,
@@ -307,7 +307,7 @@ class OrdersController extends Controller
     public function show($id)
     {
 
-        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses', 'orderCourses.freezings', 'orderCourses.dateHistory', 'sapInstalations.staff', 'sapInstalations.lastSapTry', 'sapInstalations.due', 'sapInstalations.student', 'sapInstalations.due', 'currency', 'dues', 'createdBy', 'invoice')->find($id);
+        $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests', 'orderCourses', 'orderCourses.freezings.due', 'orderCourses.dateHistory', 'sapInstalations.staff', 'sapInstalations.lastSapTry', 'sapInstalations.due', 'sapInstalations.student', 'sapInstalations.due', 'currency', 'dues', 'createdBy', 'invoice')->find($id);
         if (!$order) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }

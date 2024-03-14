@@ -194,7 +194,7 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
         Route::prefix('freezings')->group(function () {
             Route::post('save-draft', 'App\Http\Controllers\Traking\FreezingsController@saveDraft');
-            Route::put('update', 'App\Http\Controllers\Traking\FreezingsController@update');
+            Route::put('update/{id}', 'App\Http\Controllers\Traking\FreezingsController@update');
             Route::get('unfreeze-course/{id}', 'App\Http\Controllers\Traking\FreezingsController@unfreezeCourse');
         });
     });

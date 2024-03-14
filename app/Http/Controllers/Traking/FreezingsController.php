@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Traking;
 
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\DuesController;
 use App\Http\Controllers\Mails\CoreMailsController;
 use App\Http\Services\LiveConnectService;
 use App\Http\Services\ResendService;
 use App\Jobs\GeneralJob;
 use App\Models\DatesHistory;
+use App\Models\Due;
 use App\Models\Freezing;
 use App\Models\Holiday;
 use App\Models\OrderCourse;
@@ -31,17 +33,17 @@ class FreezingsController extends Controller
     }
 
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
 
         $datesFields = ['start_date', 'finish_date', 'return_date', 'payment_date', 'new_return_date', 'new_finish_date'];
-        $freezingToMove = null;
 
-
+        // remove fue_id
+        $data = $request->all();
+        unset($data['due_id']);
 
         $fillable = (new Freezing())->getFillable();
-        $free_id = $request->id;
-        $free = array_filter($request->all(), function ($key) use ($fillable) {
+        $free     = array_filter($data, function ($key) use ($fillable) {
             return in_array($key, $fillable);
         }, ARRAY_FILTER_USE_KEY);
 
@@ -51,71 +53,115 @@ class FreezingsController extends Controller
             }
         }
 
-        $order_course_id = $request->order_course_id;
+
+        Freezing::where('id', $id)->update($free);
+        $freezingDB = Freezing::where('id', $id)->first();
+
+        if (!$freezingDB->due_id && $request->due_id == 1) {
+            $due = Due::create([
+                'payment_reason' => 'Congelación',
+                'student_id' => $freezingDB->orderCourse->order->student_id,
+            ]);
+
+            $freezingDB->due_id = $due->id;
+            $freezingDB->save();
+        }
+
+        if ($freezingDB->due_id && $freezingDB->due_id != 1) {
+            $dueController = new DuesController();
+            $dueController->updatePayment($request, $freezingDB->due_id);
+        }
+
+        $freezingDB = Freezing::where('id', $id)->first();
+        Log::info($freezingDB);
 
         // Check if start_date and return_date exists
-        if (isset($free['start_date']) && isset($free['return_date'])) {
+        $dateHistory = DatesHistory::where('freezing_id', $id)->first();
 
-            $dateHistory = DatesHistory::where('freezing_id', $free_id)->first();
-            if (!$dateHistory) {
-                $orderCourse = OrderCourse::where('id', $free['order_course_id'])->first();
-                DatesHistory::create([
-                    'order_id'        => $orderCourse->order_id,
-                    'order_course_id' => $free['order_course_id'],
-                    'start_date'      => $orderCourse->start,
-                    'end_date'        => $free['finish_date'],
-                    'freezing_id'     => $free_id,
-                    'type'            => 'Congelamiento',
-                ]);
-
-
-                // Get date_history created
-                $dateHistory = DatesHistory::where('freezing_id', $free_id)->first();
-
-                OrderCourse::where('id', $free['order_course_id'])->update([
-                    'end' => $dateHistory->end_date
-                ]);
-
-                $freezingToMove = $free_id;
-            }
-
-            $currentDate = Carbon::now();
-            $startDate   = Carbon::parse($free['start_date']);
-            $returnDate  = Carbon::parse($free['return_date']);
-            if ($currentDate->between($startDate, $returnDate)) {
-                OrderCourse::where('id', $free['order_course_id'])->update(['classroom_status' => 'Congelado']);
-            }
-        }
-
-        Freezing::where('id', $free_id)->update($free);
-
-        if (isset($free['start_date']) && isset($free['return_date'])) {
-
-            $freezingDB = Freezing::where('id', $free_id)->first();
-            if ($freezingDB->mail_status == 'Pendiente') {
-                self::sendFreezeMail($freezingDB, $order_course_id);
-            }
+        if ($freezingDB->due_id == null && !$freezingDB->set) {
+            self::setFreezing($freezingDB);
         }
 
 
-        // Get last freezing
-        $lastFreezing = Freezing::where('order_course_id', $order_course_id)->orderBy('id', 'desc')->first();
-        $now = Carbon::now();
-        $courseFreezing = false;
-        if ($now->between(Carbon::parse($lastFreezing->start_date), Carbon::parse($lastFreezing->finish_date))) {
-            OrderCourse::where('id', $order_course_id)->update(['classroom_status' => 'Congelado']);
-            $courseFreezing = true;
-        }
 
-        if ($freezingToMove) {
-            $freeDB = Freezing::where('id', $freezingToMove)->first();
-            self::moveNextCoursesDate($freeDB);
-        }
-
-        $freezing = Freezing::with('orderCourse')->where('id', $free_id)->first();
+        $freezing = Freezing::with('orderCourse', 'due')->where('id', $id)->first();
 
 
         return ApiResponseController::response('Exito', 200, ['freezing' => $freezing]);
+    }
+
+    // public function calculateCharges($currentFreezingId)
+    // {
+    //     $currentFreezing = Freezing::find($currentFreezingId);
+    //     $totalMonths = Freezing::where('id', '!=', $currentFreezingId)->where('order_course_id', $currentFreezing->order_course_id)
+    //         ->get()
+    //         ->sum(function ($freezing) {
+    //             return intval($freezing->months);
+    //         });
+
+    //     $prevMonths = $totalMonths - intval($currentFreezing->months);
+    //     $monthToCharge = $prevMonths >= 3 ? intval($currentFreezing->months) : max(0, intval($currentFreezing->months) - (3 - $prevMonths));
+
+    //     if ($totalMonths <= 3 || $monthToCharge <= 0) {
+    //         $currentFreezing->due_id = null;
+    //         $currentFreezing->save();
+    //     } else {
+
+    //         if (!$currentFreezing->due_id) {
+    //             $due = Due::create([
+    //                 'payment_reason' => 'Congelación',
+    //                 'student_id' => $currentFreezing->orderCourse->order->student_id,
+    //             ]);
+
+    //             $currentFreezing->due_id = $due->id;
+    //             $currentFreezing->save();
+    //         }
+    //     }
+    // }
+
+
+
+
+    static public function setFreezing($freezing)
+    {
+        $orderCourse = OrderCourse::where('id', $freezing->order_course_id)->first();
+        DatesHistory::create([
+            'order_id'        => $orderCourse->order_id,
+            'order_course_id' => $freezing->order_course_id,
+            'start_date'      => $orderCourse->start,
+            'end_date'        => $freezing->finish_date,
+            'freezing_id'     => $freezing->id,
+            'type'            => 'Congelamiento',
+        ]);
+
+
+        // Get date_history created
+        $dateHistory = DatesHistory::where('freezing_id', $freezing->id)->first();
+
+        OrderCourse::where('id', $freezing->order_course_id)->update([
+            'end' => $dateHistory->end_date
+        ]);
+
+        self::sendFreezeMail($freezing, $freezing->order_course_id);
+
+        $now = Carbon::now();
+        if ($now->between(Carbon::parse($freezing->start_date), Carbon::parse($freezing->finish_date))) {
+            OrderCourse::where('id', $freezing->order_course_id)->update(['classroom_status' => 'Congelado']);
+        }
+
+        if ($freezing) {
+            $freeDB = Freezing::where('id', $freezing->id)->first();
+            self::moveNextCoursesDate($freeDB);
+        }
+
+        $currentDate = Carbon::now();
+        $startDate   = Carbon::parse($freezing->start_date);
+        $returnDate  = Carbon::parse($freezing->return_date);
+        if ($currentDate->between($startDate, $returnDate)) {
+            OrderCourse::where('id', $freezing->order_course_id)->update(['classroom_status' => 'Congelado']);
+        }
+        $freezing->set = true;
+        $freezing->save();
     }
 
 
@@ -165,7 +211,7 @@ class FreezingsController extends Controller
         return ApiResponseController::response('Exito', 200, $last_freezing);
     }
 
-    public function moveNextCoursesDate(Freezing $freezing, $to = 'forward')
+    static public function moveNextCoursesDate(Freezing $freezing, $to = 'forward')
     {
         $finish_date = $to == 'forward' ? $freezing->finish_date : $freezing->new_finish_date;
         $orderCourse = OrderCourse::where('id', $freezing->order_course_id)->first();
@@ -209,7 +255,7 @@ class FreezingsController extends Controller
     }
 
 
-    public function sendFreezeMail($freezing, $order_course_id)
+    static public function sendFreezeMail($freezing, $order_course_id)
     {
         // Get user
 

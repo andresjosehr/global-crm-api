@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('courses', ['single', 'all'])->default('single')->after('due_id');
 
             $table->longText('observation')->nullable()->after('courses');
+            $table->boolean('set')->default(false)->after('observation');
         });
     }
 
@@ -36,6 +37,7 @@ return new class extends Migration
             $table->dropColumn('due_id');
             $table->dropColumn('courses');
             $table->dropColumn('observation');
+            $table->dropColumn('set');
         });
     }
 };
