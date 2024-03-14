@@ -67,6 +67,7 @@ class LiveConnectService
 
         $body = $res->getBody();
 
+        Log::info([json_decode($body)]);
         if (json_decode($body)->status_message != 'Ok' && $student_id) {
 
             $student = Student::with('user')->where('id', $student_id)->first();
