@@ -158,9 +158,9 @@ class ImportStudentsServiceSEG
                         'new_start' => $course['start'],
                         'new_end' => $course['end'],
                     ]);
-                    // $orderCourseDB->start = $course['start'];
-                    // $orderCourseDB->end = $course['end'];
-                    // $orderCourseDB->save();
+                    $orderCourseDB->start = $course['start'];
+                    $orderCourseDB->end = $course['end'];
+                    $orderCourseDB->save();
                     $orderCourseDifferent++;
                 }
 

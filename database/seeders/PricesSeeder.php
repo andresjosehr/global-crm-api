@@ -1432,42 +1432,42 @@ class PricesSeeder extends Seeder
 
 
             [
-                'description' => 'Congelacion Curso gratis',
+                'description' => 'Congelacion',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 10,
                 'months' => 1,
                 'mode' => ''
             ],
             [
-                'description' => 'Congelacion Curso gratis',
+                'description' => 'Congelacion',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 20,
                 'months' => 2,
                 'mode' => ''
             ],
             [
-                'description' => 'Congelacion Curso gratis',
+                'description' => 'Congelacion',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 30,
                 'months' => 3,
                 'mode' => ''
             ],
             [
-                'description' => 'Congelacion Curso gratis',
+                'description' => 'Congelacion',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 40,
                 'months' => 4,
                 'mode' => ''
             ],
             [
-                'description' => 'Congelacion Curso gratis',
+                'description' => 'Congelacion',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 50,
                 'months' => 5,
                 'mode' => ''
             ],
             [
-                'description' => 'Congelacion Curso gratis',
+                'description' => 'Congelacion',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
                 'amount' => 60,
                 'months' => 6,
