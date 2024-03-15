@@ -458,7 +458,7 @@ class TestController extends Controller
 
 
                 // sort orderCourses by start date
-                $orderCourses = $order->orderCourses->whereNotNull('start')->sortBy('start')->values();
+                $orderCourses = $order->orderCourses->whereNotNull('start')->where('type', 'paid')->sortBy('start')->values();
 
                 for ($i = 0; $i < $orderCourses->count(); $i++) {
 
@@ -486,17 +486,17 @@ class TestController extends Controller
 
 
                     if ($orderCourses->count() > 1 && $orderCourses->count() < 5) {
-                        $end = Carbon::parse($start)->addMonths(3);
+                        // $end = Carbon::parse($start)->addMonths(3);
                     }
 
                     if ($orderCourses->count() == 5) {
-                        $end = Carbon::parse($start)->addMonths(12);
+                        // $end = Carbon::parse($start)->addMonths(12);
                     }
 
                     if ($orderCourses->count() == 1) {
                         $diffMonths = Carbon::parse($end)->diffInMonths($start);
                         $plusMonths = $diffMonths > 4 ? 6 : 3;
-                        $end = Carbon::parse($start)->addMonths($plusMonths);
+                        // $end = Carbon::parse($start)->addMonths($plusMonths);
                     }
 
 
