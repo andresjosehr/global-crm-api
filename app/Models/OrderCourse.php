@@ -23,6 +23,7 @@ class OrderCourse extends Model implements Auditable
         'type',
         'enabled',
         'end',
+        'last_freezing_id',
         'classroom_status',
         'observation',
         'welcome_mail_id',
@@ -42,7 +43,12 @@ class OrderCourse extends Model implements Auditable
 
     public function freezings()
     {
-        return $this->hasMany(Freezing::class);
+        return $this->belongsToMany(Freezing::class, 'freezings_order_course', 'order_course_id', 'freezing_id');
+    }
+
+    public function freezing()
+    {
+        return $this->hasMany(FreezingOrderCourse::class);
     }
 
     public function extensions()

@@ -336,4 +336,47 @@ class FreezingsController extends Controller
         $message = CoreMailsController::sendMail($email, $subject, $content, $scheduleTime);
         Freezing::where('id', $freezing_id)->update(['mail_id' => $message->messageId]);
     }
+
+
+    public function importFreezings(Request $request)
+    {
+        // max execution time
+        ini_set('max_execution_time', -1);
+        // Get unificacion_1.json from storage/app
+        $json = file_get_contents(storage_path('app/congelados.csv'));
+        $json = explode("\n", $json);
+        foreach ($json as $key => $value) {
+            $json[$key] = explode(",", $value);
+        }
+
+        // set headers as keys
+        $headers = collect($json[0]);
+        $data = collect($json)->map(function ($row) use ($headers) {
+            return collect($row)->mapWithKeys(function ($item, $key) use ($headers) {
+                return [$headers[$key] => $item];
+            });
+        });
+
+        //  remove first row
+        $data->shift();
+
+        $data = $data->map(function ($row) {
+            $row['freezing'] = collect([]);
+
+            if(!isset($row['CONGELACIÓN 1'])){
+                return $row;
+            }
+            Log::info($row);
+            for ($i = 1; $i < 6; $i++) {
+                $row['freezing']->push([
+                    'months'          => $row['CONGELACIÓN ' . $i],
+                    'start'           => $row['FECHA DE INICIO ' . $i],
+                    'return_date'     => $row['FECHA DE FIN ' . $i],
+                ]);
+            }
+            return $row;
+        });
+
+        return $data;
+    }
 }
