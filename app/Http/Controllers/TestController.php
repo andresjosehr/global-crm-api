@@ -515,6 +515,31 @@ class TestController extends Controller
 
                     $orderCourse->save();
                 }
+
+                $orderCoursesFree = $order->orderCourses->whereNotNull('start')->where('type', 'free')->sortBy('start')->values();
+                for ($i = 0; $i < $orderCoursesFree->count(); $i++) {
+
+                    $orderCourseFree = $orderCoursesFree[$i];
+
+                    $start = Carbon::parse($orderCourseFree->start);
+                    $end = Carbon::parse($orderCourseFree->end);
+
+                    while ($holidays->contains('date', $start->format('Y-m-d')) || $start->isSunday()) {
+                        $start = Carbon::parse($start)->addDays(1);
+                    }
+
+                    while ($holidays->contains('date', $end->format('Y-m-d')) || $end->isSunday()) {
+                        $end->addDays(1);
+                    }
+
+                    unset($orderCourseFree->startInfo);
+                    unset($orderCourseFree->endInfo);
+
+                    $orderCourseFree->start = $start->format('Y-m-d');
+                    $orderCourseFree->end = $end->format('Y-m-d');
+
+                    $orderCourseFree->save();
+                }
             });
 
         return "Exito";
