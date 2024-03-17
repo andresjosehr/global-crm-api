@@ -12,6 +12,7 @@ use App\Http\Controllers\ProcessesController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\Traking\CertificationTestsController;
+use App\Http\Controllers\Traking\FreezingsController;
 use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Http\Controllers\Traking\SapTriesController;
 use App\Http\Controllers\UsersActivitiesControllers;
@@ -42,6 +43,8 @@ use PhpParser\Node\Expr\Assign;
 $basePathController = 'App\Http\Controllers\\';
 
 Route::get('traking/sap-instalations/import/from-excel', [SapInstalationsController::class, 'importFormExcel']);
+Route::get('freezings/import', [FreezingsController::class, 'importFreezings']);
+Route::get('freezings/import-un', [FreezingsController::class, 'importUnfreezings']);
 
 Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
 Route::get('traking/sap-instalations/get/{key}', [SapInstalationsController::class, 'getSapInstalation']);

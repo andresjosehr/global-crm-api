@@ -29,6 +29,10 @@ class Freezing extends Model
         'order_course_id',
     ];
 
+    protected $appends = [
+        'order_course_ids',
+    ];
+
     public function setFinishDateAttribute($value)
     {
         $this->attributes['finish_date'] = Carbon::parse($value)->format('Y-m-d');
@@ -44,13 +48,20 @@ class Freezing extends Model
         $this->attributes['return_date'] = Carbon::parse($value)->format('Y-m-d');
     }
 
-    public function orderCourse()
+    public function orderCourses()
     {
-        return $this->belongsTo(OrderCourse::class);
+        // table freezings_order_course
+        return $this->belongsToMany(OrderCourse::class, 'freezings_order_course');
     }
 
     public function due()
     {
         return $this->belongsTo(Due::class);
+    }
+
+    // ordercourse attribute
+    public function getOrderCourseIdsAttribute()
+    {
+        return $this->orderCourses->pluck('id');
     }
 }

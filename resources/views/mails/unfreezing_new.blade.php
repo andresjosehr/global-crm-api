@@ -37,24 +37,24 @@
 
         <div style="text-align: center">
             <h1 style='margin: 0px'>Retoma tu curso:</h1>
-            <h1 style='margin: 0px'>{{$freezing->orderCourse->course->name}}</h1>
+            <h1 style='margin: 0px'>{{$orderCourse->course->name}}</h1>
         </div>
 
         <!-- SEGUIMIENTO ACADÉMICO (CUANDO EL ALUMNO REALIZA UN SOLO PAGO) -->
         <div class="seguimiento-academico" style="font-size: 19px">
             <p>
                 <div> Estimado(a): </div>
-                <div>{{$freezing->orderCourse->order->student->name}}</div>
+                <div>{{$orderCourse->order->student->name}}</div>
             </p>
 
             <p>
-                <b>¡Te damos nuevamente la bienvenida a tu curso de {{$freezing->orderCourse->course->name}}</b>
+                <b>¡Te damos nuevamente la bienvenida a tu curso de {{$orderCourse->course->name}}</b>
             </p>
 
-            <p>El programa de capacitación de sap comprende <b> 50 horas teórico-prácticas certificadas como Key User (usuario experto) {{$freezing->orderCourse->course->name}}</b></p>
+            <p>El programa de capacitación de sap comprende <b> 50 horas teórico-prácticas certificadas como Key User (usuario experto) {{$orderCourse->course->name}}</b></p>
 
 
-            @php $freeCourses = $freezing->orderCourse->order->orderCourses->where('type', 'free') @endphp
+            @php $freeCourses = $orderCourse->order->orderCourses->where('type', 'free') @endphp
 
             @if(count($freeCourses) > 0)
 
@@ -86,8 +86,8 @@
             <p style='text-align: center; margin-top:40px'><u><b>PROCESO DE INICIO DE SESIÓN</b></u></p>
 
             <b> Acceso al <u>AULA VIRTUAL:</u></b>
-            <li style="margin-left: 30px">Usuario: {{$freezing->orderCourse->order->student->classroom_user}}</li>
-            <li style="margin-left: 30px">Contraseña: {{$freezing->orderCourse->order->student->classroom_user}}</li>
+            <li style="margin-left: 30px">Usuario: {{$orderCourse->order->student->classroom_user}}</li>
+            <li style="margin-left: 30px">Contraseña: {{$orderCourse->order->student->classroom_user}}</li>
 
             <div style="margin:50px 0px;">
                 <a target="_blank" style="background: #2c7379; padding: 10px 20px; text-decoration: none; color: white; font-weight: 700; border-radius: 10px;" href="https://globaltecnologiasacademy.com/wp-content/uploads/2023/08/Guia-para-uso-del-aula-virtual.pdf">
