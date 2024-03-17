@@ -43,8 +43,8 @@ use PhpParser\Node\Expr\Assign;
 $basePathController = 'App\Http\Controllers\\';
 
 Route::get('traking/sap-instalations/import/from-excel', [SapInstalationsController::class, 'importFormExcel']);
-Route::get('freezings/import', [FreezingsController::class, 'importFreezings']);
-Route::get('freezings/import-un', [FreezingsController::class, 'importUnfreezings']);
+// Route::get('freezings/import', [FreezingsController::class, 'importFreezings']);
+// Route::get('freezings/import-un', [FreezingsController::class, 'importUnfreezings']);
 
 Route::get('auth/check-instalation-sap-schedule-access/{key}', 'App\Http\Controllers\Traking\SapInstalationsController@checkScheduleAccess');
 Route::get('traking/sap-instalations/get/{key}', [SapInstalationsController::class, 'getSapInstalation']);

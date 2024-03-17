@@ -1,0 +1,7 @@
+
+# This line prevents accidental inclusion of the .gitignore file
+*
+!.gitignore
+
+# Exclude all other files and directories
+

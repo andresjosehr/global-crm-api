@@ -19,6 +19,7 @@
         "resend/resend-laravel": "^0.9.0",
         "resend/resend-php": "^0.11.0",
         "spatie/laravel-backup": "^8.2",
+        "spatie/laravel-db-snapshots": "^2.6",
         "tomfordrumm/jwt-auth": "dev-develop",
         "wnx/laravel-backup-restore": "^1.0",
         "zadarma/user-api-v1": "^1.1"
