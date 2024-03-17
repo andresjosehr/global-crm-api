@@ -148,8 +148,14 @@ class DuesController extends Controller
 
             if ($due->payment_reason == 'Congelación') {
                 $freezing = Freezing::where('due_id', $due->id)->whereSet(false)->first();
+
                 if ($freezing) {
-                    FreezingsController::setFreezing($freezing);
+                    if ($freezing->courses == 'all') {
+                        FreezingsController::setFreezingMany($freezing);
+                    }
+                    if ($freezing->courses == 'single') {
+                        FreezingsController::setFreezingSingle($freezing);
+                    }
                 }
             }
         }

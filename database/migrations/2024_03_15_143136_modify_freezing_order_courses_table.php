@@ -14,6 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('freezings_order_course', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('order_id')->nullable();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
 
