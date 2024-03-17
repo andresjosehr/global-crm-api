@@ -401,7 +401,9 @@ class TestController extends Controller
     {
 
         $im = new ImportStudentsServiceSEG();
-        return $im->index();
+        $im->index();
+
+        self::excludeInvalidDays();
     }
 
     // Capitaliza first letter and lower the rest of each word
