@@ -99,14 +99,18 @@ class OrderCourse extends Model implements Auditable
 
     public function attachCertificationTestCourse()
     {
-        $user_id = WpUser::where('user_email', $this->order->student->email)->first()->ID;
+        $user = WpUser::where('user_email', $this->order->student->email)->first();
 
-        Log::info([$user_id, $this->course->wp_post_id]);
+        if (!$user) {
+            return $this;
+        }
+
+        Log::info([$user->ID, $this->course->wp_post_id]);
 
         $wp_certification_tests = WpLearnpressUserItem::whereHas('item', function ($q) {
             $q->where('post_title', 'LIKE', '%Certificación%');
         })
-            ->where('user_id', $user_id)
+            ->where('user_id', $user->ID)
             ->where('ref_id', $this->course->wp_post_id)
             ->where('item_type', 'lp_quiz')
             ->orderBy('start_time', 'ASC')
