@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Models\Wordpress\WpLearnpressUserItem;
+use App\Models\Wordpress\WpUser;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use OwenIt\Auditing\Contracts\Auditable;
 use \OwenIt\Auditing\Auditable as AuditableTrait;
 
@@ -95,8 +97,11 @@ class OrderCourse extends Model implements Auditable
     }
 
 
-    public function attachCertificationTestCourse($user_id)
+    public function attachCertificationTestCourse()
     {
+        $user_id = WpUser::where('user_email', $this->order->student->email)->first()->ID;
+
+        Log::info([$user_id, $this->course->wp_post_id]);
 
         $wp_certification_tests = WpLearnpressUserItem::whereHas('item', function ($q) {
             $q->where('post_title', 'LIKE', '%Certificación%');
@@ -112,6 +117,43 @@ class OrderCourse extends Model implements Auditable
             $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
             $this->certificationTests[$key]->start_time = $wp_certification_test->start_time;
             $this->certificationTests[$key]->wp_certification = $wp_certification_test;
+        }
+
+        return $this;
+    }
+
+    public function attachLessonProgress()
+    {
+
+        $lessons = DB::connection('wordpress')->table('posts as lessons')
+            ->select('lessons.*', 'sections.section_course_id', 'sections.section_name')
+            ->join('learnpress_section_items as section_items', 'section_items.item_id', '=', 'lessons.ID')
+            ->join('learnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
+            ->where('lessons.post_type', 'lp_lesson')
+            ->where('lessons.post_title', 'not like', '%webinar%')
+            ->orderBy('sections.section_course_id')
+            ->orderBy('sections.section_name')
+            ->orderBy('section_items.item_order', 'ASC')
+            ->get()->unique('ID')->values();
+
+        $groupedLessons = $lessons->groupBy('section_course_id')->map(function ($group) {
+            return $group->count();
+        });
+
+        $student = Student::where('email', $this->order->student->email)->with(['wpLearnpressUserItems' => function ($q) {
+            $q->whereItemType('lp_lesson')->whereStatus('completed')->whereRefId($this->course->wp_post_id);
+        }])->first();
+
+        $student->wpLearnpressUserItems->count();
+
+        $this->lesson_progress = $student->wpLearnpressUserItems->count() / $groupedLessons[$this->course->wp_post_id] * 100;
+
+        // fix to 2 decimals
+        $this->lesson_progress = number_format($this->lesson_progress, 2);
+
+        // if greater than 100, set to 100
+        if ($this->lesson_progress > 100) {
+            $this->lesson_progress = 100;
         }
 
         return $this;

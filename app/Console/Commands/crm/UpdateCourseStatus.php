@@ -3,8 +3,10 @@
 namespace App\Console\Commands\crm;
 
 use App\Models\OrderCourse;
+use App\Models\Wordpress\WpLearnpressUserItem;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class UpdateCourseStatus extends Command
@@ -30,39 +32,44 @@ class UpdateCourseStatus extends Command
      */
     public function handle()
     {
-        OrderCourse::where('end', '>', now())->with('freezings')->get()->each(function ($orderCourse) {
-            $now = Carbon::now();
-            $orderCourse->freezings->each(function ($freezing) use ($orderCourse, $now) {
-                $start_freezing = Carbon::parse($freezing->start_date);
-                $return_freezing = Carbon::parse($freezing->return_date);
 
-                if ($now->between($start_freezing, $return_freezing) && !$freezing->new_return_date) {
-                    $orderCourse->classroom_status = 'Congelado';
-                    $orderCourse->save();
-                }
-            });
+        OrderCourse::with('freezings')->get()->each(function ($orderCourse) {
 
-            if ($orderCourse->classroom_status === 'Congelado') {
+            if ($orderCourse->start === null || $orderCourse->end === null) {
+                $orderCourse->classroom_status = 'Por habilitar';
+                $orderCourse->save();
                 return;
             }
 
-            $start = Carbon::parse($orderCourse->start);
-            $end = Carbon::parse($orderCourse->end);
-
-            if ($now->between($start, $end)) {
-                $orderCourse->classroom_status = 'Cursando';
-                $orderCourse->save();
-            }
-
-
-            if ($now->gt($end)) {
-                $orderCourse->classroom_status = 'Finalizado';
-                $orderCourse->save();
-            }
-
-            if ($now->lt($start)) {
+            if (Carbon::now()->lt(Carbon::parse($orderCourse->start))) {
                 $orderCourse->classroom_status = 'Por habilitar';
                 $orderCourse->save();
+                return;
+            }
+
+            if (Carbon::now()->between(Carbon::parse($orderCourse->start), Carbon::parse($orderCourse->end))) {
+
+                if ($orderCourse->freezings->count() > 0) {
+                    $lastFreezing = $orderCourse->freezings->last();
+                    if (Carbon::now()->between(Carbon::parse($lastFreezing->start_date), Carbon::parse($lastFreezing->return_date))) {
+                        $orderCourse->classroom_status = 'Congelado';
+                        $orderCourse->save();
+                        return;
+                    }
+                }
+
+
+                if ($orderCourse->freezings->count() == 0) {
+                    $orderCourse->classroom_status = 'Cursando';
+                    $orderCourse->save();
+                    return;
+                }
+            }
+
+            if (Carbon::now()->gt(Carbon::parse($orderCourse->end))) {
+                $orderCourse->classroom_status = 'Finalizado';
+                $orderCourse->save();
+                return;
             }
         });
 

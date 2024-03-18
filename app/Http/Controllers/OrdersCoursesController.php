@@ -47,7 +47,12 @@ class OrdersCoursesController extends Controller
      */
     public function show($id)
     {
-        $orderCourse = OrderCourse::with('course', 'extensions.due', 'certificationTests', 'freezings.due', 'dateHistory')->find($id);
+
+        $orderCourse = OrderCourse::with('course', 'extensions.due', 'certificationTests', 'freezings.due', 'dateHistory')
+            ->find($id)
+            ->attachCertificationTestCourse()
+            ->attachLessonProgress();
+
         if (!$orderCourse) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }

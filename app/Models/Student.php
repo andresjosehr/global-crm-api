@@ -58,9 +58,9 @@ class Student extends Model implements Auditable
         return $this->hasManyThrough(
             WpLearnpressUserItem::class,
             WpUser::class,
-            'ID',  // Foreign key on UserWP table
+            'user_email',  // Foreign key on UserWP table
             'user_id', // Foreign key on WpLearnpressUserItem table
-            'classroom_user',  // Local key on Student table
+            'email',  // Local key on Student table
             'ID'   // Local key on UserWP table
         );
         // ->where('item_type', 'lp_quiz')

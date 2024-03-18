@@ -9,6 +9,7 @@ use App\Http\Services\LiveConnectService;
 use App\Http\Services\ResendService;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
+use App\Models\CertificationTest;
 use App\Models\Course;
 use App\Models\Currency;
 use App\Models\Due;
@@ -38,47 +39,89 @@ class TestController extends Controller
     public function index()
     {
 
-        $data = [];
-        Student::with('orders.orderCourses.course')->get()->map(function ($student) {
-            $student->orders->map(function ($order) {
-                $order->orderCourses->map(function ($orderCourse) {
-                    $orderCourse->course = $orderCourse->course;
-                    return $orderCourse;
-                });
-                return $order;
-            });
-            return $student;
-        })
-            // csv with student.name, student.email, student.order[0].orderCourses.course.name, student.order[0].orderCourses.start, student.order[0].orderCourses.end, student.order[0].orderCourses.license
-            ->map(function ($student) use (&$data) {
-                return $student->orders->map(function ($order) use (&$data) {
-                    return $order->orderCourses->map(function ($orderCourse) use ($order, &$data) {
-                        $epa = [
-                            'student_name' => $order->student->name,
-                            'student_email' => $order->student->email,
-                            'course_name' => $orderCourse->course->name,
-                            'license' => $orderCourse->license,
-                            'start' => $orderCourse->start,
-                            'end' => $orderCourse->end,
-                        ];
-                        $data[] = $epa;
-                    });
-                });
-                return $student;
-            });
 
-        // conver to csv
-        $csv = '';
-        $csv .= 'student_name,student_email,course_name,license,start,end' . "\n";
-        foreach ($data as $key => $value) {
-            $csv .= $value['student_name'] . ',' . $value['student_email'] . ',' . $value['course_name'] . ',' . $value['license'] . ',' . $value['start'] . ',' . $value['end'] . "\n";
+        $lessons = DB::connection('wordpress')->table('posts as lessons')
+            ->select('lessons.*', 'sections.section_course_id', 'sections.section_name')
+            ->join('learnpress_section_items as section_items', 'section_items.item_id', '=', 'lessons.ID')
+            ->join('learnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
+            ->where('lessons.post_type', 'lp_lesson')
+            ->where('lessons.post_title', 'not like', '%webinar%')
+            ->orderBy('sections.section_course_id')
+            ->orderBy('sections.section_name')
+            ->orderBy('section_items.item_order', 'ASC')
+            ->get()->unique('ID')->values();
+
+        return $groupedLessons = $lessons->groupBy('section_course_id')->map(function ($group) {
+            return $group->count();
+        });
+
+        return
+
+            $student =  Student::where('email', 'evy815@gmail.com')->with(['wpLearnpressUserItems' => function ($q) {
+                $q->whereItemType('lp_lesson')->whereStatus('completed');
+            }])->first();
+
+        return $student->wpLearnpressUserItems->count();
+
+
+
+
+        // max init
+        ini_set('max_execution_time', -1);
+
+        // Get all order course that does not have certification tests
+        $orderCourses = OrderCourse::whereDoesntHave('certificationTests')->get();
+
+        $freeCourses = [6, 7, 8, 9];
+
+        foreach ($orderCourses as $orderCourse) {
+            Log::info('OrderCourse: ' . $orderCourse->id);
+            $premium = true;
+
+            $course_id = $orderCourse->course_id;
+            $limit = array_search($course_id, $freeCourses) ? 4 : 6;
+
+            if ($course_id != 6) {
+                for ($i = 0; $i < $limit; $i++) {
+                    if ($i < $limit - 1) {
+                        $name = "Examen de certificación " . ($i + 1);
+                        $premium = array_search($course_id, $freeCourses) ? false : $i >= 3;
+                    } else {
+                        $name = "Ponderación";
+                        $premium = true;
+                    }
+
+                    $certificationTest = new CertificationTest();
+                    $certificationTest->description = $name;
+                    $certificationTest->order_id = $orderCourse->order->id;
+                    $certificationTest->order_course_id = $orderCourse->id;
+                    $certificationTest->enabled = $i < 3;
+                    $certificationTest->status = 'Sin realizar';
+                    $certificationTest->premium = $premium;
+                    $certificationTest->save();
+                }
+            }
+
+            if ($course_id == 6) {
+                $cert = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
+                foreach ($cert as $c) {
+                    for ($i = 0; $i < 4; $i++) {
+                        $name = $i < 3 ? $c . " " . ($i + 1) : "Ponderación " . $c;
+                        $premium = $i < 3 ? false : true;
+                        $certificationTest = new CertificationTest();
+                        $certificationTest->description = $name;
+                        $certificationTest->order_id = $orderCourse->order->id;
+                        $certificationTest->order_course_id = $orderCourse->id;
+                        $certificationTest->enabled = false;
+                        $certificationTest->status = 'Sin realizar';
+                        $certificationTest->premium = $premium;
+                        $certificationTest->save();
+                    }
+                }
+            }
         }
-        return $csv;
 
-        $extension = Extension::with('order.student', 'orderCourse.course')->first();
-        $content = view("mails.extension")->with(['extension' => $extension])->render();
-
-        return $content;
+        return "Exito";
     }
 
 
