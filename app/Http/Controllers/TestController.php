@@ -40,31 +40,6 @@ class TestController extends Controller
     {
 
 
-        $lessons = DB::connection('wordpress')->table('posts as lessons')
-            ->select('lessons.*', 'sections.section_course_id', 'sections.section_name')
-            ->join('learnpress_section_items as section_items', 'section_items.item_id', '=', 'lessons.ID')
-            ->join('learnpress_sections as sections', 'sections.section_id', '=', 'section_items.section_id')
-            ->where('lessons.post_type', 'lp_lesson')
-            ->where('lessons.post_title', 'not like', '%webinar%')
-            ->orderBy('sections.section_course_id')
-            ->orderBy('sections.section_name')
-            ->orderBy('section_items.item_order', 'ASC')
-            ->get()->unique('ID')->values();
-
-        return $groupedLessons = $lessons->groupBy('section_course_id')->map(function ($group) {
-            return $group->count();
-        });
-
-        return
-
-            $student =  Student::where('email', 'evy815@gmail.com')->with(['wpLearnpressUserItems' => function ($q) {
-                $q->whereItemType('lp_lesson')->whereStatus('completed');
-            }])->first();
-
-        return $student->wpLearnpressUserItems->count();
-
-
-
 
         // max init
         ini_set('max_execution_time', -1);
