@@ -39,6 +39,8 @@ class TestController extends Controller
      */
     public function index()
     {
+
+        return Student::limit(10)->get();
         // max execution time
         ini_set('max_execution_time', -1);
 
@@ -396,6 +398,11 @@ class TestController extends Controller
 
     public function index3()
     {
+
+        // max execution time 10 seconds
+        ini_set('max_execution_time', 10);
+
+        return Student::limit(10)->get();
 
         $im = new ImportStudentsServiceSEG();
         $im->index();

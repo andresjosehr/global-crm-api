@@ -170,8 +170,28 @@ class ImportStudentsServiceSEG
                     $orderCourseDB->save();
                 }
 
+                if ($orderCourseDB->course_id === 6) {
+                    $cert1 = ucwords(strtolower($course['nivel_basico']['certificate']));
+                    $cert2 = ucwords(strtolower($course['nivel_intermedio']['certificate']));
+                    $cert3 = ucwords(strtolower($course['nivel_avanzado']['certificate']));
+
+                    if ($orderCourseDB->certification_status_excel_1 != $cert1) {
+                        $orderCourseDB->certification_status_excel_1 = $cert1;
+                        $orderCourseDB->save();
+                    }
+                    if ($orderCourseDB->certification_status_excel_2 != $cert2) {
+                        $orderCourseDB->certification_status_excel_2 = $cert2;
+                        $orderCourseDB->save();
+                    }
+                    if ($orderCourseDB->certification_status_excel_3 != $cert3) {
+                        $orderCourseDB->certification_status_excel_3 = $cert3;
+                        $orderCourseDB->save();
+                    }
+                }
+
 
                 $courseData = [
+                    'email'                => $student['CORREO'],
                     'course_id'            => $course['course_id'],
                     'classroom_status'     => $course['status'] ? $course['status'] : '',
                     'license'              => strtolower($student['LICENCIA y AULA V.']),
@@ -184,6 +204,11 @@ class ImportStudentsServiceSEG
                     'certification_status' => ucwords(strtolower($course['certificate'])),
                     'order_course_db'      => $orderCourseDB
                 ];
+                if ($course['course_id'] == 6) {
+                    $courseData['certification_status_excel_1'] = $course['nivel_basico']['certificate'];
+                    $courseData['certification_status_excel_2'] = $course['nivel_intermedio']['certificate'];
+                    $courseData['certification_status_excel_3'] = $course['nivel_avanzado']['certificate'];
+                }
                 $orderCourses[] = $courseData;
             }
 
@@ -422,6 +447,18 @@ class ImportStudentsServiceSEG
 
                     if ($course_db->id != 6) {
                         $courses[count($courses) - 1]['certifaction_test_original'] = $student[$colsCertificationStatus[$course_db->id]];
+                    }
+
+                    if ($course_db->id == 6) {
+                        $free_courses[count($free_courses) - 1]['nivel_basico'] = [
+                            'certificate' => $student['EXC CERTIF. BÁS']
+                        ];
+                        $free_courses[count($free_courses) - 1]['nivel_intermedio'] = [
+                            'certificate' => $student['EXC CERTIF. INT']
+                        ];
+                        $free_courses[count($free_courses) - 1]['nivel_avanzado'] = [
+                            'certificate' => $student['EXC CERTIF. AVA']
+                        ];
                     }
                 }
             }

@@ -28,11 +28,16 @@ class OrderCourse extends Model implements Auditable
         'last_freezing_id',
         'certification_status',
         'classroom_status',
+        'certification_status_excel_1',
+        'certification_status_excel_2',
+        'certification_status_excel_3',
         'observation',
         'welcome_mail_id',
         'created_at',
         'updated_at',
     ];
+
+    protected $appends = ['credly'];
 
     function course()
     {
@@ -162,5 +167,20 @@ class OrderCourse extends Model implements Auditable
         }
 
         return $this;
+    }
+
+    public function getCredlyAttribute()
+    {
+        if ($this->type == 'paid') {
+            return null;
+        }
+
+        $orderCourses = $this->order->orderCourses->where('type', 'paid')->where('certification_status', 'Emitido')->count();
+
+        if ($orderCourses == 0) {
+            return false;
+        }
+
+        return true;
     }
 }
