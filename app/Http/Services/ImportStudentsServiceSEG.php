@@ -165,7 +165,7 @@ class ImportStudentsServiceSEG
                     $orderCourseDB->save();
                 }
 
-                if ($orderCourseDB->certification_status != 'Certificado' && $course['status'] === 'Certificado') {
+                if ($orderCourseDB->certification_status != 'Certificado' && ($course['status'] === 'Certificado' || $course['status'] === 'Certificado ')) {
                     $orderCourseDB->certification_status = 'Emitido';
                     $orderCourseDB->save();
                 }
