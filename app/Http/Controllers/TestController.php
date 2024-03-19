@@ -400,14 +400,14 @@ class TestController extends Controller
     {
 
         // max execution time 10 seconds
-        ini_set('max_execution_time', 10);
-
-        return Student::limit(10)->get();
+        ini_set('max_execution_time', -1);
 
         $im = new ImportStudentsServiceSEG();
         $im->index();
 
         self::excludeInvalidDays();
+
+        return "Exito con fechas";
     }
 
     // Capitaliza first letter and lower the rest of each word
