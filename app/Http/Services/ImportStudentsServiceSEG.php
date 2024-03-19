@@ -67,14 +67,14 @@ class ImportStudentsServiceSEG
 
 
         $sheets = [
-            '14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs',
-            '1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo',
+            // '14v8gIrNdI3c3K1lEa8FYOyq6kOsw5gr0x8QTH2cbnUs',
+            // '1BCk_SHAD8sYjngCtGbi-0F65NJtF3nSS3n4gtcThaQo',
             '1_CBoJ5JyCjtMeOA1KIniWNqvDNxQUTDwMwV-qAYtedI',
-            '15IgSGsDjfrJMLaVRwkpxkusiyNHc0nSaFRpuRJ1ywWk'
+            // '15IgSGsDjfrJMLaVRwkpxkusiyNHc0nSaFRpuRJ1ywWk'
         ];
 
 
-
+        $dataNew = [];
         foreach ($sheets as $sheet) {
 
             self::createGoogleServiceInstance();
@@ -82,8 +82,10 @@ class ImportStudentsServiceSEG
             $data = self::formatCourses($data);
             // Log::info($data);
             $data = self::formatForImport($data);
+
+            $dataNew = array_merge($dataNew, $data);
         }
-        return "Exito";
+        return $dataNew;
         // $data = self::import($data);
 
         // return ['Exito'];
@@ -121,6 +123,7 @@ class ImportStudentsServiceSEG
         $students = [];
         $orderCourseNotFound = 0;
         $orderCourseDifferent = 0;
+        $orderCourses = [];
         foreach ($data as $i => $student) {
             $studentData = [
                 'name'           => $student['NOMBRE'],
@@ -132,11 +135,10 @@ class ImportStudentsServiceSEG
                 'created_by'     => $created_by,
                 'created_at'     => '2024-01-01 00:00:00',
                 'updated_at'     => '2024-01-01 00:00:00',
-                'order_courses'          => []
             ];
 
             $coursesDB = DB::table('courses')->get()->pluck('type', 'id')->toArray();
-            $orderCourses = [];
+
             foreach ($student['courses'] as $j => $course) {
 
                 $orderCourseDB = OrderCourse::where('course_id', $course['course_id'])
@@ -150,33 +152,39 @@ class ImportStudentsServiceSEG
                 }
 
                 if (($orderCourseDB->start != $course['start'] || $orderCourseDB->end != $course['end']) && $course['start'] != null && $course['end'] != null) {
-                    Log::info([
-                        'student_name' => $student['NOMBRE'],
-                        'course_name' => $course['name'],
-                        'old_start' => $orderCourseDB->start,
-                        'old_end' => $orderCourseDB->end,
-                        'new_start' => $course['start'],
-                        'new_end' => $course['end'],
-                    ]);
+
+
                     $orderCourseDB->start = $course['start'];
                     $orderCourseDB->end = $course['end'];
                     $orderCourseDB->save();
                     $orderCourseDifferent++;
                 }
 
+                if ($orderCourseDB->certification_status != ucwords(strtolower($course['certificate']))) {
+                    $orderCourseDB->certification_status = ucwords(strtolower($course['certificate']));
+                    $orderCourseDB->save();
+                }
+
+                if ($orderCourseDB->certification_status != 'Certificado' && $course['status'] === 'Certificado') {
+                    $orderCourseDB->certification_status = 'Emitido';
+                    $orderCourseDB->save();
+                }
+
 
                 $courseData = [
-                    'course_id'        => $course['course_id'],
-                    'classroom_status' => $course['status'] ? $course['status'] : '',
-                    'license'          =>  strtolower($student['LICENCIA y AULA V.']),
-                    'type'             => $coursesDB[$course['course_id']],
-                    'start'            => $course['start'],
-                    'end'              => $course['end'],
-                    'enabled'          => 1,
-                    'created_at'       => '2024-01-01 00:00:00',
-                    'updated_at'       => '2024-01-01 00:00:00',
-                    'order_course_db' => $orderCourseDB
+                    'course_id'            => $course['course_id'],
+                    'classroom_status'     => $course['status'] ? $course['status'] : '',
+                    'license'              => strtolower($student['LICENCIA y AULA V.']),
+                    'type'                 => $coursesDB[$course['course_id']],
+                    'start'                => $course['start'],
+                    'end'                  => $course['end'],
+                    'enabled'              => 1,
+                    'created_at'           => '2024-01-01 00:00:00',
+                    'updated_at'           => '2024-01-01 00:00:00',
+                    'certification_status' => ucwords(strtolower($course['certificate'])),
+                    'order_course_db'      => $orderCourseDB
                 ];
+                $orderCourses[] = $courseData;
             }
 
             $studentData['order_courses'] = $orderCourses;
@@ -184,7 +192,7 @@ class ImportStudentsServiceSEG
             $students[] = $studentData;
         }
         // Log::info('Order Course Different: ' . $orderCourseDifferent);
-        return $students;
+        return $orderCourses;
     }
 
     public function formatCourses($data)

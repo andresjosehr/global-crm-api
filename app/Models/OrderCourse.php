@@ -26,6 +26,7 @@ class OrderCourse extends Model implements Auditable
         'enabled',
         'end',
         'last_freezing_id',
+        'certification_status',
         'classroom_status',
         'observation',
         'welcome_mail_id',
