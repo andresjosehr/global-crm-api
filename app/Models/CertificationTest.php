@@ -13,13 +13,15 @@ class CertificationTest extends Model
         'description',
         'status',
         'enabled',
+        'due_id',
         'premium',
         'average',
         'order_id',
         'order_course_id',
-        'price_id',
-        'price',
-        'currency_id',
-        'payment_method_id',
     ];
+
+    public function due()
+    {
+        return $this->belongsTo(Due::class);
+    }
 }

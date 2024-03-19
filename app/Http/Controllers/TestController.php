@@ -9,6 +9,7 @@ use App\Http\Services\LiveConnectService;
 use App\Http\Services\ResendService;
 use App\Http\Services\ZohoService;
 use App\Jobs\GeneralJob;
+use App\Models\Careerjet;
 use App\Models\CertificationTest;
 use App\Models\Course;
 use App\Models\Currency;
@@ -38,65 +39,43 @@ class TestController extends Controller
      */
     public function index()
     {
-
-
-
-        // max init
+        // max execution time
         ini_set('max_execution_time', -1);
 
-        // Get all order course that does not have certification tests
-        $orderCourses = OrderCourse::whereDoesntHave('certificationTests')->get();
+        // Request with the data
+        $client = new \GuzzleHttp\Client();
 
-        $freeCourses = [6, 7, 8, 9];
+        $locations = [
+            'es_AR' => 'Argentina',
+            'es_CO' => 'Colombia',
+            'es_VE' => 'Venezuela',
+            'es_MX' => 'Mexico',
+            'es_EC' => 'Ecuador',
+            'es_PE' => 'Peru',
+            'es_CL' => 'Chile',
+            'es_SV' => 'El Salvador',
+        ];
 
-        foreach ($orderCourses as $orderCourse) {
-            Log::info('OrderCourse: ' . $orderCourse->id);
-            $premium = true;
+        foreach ($locations as $key => $country) {
 
-            $course_id = $orderCourse->course_id;
-            $limit = array_search($course_id, $freeCourses) ? 4 : 6;
+            for ($i = 1; $i <= 100; $i++) {
+                Log::info('Country: ' . $country . ' Page: ' . $i);
+                $response = $client->request('GET', 'http://public.api.careerjet.net/search?locale_code=' . $key . '&pagesize=1000&page=1&affid=a4af538b7a89348a5317709fccceda24&sort=relevance&user_ip=127.0.0.1&user_agent=Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F122.0.0.0+Safari%2F537.36+Edg%2F122.0.0.0');
 
-            if ($course_id != 6) {
-                for ($i = 0; $i < $limit; $i++) {
-                    if ($i < $limit - 1) {
-                        $name = "Examen de certificación " . ($i + 1);
-                        $premium = array_search($course_id, $freeCourses) ? false : $i >= 3;
-                    } else {
-                        $name = "Ponderación";
-                        $premium = true;
-                    }
+                $data = json_decode($response->getBody(), true);
+                $data['jobs'] = (array) $data['jobs'];
 
-                    $certificationTest = new CertificationTest();
-                    $certificationTest->description = $name;
-                    $certificationTest->order_id = $orderCourse->order->id;
-                    $certificationTest->order_course_id = $orderCourse->id;
-                    $certificationTest->enabled = $i < 3;
-                    $certificationTest->status = 'Sin realizar';
-                    $certificationTest->premium = $premium;
-                    $certificationTest->save();
-                }
-            }
-
-            if ($course_id == 6) {
-                $cert = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
-                foreach ($cert as $c) {
-                    for ($i = 0; $i < 4; $i++) {
-                        $name = $i < 3 ? $c . " " . ($i + 1) : "Ponderación " . $c;
-                        $premium = $i < 3 ? false : true;
-                        $certificationTest = new CertificationTest();
-                        $certificationTest->description = $name;
-                        $certificationTest->order_id = $orderCourse->order->id;
-                        $certificationTest->order_course_id = $orderCourse->id;
-                        $certificationTest->enabled = false;
-                        $certificationTest->status = 'Sin realizar';
-                        $certificationTest->premium = $premium;
-                        $certificationTest->save();
-                    }
+                foreach ($data['jobs'] as $job) {
+                    $job['created_at'] = Carbon::now();
+                    $job['updated_at'] = Carbon::now();
+                    $job['country'] = $country;
+                    Careerjet::create($job);
                 }
             }
         }
 
-        return "Exito";
+
+        return 'Exito';
     }
 
 

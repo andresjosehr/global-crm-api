@@ -48,7 +48,7 @@ class OrdersCoursesController extends Controller
     public function show($id)
     {
 
-        $orderCourse = OrderCourse::with('course', 'extensions.due', 'certificationTests', 'freezings.due', 'dateHistory')
+        $orderCourse = OrderCourse::with('course', 'extensions.due', 'certificationTests.due', 'freezings.due', 'dateHistory')
             ->find($id)
             ->attachCertificationTestCourse()
             ->attachLessonProgress();
