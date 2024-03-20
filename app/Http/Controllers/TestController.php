@@ -45,6 +45,7 @@ class TestController extends Controller
             ->whereRaw('DATE_FORMAT(start, "%d") != DATE_FORMAT(end, "%d")')
             ->where('license', '<>', '1 meses y 16 dias')
             ->get();
+
         $holidays = Holiday::all();
 
         foreach ($orderCourse as $oc) {
