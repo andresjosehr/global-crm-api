@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
+use App\Models\Freezing;
 use App\Models\SapInstalation;
 use App\Models\Student;
 use Carbon\Carbon;
@@ -74,15 +75,33 @@ class AssignmentsController extends Controller
                     ->where('start_datetime', '<=', Carbon::now()->addHours(24)->format('Y-m-d H:i:s'))
                     ->whereDate('start_datetime', '>=', Carbon::now()->format('Y-m-d H:i:s'));
             })
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
             ->get();
+
+        $sapInstalationWithRestrictions = SapInstalation::with(['lastSapTry', 'student.user', 'student.liveConnectMessages'])
+            ->whereHas('lastSapTry', function ($query) {
+                return $query->where('status', 'Programada')
+                    ->where('start_datetime', '>=', Carbon::now()->addHours(24)->format('Y-m-d H:i:s'));
+            })
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
+            ->where('restrictions', 'IS NOT', null)
+            ->get();
+
+
+        // $freezings = Freezing
 
 
 
 
         $data = [
-            'sapInstalationLinkNotSent' => $sapInstalationLinkNotSent,
-            'sapInstalationNotSchedule'  => $sapInstalationNotSchedule,
-            'assignments'     => $assignments
+            'sapInstalationLinkNotSent'      => $sapInstalationLinkNotSent,
+            'sapInstalationNotSchedule'      => $sapInstalationNotSchedule,
+            'assignments'                    => $assignments,
+            'sapInstalationWithRestrictions' => $sapInstalationWithRestrictions
         ];
 
 

@@ -1522,40 +1522,39 @@ class PricesSeeder extends Seeder
 
 
 
-
             // Reagendamiento SAP
             [
                 'description' => 'Certificación',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
-                'amount' => 20,
+                'amount' => 50,
                 'months' => 0,
                 'mode' => ''
             ],
             [
                 'description' => 'Certificación',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 5,
+                'amount' => 15,
                 'months' => 0,
                 'mode' => ''
             ],
             [
                 'description' => 'Certificación',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
-                'amount' => 9000,
+                'amount' => 11000,
                 'months' => 0,
                 'mode' => ''
             ],
             [
                 'description' => 'Certificación',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
-                'amount' => 100,
+                'amount' => 250,
                 'months' => 0,
                 'mode' => ''
             ],
             [
                 'description' => 'Certificación',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
-                'amount' => 20000,
+                'amount' => 50000,
                 'months' => 0,
                 'mode' => ''
             ],

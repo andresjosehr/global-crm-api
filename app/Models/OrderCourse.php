@@ -54,15 +54,16 @@ class OrderCourse extends Model implements Auditable
         return $this->belongsToMany(Freezing::class, 'freezings_order_course', 'order_course_id', 'freezing_id');
     }
 
+    public function extensions()
+    {
+        return $this->belongsToMany(Extension::class, 'extensions_order_course', 'order_course_id', 'extension_id');
+    }
+
     public function freezing()
     {
         return $this->hasMany(FreezingOrderCourse::class);
     }
 
-    public function extensions()
-    {
-        return $this->hasMany(Extension::class);
-    }
 
     public function sapInstalations()
     {
