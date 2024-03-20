@@ -40,44 +40,27 @@ class TestController extends Controller
     public function index()
     {
 
-        return Student::limit(10)->get();
-        // max execution time
-        ini_set('max_execution_time', -1);
+        $orderCourse =  OrderCourse::select('id', 'start', 'end', 'license')->where('start', '>', Carbon::now())
+            // WHERE END DATE IS NOT SAME NUMBER AS START DATE
+            ->whereRaw('DATE_FORMAT(start, "%d") != DATE_FORMAT(end, "%d")')
+            ->where('license', '<>', '1 meses y 16 dias')
+            ->get();
+        $holidays = Holiday::all();
 
-        // Request with the data
-        $client = new \GuzzleHttp\Client();
+        foreach ($orderCourse as $oc) {
+            $months = explode(' ', $oc->license)[0];
 
-        $locations = [
-            'es_AR' => 'Argentina',
-            'es_CO' => 'Colombia',
-            'es_VE' => 'Venezuela',
-            'es_MX' => 'Mexico',
-            'es_EC' => 'Ecuador',
-            'es_PE' => 'Peru',
-            'es_CL' => 'Chile',
-            'es_SV' => 'El Salvador',
-        ];
+            $newEndDate = Carbon::parse($oc->start)->addMonths($months);
 
-        foreach ($locations as $key => $country) {
-
-            for ($i = 1; $i <= 100; $i++) {
-                Log::info('Country: ' . $country . ' Page: ' . $i);
-                $response = $client->request('GET', 'http://public.api.careerjet.net/search?locale_code=' . $key . '&pagesize=1000&page=1&affid=a4af538b7a89348a5317709fccceda24&sort=relevance&user_ip=127.0.0.1&user_agent=Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F122.0.0.0+Safari%2F537.36+Edg%2F122.0.0.0');
-
-                $data = json_decode($response->getBody(), true);
-                $data['jobs'] = (array) $data['jobs'];
-
-                foreach ($data['jobs'] as $job) {
-                    $job['created_at'] = Carbon::now();
-                    $job['updated_at'] = Carbon::now();
-                    $job['country'] = $country;
-                    Careerjet::create($job);
-                }
+            while ($newEndDate->isSunday() || $holidays->contains('date', $newEndDate->format('Y-m-d'))) {
+                $newEndDate->addDay();
             }
+
+            $oc->end = $newEndDate->format('Y-m-d');
+            $oc->save();
         }
 
-
-        return 'Exito';
+        return $orderCourse;
     }
 
 
