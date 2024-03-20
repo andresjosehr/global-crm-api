@@ -24,4 +24,9 @@ class CertificationTest extends Model
     {
         return $this->belongsTo(Due::class);
     }
+
+    public function orderCourse()
+    {
+        return $this->belongsTo(OrderCourse::class);
+    }
 }
