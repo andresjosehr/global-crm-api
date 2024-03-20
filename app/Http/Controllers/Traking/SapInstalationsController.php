@@ -818,9 +818,7 @@ class SapInstalationsController extends Controller
     public function setLinkAsSent(Request $request, $id)
     {
         $user = $request->user();
-        if (!collect([1, 2, 3])->contains($user->role_id)) {
-            return ApiResponseController::response('No tienes permisos para realizar esta acción', 400);
-        }
+
         $sapInstalation = SapInstalation::find($id);
         $sapTry = SapTry::where('id', $sapInstalation->last_sap_try_id)->first();
         if (!$sapTry->link_sent_at) {
