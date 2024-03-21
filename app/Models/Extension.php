@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use App\Models\OrderCourse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Log;
 use OwenIt\Auditing\Contracts\Auditable;
 use \OwenIt\Auditing\Auditable as AuditableTrait;
 
@@ -17,9 +16,14 @@ class Extension extends Model implements Auditable
     protected $fillable = [
         "id",
         "months",
+        "courses",
         "order_id",
         "due_id",
         "order_course_id",
+    ];
+
+    protected $appends = [
+        'order_course_ids',
     ];
 
     protected static function booted()
@@ -29,7 +33,7 @@ class Extension extends Model implements Auditable
             // create due
             $due = Due::create([
                 'payment_reason' => 'Extension',
-                'student_id' => $extension->orderCourse->order->student_id,
+                'student_id' => $extension->order->student_id,
             ]);
 
             // update extension with due_id
@@ -50,10 +54,6 @@ class Extension extends Model implements Auditable
         }
     }
 
-    public function orderCourse()
-    {
-        return $this->belongsTo(OrderCourse::class);
-    }
 
     public function due()
     {
@@ -63,5 +63,16 @@ class Extension extends Model implements Auditable
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function orderCourses()
+    {
+        return $this->belongsToMany(OrderCourse::class, 'extensions_order_course');
+    }
+
+
+    public function getOrderCourseIdsAttribute()
+    {
+        return $this->orderCourses->pluck('id');
     }
 }

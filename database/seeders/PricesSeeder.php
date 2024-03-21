@@ -1522,7 +1522,6 @@ class PricesSeeder extends Seeder
 
 
 
-
             // Reagendamiento SAP
             [
                 'description' => 'Certificación',

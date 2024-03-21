@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
+use App\Models\Freezing;
+use App\Models\OrderCourse;
 use App\Models\SapInstalation;
 use App\Models\Student;
 use Carbon\Carbon;
@@ -74,15 +76,57 @@ class AssignmentsController extends Controller
                     ->where('start_datetime', '<=', Carbon::now()->addHours(24)->format('Y-m-d H:i:s'))
                     ->whereDate('start_datetime', '>=', Carbon::now()->format('Y-m-d H:i:s'));
             })
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->whereHas('student', function ($query) use ($user) {
+                    return $query->where('user_id', $user->id);
+                });
+            })
             ->get();
+
+        $sapInstalationWithRestrictions = SapInstalation::with(['lastSapTry', 'student.user', 'student.liveConnectMessages'])
+            ->whereHas('lastSapTry', function ($query) {
+                return $query->where('status', 'Programada')
+                    ->where('start_datetime', '>=', Carbon::now()->addHours(24)->format('Y-m-d H:i:s'));
+            })
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->whereHas('student', function ($query) use ($user) {
+                    return $query->where('user_id', $user->id);
+                });
+            })
+            ->where('restrictions', 'IS NOT', null)
+            ->get();
+
+        $freezings = OrderCourse::with('freezings.orderCourses.order.student.user', 'freezings.orderCourses.course')->whereHas('freezings', function ($query) {
+            // return end tomorrow
+            return $query
+                ->with('orderCourses.order.student')
+                ->whereBetween('return_date', [Carbon::now()->format('Y-m-d'), Carbon::now()->addDays(7)->format('Y-m-d')]);
+        })
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->whereHas('order.student', function ($query) use ($user) {
+                    return $query->where('user_id', $user->id);
+                });
+            })
+            ->with(['freezings' => function ($query) {
+                return $query->whereBetween('return_date', [Carbon::now()->format('Y-m-d'), Carbon::now()->addDays(7)->format('Y-m-d')]);
+            }])
+            ->get()->pluck('freezings')->flatten(1);
+
+        // order by return date
+        $freezings = $freezings->sortBy('return_date')->values();
+
+
+        // $freezings = Freezing
 
 
 
 
         $data = [
-            'sapInstalationLinkNotSent' => $sapInstalationLinkNotSent,
-            'sapInstalationNotSchedule'  => $sapInstalationNotSchedule,
-            'assignments'     => $assignments
+            'sapInstalationLinkNotSent'      => $sapInstalationLinkNotSent,
+            'sapInstalationNotSchedule'      => $sapInstalationNotSchedule,
+            'assignments'                    => $assignments,
+            'sapInstalationWithRestrictions' => $sapInstalationWithRestrictions,
+            'freezings'                      => $freezings
         ];
 
 
