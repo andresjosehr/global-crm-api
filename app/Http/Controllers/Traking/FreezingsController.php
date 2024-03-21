@@ -6,6 +6,7 @@ use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\DuesController;
 use App\Http\Controllers\Mails\CoreMailsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Services\LiveConnectService;
 use App\Http\Services\ResendService;
 use App\Jobs\GeneralJob;
@@ -91,6 +92,16 @@ class FreezingsController extends Controller
 
             $freezingDB->due_id = $due->id;
             $freezingDB->save();
+
+            $noti = new NotificationController();
+            $noti = $noti->store([
+                'title'      => 'Se ha registrado un pago de un congelamiento',
+                'body'       => 'Se ha registrado un pago de congelamiento del alumno ' . $freezingDB->orderCourses[0]->order->student->name . ' Por favor revisar el pago',
+                'icon'       => 'check_circle_outline',
+                'url'        => '#',
+                'user_id'    => 10,
+                'use_router' => false,
+            ]);
         }
 
         if ($freezingDB->due_id && $freezingDB->due_id != 1) {

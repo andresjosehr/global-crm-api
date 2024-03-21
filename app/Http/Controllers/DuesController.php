@@ -51,7 +51,19 @@ class DuesController extends Controller
             ->orderBy('date', 'desc')
 
             ->paginate($perPage);
-        return ApiResponseController::response('Dues', 200, $dues);
+
+
+        $priorityPayments = Due::with('student', 'currency', 'paymentMethod')
+            ->whereIn('payment_reason', ['Desbloqueo SAP', 'Extension', 'Examen de certificación'])->where('payment_verified_at', null)->orderBy('date', 'asc')
+            ->where('payment_verified_at', null)
+            ->whereNotNull('payment_receipt')
+            ->get();
+
+
+        return ApiResponseController::response('Dues', 200, [
+            'dues' => $dues,
+            'priorityDues' => $priorityPayments
+        ]);
     }
 
     /**

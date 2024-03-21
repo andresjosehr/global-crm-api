@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Traking;
 
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use App\Models\CertificationTest;
 use App\Models\Due;
 use Illuminate\Http\Request;
@@ -44,12 +45,29 @@ class CertificationTestsController extends Controller
     {
         $certificationTest = CertificationTest::find($certification_id);
 
-        Log::info($data);
         $d = new Due();
         $d = array_intersect_key($data, array_flip($d->getFillable()));
 
-        Log::info($d);
+
+
+        // if payment_receipt is set and before was null
+        if (isset($data['payment_receipt']) && !$certificationTest->due->payment_receipt) {
+            if ($data['payment_receipt'] && !$certificationTest->due->payment_receipt) {
+                $noti = new NotificationController();
+                $noti = $noti->store([
+                    'title'      => 'Se ha registrado un pago de un examen de certificación/ponderación',
+                    'body'       => 'Se ha registrado un pago de un examen de certificación/ponderación del alumno ' . $certificationTest->order->student->name . ' Por favor revisar el pago',
+                    'icon'       => 'check_circle_outline',
+                    'url'        => '#',
+                    'user_id'    => 10,
+                    'use_router' => false,
+                ]);
+            }
+        }
+
         $certificationTest->due->update($d);
+
+
 
         return true;
     }

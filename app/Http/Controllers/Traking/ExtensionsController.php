@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Traking;
 
 use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\NotificationController;
 use App\Http\Services\LiveConnectService;
 use App\Http\Services\ResendService;
 use App\Jobs\GeneralJob;
@@ -156,6 +157,17 @@ class ExtensionsController extends Controller
                         ]);
                     }
                 }
+
+                // Notification
+                $noti = new NotificationController();
+                $noti = $noti->store([
+                    'title'      => 'Se ha registrado un pago de extensión',
+                    'body'       => 'Se ha registrado un pago de extensión del alumno ' . $extensionDB->order->student->name . ' Por favor revisar el pago',
+                    'icon'       => 'check_circle_outline',
+                    'url'        => '#',
+                    'user_id'    => 10,
+                    'use_router' => false,
+                ]);
             }
         }
 

@@ -595,6 +595,20 @@ class SapInstalationsController extends Controller
             ]
         ]);
 
+
+        $noti = new NotificationController();
+        $noti = $noti->store([
+            'title'      => 'Pago de agendamiento de instalación',
+            'body'       => 'El alumno ' . $student->name . ' ha realizado el pago de la instalación, por favor revisar el comprobante de pago y confirmar la instalación.',
+            'icon'       => 'check_circle_outline',
+            'url'        => '#',
+            'user_id'    => 10,
+            'use_router' => false,
+            'custom_data' => [
+                []
+            ]
+        ]);
+
         $due->save();
 
         return ApiResponseController::response('Sap try instalation updated', 200, $sap);
