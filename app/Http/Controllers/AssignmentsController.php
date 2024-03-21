@@ -57,11 +57,14 @@ class AssignmentsController extends Controller
             })
 
             ->whereHas('student', function ($query) use ($students) {
-
                 $query->whereIn('students.id', $students);
             })
             ->get();
-        // Fin alumnos que empiezan clase dentro de 72 horas y aun no se les ha enviado link de agendamiento
+
+        // one by student
+        $sapInstalationLinkNotSent = $sapInstalationLinkNotSent->groupBy('student_id')->map(function ($item) {
+            return $item->first();
+        })->values();
 
 
 

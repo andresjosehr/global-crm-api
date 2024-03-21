@@ -341,7 +341,11 @@ class FreezingsController extends Controller
         $index = $dateRecord->search(function ($item) use ($freezing) {
             return $item->freezing_id == $freezing->id;
         }) - 1;
-        $original_date = $dateRecord[$index];
+        if (isset($dateRecord[$index])) {
+            $original_date = $dateRecord[$index];
+        } else {
+            $original_date = OrderCourse::where('id', $order_course_id)->first();
+        }
 
 
         $content = view('mails.freezing')->with([
