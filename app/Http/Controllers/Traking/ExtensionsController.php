@@ -185,35 +185,42 @@ class ExtensionsController extends Controller
 
     static public function sendNotificacion($extension_id)
     {
-        $extension = Extension::with('order.student', 'orderCourse.course')->where('id', $extension_id)->first();
+        $extension = Extension::with('order.student', 'orderCourses.course')->where('id', $extension_id)->first();
 
         if ($extension->notification_sent_at) {
             return ApiResponseController::response('Notificacion ya enviada', 200);
         }
 
+        foreach ($extension->orderCourses as $orderCourse) {
 
-        $content = view("mails.extension")->with(['extension' => $extension])->render();
 
 
-        $mail = [[
-            'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
-            'to'         => [$extension->order->student->email],
-            'subject'    => 'Notificación de extensión de curso',
-            'student_id' => $extension->order->student->id,
-            'html'       => $content
-        ]];
 
-        ResendService::sendBatchMail($mail);
 
-        $text = "Hola, le informo que hemos completado el proceso administrativo de extensión de su curso: " . $extension->orderCourse->course->name . ". \nSu nueva fecha de fin sería: " . $extension->orderCourse->end . ".\nLe hemos enviado la misma información a su correo registrado: " . $extension->order->student->email . ".\nAsimismo, tiene información relevante sobre la aprobación de su examen de certificación correspondiente.";
 
-        $params = [
-            'student_id' => $extension->order->student->id,
-            'phone' => $extension->order->student->phone,
-            'message' => $text,
-        ];
+            $content = view("mails.extension")->with(['extension' => $extension, 'orderCourse' => $orderCourse])->render();
 
-        GeneralJob::dispatch(ExtensionsController::class, 'sendLiveConnectMessage', $params)->onQueue('liveconnect');
+
+            $mail = [[
+                'from'       => 'No contestar <noreply@globaltecnoacademy.com>',
+                'to'         => [$extension->order->student->email],
+                'subject'    => 'Notificación de extensión de curso',
+                'student_id' => $extension->order->student->id,
+                'html'       => $content
+            ]];
+
+            ResendService::sendBatchMail($mail);
+
+            $text = "Hola, le informo que hemos completado el proceso administrativo de extensión de su curso: " . $orderCourse->course->name . ". \nSu nueva fecha de fin sería: " . $orderCourse->end . ".\nLe hemos enviado la misma información a su correo registrado: " . $orderCourse->order->student->email . ".\nAsimismo, tiene información relevante sobre la aprobación de su examen de certificación correspondiente.";
+
+            $params = [
+                'student_id' => $extension->order->student->id,
+                'phone' => $extension->order->student->phone,
+                'message' => $text,
+            ];
+
+            GeneralJob::dispatch(ExtensionsController::class, 'sendLiveConnectMessage', $params)->onQueue('liveconnect');
+        }
 
         $extension->notification_sent_at = now();
         $extension->save();

@@ -65,6 +65,18 @@ class TestController extends Controller
     }
 
 
+    public function transformExtensions()
+    {
+        $extensions = Extension::all();
+        foreach ($extensions as $extension) {
+            $orderCourseId = $extension->order_course_id;
+            $order_id = OrderCourse::find($orderCourseId)->order_id;
+            // sync with order
+            $extension->orderCourses()->sync([$orderCourseId => ['order_id' => $order_id]]);
+        }
+    }
+
+
 
     public function index2()
     {

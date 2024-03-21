@@ -54,8 +54,8 @@
 
 
 
-            <p>Nos complace informarle que el proceso administrativo de extensión de <b>{{$extension->orderCourse->course->name}}</b>, ha sido completado satisfactoriamente.  </p>
-            <p>La nueva fecha fin de tu curso es el <b>{{$extension->orderCourse->end}}</b></p>
+            <p>Nos complace informarle que el proceso administrativo de extensión de <b>{{$orderCourse->course->name}}</b>, ha sido completado satisfactoriamente.  </p>
+            <p>La nueva fecha fin de tu curso es el <b>{{$orderCourse->end}}</b></p>
             <p style="margin-top: 30px">Asimismo recordarle que antes de esta fecha, debe realizar el examen de certificación correspondiente e informarme su aprobación dentro de mi horario laboral:</p>
             <p>Lunes a Viernes de 9am a 7pm (Hora Perú 🇵🇪)<br>Sábados de 9am a 5pm (Hora Perú 🇵🇪)<br>Los DOMINGOS NO laboramos.</p>
             <p>Caso contrario, no admitiremos capturas de pantalla, como se ha indicado en sus términos y condiciones previamente aceptados.</p>
