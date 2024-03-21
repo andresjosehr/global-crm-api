@@ -95,6 +95,11 @@ class CoreMailsController extends Controller
         }
 
 
+        if (!isset($mails[0])) {
+            return (object)[
+                'messageId' => "XXXXXXXXX",
+            ];
+        }
         $lastMail = $mails[0];
         return $lastMail;
     }

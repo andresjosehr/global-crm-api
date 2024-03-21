@@ -336,19 +336,7 @@ class StudentsController extends Controller
 
         $content = view("mails." . $mailTemplate[$order->payment_mode])->with(['order' => $order, 'urlTerm' => $urlTerm])->render();
 
-        CoreMailsController::sendMail(
-            'finanzas@globaltecnologiasacademy.com',
-            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
 
-        $student = Student::where('id', $order->student->id)->with('users')->first();
-
-        CoreMailsController::sendMail(
-            $student->email,
-            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
-            $content
-        );
         $noti = new NotificationController();
         $noti = $noti->store([
             'title'      => 'Ficha de matriculada confirmada | ' . $order->student->name,
@@ -449,6 +437,21 @@ class StudentsController extends Controller
             $assignment = new AssignmentsController();
             $assignment->store($data);
         }
+
+
+        CoreMailsController::sendMail(
+            'finanzas@globaltecnologiasacademy.com',
+            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
+
+        $student = Student::where('id', $order->student->id)->with('users')->first();
+
+        CoreMailsController::sendMail(
+            $student->email,
+            'Has aceptado los términos y condiciones | Bienvenido a tu curso',
+            $content
+        );
     }
 
     public function saveTermsPdfTemplate(Request $request, $order_id)
