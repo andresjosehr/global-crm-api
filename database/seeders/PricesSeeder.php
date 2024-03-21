@@ -1562,6 +1562,45 @@ class PricesSeeder extends Seeder
 
 
 
+
+            [
+                'description' => 'Ponderación',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'PEN')->first()->id,
+                'amount' => 70,
+                'months' => 0,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Ponderación',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
+                'amount' => 20,
+                'months' => 0,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Ponderación',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'CLP')->first()->id,
+                'amount' => 20000,
+                'months' => 0,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Ponderación',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'MXN')->first()->id,
+                'amount' => 350,
+                'months' => 0,
+                'mode' => ''
+            ],
+            [
+                'description' => 'Ponderación',
+                'currency_id' => DB::table('currencies')->where('iso_code', 'COP')->first()->id,
+                'amount' => 70000,
+                'months' => 0,
+                'mode' => ''
+            ],
+
+
+
         ]);
     }
 }
