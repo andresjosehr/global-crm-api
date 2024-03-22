@@ -16,8 +16,8 @@ class CoursesSeeder extends Seeder
     public function run()
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-		DB::table('courses')->truncate();
-		DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        DB::table('courses')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         DB::table('courses')->insert([
             [
@@ -80,6 +80,12 @@ class CoursesSeeder extends Seeder
                 'short_name' => 'SAP FI',
                 'type'       => 'paid',
                 'wp_post_id' => 9225
+            ],
+            [
+                'name'       => 'SAP QM Gestion de Calidad',
+                'short_name' => 'SAP QM',
+                'type'       => 'paid',
+                'wp_post_id' => 0
             ],
 
         ]);
