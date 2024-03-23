@@ -235,6 +235,9 @@ class UpdateTestsStatus extends Command
         foreach ($studentsFitered as $student) {
             foreach ($student['courses'] as $course) {
                 if ($course['type'] === 'paid') {
+                    try {
+                        //code...
+
                     $dataU[] = [
                         'sheet_id'          => $student['sheet_id'],
                         'course_row_number' => $student['course_row_number'],
@@ -243,6 +246,9 @@ class UpdateTestsStatus extends Command
                         'tab_id'            => $student['course_tab_id'],
                         'value'             => $course['certifaction_test'],
                     ];
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
                 }
 
                 if ($course['type'] === 'free') {
