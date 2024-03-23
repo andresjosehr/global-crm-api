@@ -41,6 +41,10 @@ class UpdateCourseStatus extends Command
                 return;
             }
 
+            if ($orderCourse->classroom_status == 'Abandonó') {
+                return;
+            }
+
             if (Carbon::now()->lt(Carbon::parse($orderCourse->start))) {
                 $orderCourse->classroom_status = 'Por habilitar';
                 $orderCourse->save();
