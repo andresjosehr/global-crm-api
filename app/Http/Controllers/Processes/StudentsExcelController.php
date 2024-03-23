@@ -163,7 +163,7 @@ class StudentsExcelController extends Controller
 
             $sapNumber = 0;
             foreach ($courses_names as $course_name) {
-                if (in_array($course_name, ['PP', 'MM', 'PM', 'HCM', 'FI', 'INTEGRAL', 'SAP PP', 'SAP MM', 'SAP PM', 'SAP HCM', 'SAP FI', 'SAP INTEGRAL'])) {
+                if (in_array($course_name, ['PP', 'MM', 'PM', 'HCM', 'FI', 'INTEGRAL', 'SAP PP', 'SAP MM', 'SAP PM', 'SAP HCM', 'SAP FI', 'SAP QM', 'SAP INTEGRAL'])) {
                     $sapNumber++;
                 }
             }
@@ -411,6 +411,10 @@ class StudentsExcelController extends Controller
                             $q->where('post_title', 'not like', '%webinar%');
                         })
                         ->get()->unique('item_id')->values();
+
+                    if (!isset($groupedLessons[$course['wp_post_id']])) {
+                        continue;
+                    }
 
                     $quizzes = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                         ->where('ref_id', $course['wp_post_id'])
@@ -936,7 +940,7 @@ class StudentsExcelController extends Controller
                         $countCertified++;
                     endif;
                 endforeach;
-                if ($countApproved == count($excelLevels) && $countCertified == count($excelLevels)):
+                if ($countApproved == count($excelLevels) && $countCertified == count($excelLevels)) :
                     $student['courses'][$i]["certifaction_test_original"] = "CERTIFICADO";
                     $student['courses'][$i]["course_status"] = "CERTIFICADO";
                     foreach ($excelLevels as $level) :
@@ -1005,11 +1009,11 @@ class StudentsExcelController extends Controller
                         $course['course_status'] = 'POR HABILITAR';
                         $course['course_status_original'] = $courseStatus; // deja "PENDIENTE"
                         array_push($student['courses'], $course); // lo agrega al array de cursos
-                        else :
+                    else :
                         // este curso inactivo aun es valido
                         $newInactiveCourses[] = $course;
                     endif;
-                else:
+                else :
                     $newInactiveCourses[] = $course;
                 endif;
             endfor;
