@@ -412,17 +412,12 @@ class StudentsExcelController extends Controller
                         })
                         ->get()->unique('item_id')->values();
 
-                        try {
                     $quizzes = WpLearnpressUserItem::where('user_id', $data[$i]['wp_user_id'])
                         ->where('ref_id', $course['wp_post_id'])
                         ->where('item_type', 'lp_quiz')
                         ->whereIn('item_id', $groupedQuizzes[$course['wp_post_id']]->pluck('ID')->toArray())
                         // ->where('status', 'completed')
                         ->get();
-                    } catch (\Throwable $th) {
-                        $quizzes = collect([]);
-                        continue;
-                    }
 
                     $data[$i]['courses'][$j]['lessons_count'] = $lessonsCount[$course['wp_post_id']];
                     $data[$i]['courses'][$j]['lessons_completed'] = $lessons_completed->count();

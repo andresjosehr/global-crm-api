@@ -54,6 +54,11 @@ class Order extends Model implements Auditable
         return $this->hasOne(Invoice::class);
     }
 
+    function freezings()
+    {
+        return $this->hasManyThrough(Freezing::class, OrderCourse::class);
+    }
+
 
     function price()
     {
