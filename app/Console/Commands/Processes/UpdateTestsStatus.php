@@ -81,7 +81,7 @@ class UpdateTestsStatus extends Command
             }
 
             // replace course in courses
-            $course_status_columns = [1 => 'AULA SAP', 2 => 'AULA SAP', 3 => 'AULA SAP', 4 => 'AULA SAP', 5 => 'AULA SAP', 10 => 'AULA SAP', 6 => 'EXCEL', 7 => 'PBI', 8 => 'PBI' ,9 => 'MS PROJECT'];
+            $course_status_columns = [1 => 'AULA SAP', 2 => 'AULA SAP', 3 => 'AULA SAP', 4 => 'AULA SAP', 5 => 'AULA SAP', 10 => 'AULA SAP', 11 => 'AULA SAP', 6 => 'EXCEL', 7 => 'PBI', 8 => 'PBI' ,9 => 'MS PROJECT'];
 
             $student['courses'] = array_map(function ($c) use ($student, $course_status_columns) {
 
