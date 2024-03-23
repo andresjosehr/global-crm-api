@@ -44,9 +44,9 @@ class UpdateCoursesStatus extends Command
 
 
 
-            $course_status_columns = [1 => 'AULA SAP', 2 => 'AULA SAP', 3 => 'AULA SAP', 4 => 'AULA SAP', 5 => 'AULA SAP', 10 => 'AULA SAP', 11 => 'AULA SAP', 6 => 'EXCEL', 7 => 'PBI', 8 => 'PBI' ,9 => 'MS PROJECT'];
+            $course_status_columns = [1 => 'AULA SAP', 2 => 'AULA SAP', 3 => 'AULA SAP', 4 => 'AULA SAP', 5 => 'AULA SAP', 10 => 'AULA SAP', 11 => 'AULA SAP', 6 => 'EXCEL', 7 => 'PBI', 8 => 'PBI', 9 => 'MS PROJECT'];
             $courses = array_filter($student['courses'], function ($course) use ($course_status_columns, $student) {
-                if($student[$course_status_columns[$course['course_id']]] == 'ABANDONÓ'){
+                if ($student[$course_status_columns[$course['course_id']]] == 'ABANDONÓ') {
                     return false;
                 }
                 return true;
@@ -203,7 +203,7 @@ class UpdateCoursesStatus extends Command
 
         $studentsFitered = array_map(function ($student) {
             $courses = array_map(function ($course) {
-                if(!isset($course['order_id'])){
+                if (!isset($course['order_id'])) {
                     return $course;
                 }
                 if ($course['course_status'] == 'POR HABILITAR' && $course['order_id'] && !$course['start'] && !$course['end']) {
@@ -212,17 +212,16 @@ class UpdateCoursesStatus extends Command
                     $now = Carbon::now()->setTimezone('America/Lima');
                     $order_date = Carbon::parse($order_date)->setTimezone('America/Lima');
                     $diff = $now->diffInMonths($order_date);
-                    if($diff >= 2){
+                    if ($diff >= 2) {
                         $course['order_date'] = $order_date;
                         $course['diff'] = $diff;
 
-                        if($course['lesson_progress']=='EN PROGRESO'){
+                        if ($course['lesson_progress'] == 'EN PROGRESO') {
                             $course['course_status'] = 'NO CULMINÓ';
                         }
-                        if($course['lesson_progress']=='COMPLETADO'){
+                        if ($course['lesson_progress'] == 'COMPLETADO') {
                             $course['course_status'] = 'COMPLETA';
                         }
-
                     }
                 }
                 return $course;
@@ -234,19 +233,19 @@ class UpdateCoursesStatus extends Command
 
 
 
-        $studentsFitered = array_map(function ($student){
-            $student['courses'] = array_map(function ($course){
-                if($course['course_id'] == 8){
-                    if($course['course_status'] == 'POR HABILITAR'){
+        $studentsFitered = array_map(function ($student) {
+            $student['courses'] = array_map(function ($course) {
+                if ($course['course_id'] == 8) {
+                    if ($course['course_status'] == 'POR HABILITAR') {
                         $course['course_status'] = 'POR HABILITAR AVANZADO';
                     }
-                    if($course['course_status'] == 'CURSANDO'){
+                    if ($course['course_status'] == 'CURSANDO') {
                         $course['course_status'] = 'CURSANDO AVANZADO';
                     }
-                    if($course['course_status'] == 'CURSANDO SIN CREDLY'){
+                    if ($course['course_status'] == 'CURSANDO SIN CREDLY') {
                         $course['course_status'] = 'CURSANDO AVANZADO SIN CREDLY';
                     }
-                    if($course['course_status'] == 'CURSANDO'){
+                    if ($course['course_status'] == 'CURSANDO') {
                         $course['course_status'] = 'CURSANDO AVANZADO';
                     }
                 }
@@ -267,31 +266,31 @@ class UpdateCoursesStatus extends Command
 
 
         $coursesDB = Course::select('name', 'short_name')
-        ->where('type', 'paid')
-        ->get()
-        ->mapWithKeys(function ($item) {
-            $item->short_name = str_replace('SAP ', '', $item->short_name);
-            return [$item->name => $item->short_name];
-        })
-        ->toArray();
-        $studentsFitered = array_map(function ($student) use ($coursesDB){
-            $coursesSapActive = array_filter($student['courses'], function ($course){
+            ->where('type', 'paid')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                $item->short_name = str_replace('SAP ', '', $item->short_name);
+                return [$item->name => $item->short_name];
+            })
+            ->toArray();
+        $studentsFitered = array_map(function ($student) use ($coursesDB) {
+            $coursesSapActive = array_filter($student['courses'], function ($course) {
                 return $course['type'] == 'paid';
             });
-            if(count($coursesSapActive) <= 1){
+            if (count($coursesSapActive) <= 1) {
                 return $student;
             }
 
             $courseStatus = ['CURSANDO' => [], 'COMPLETA' => [], 'NO CULMINÓ' => [], 'ABANDONÓ' => [], 'NO APLICA' => []];
-            $coursesSapActive = array_map(function ($course) use (&$courseStatus, $coursesDB){
+            $coursesSapActive = array_map(function ($course) use (&$courseStatus, $coursesDB) {
                 $courseStatus[$course['course_status_original']][] = $coursesDB[$course['name']];
                 return $course;
             }, $coursesSapActive);
 
             // Generate string in this format: "CURSANDO XX XX / COMPLETA XX XX". If there are no courses in a status, don't show it
             $courseStatusString = '';
-            foreach($courseStatus as $key => $value){
-                if(count($value) > 0){
+            foreach ($courseStatus as $key => $value) {
+                if (count($value) > 0) {
                     $courseStatusString .= $key . ' ' . implode(' ', $value) . ' / ';
                 }
             }
@@ -299,8 +298,8 @@ class UpdateCoursesStatus extends Command
             // Remove last slash
             $courseStatusString = substr($courseStatusString, 0, -3);
 
-            $student['courses'] = array_map(function ($course) use ($courseStatusString){
-                if($course['type'] != 'paid'){
+            $student['courses'] = array_map(function ($course) use ($courseStatusString) {
+                if ($course['type'] != 'paid') {
                     return $course;
                 }
 
@@ -336,14 +335,20 @@ class UpdateCoursesStatus extends Command
                     $column = 'L';
                 }
 
-                $data[] = [
-                    'sheet_id'          => $student['sheet_id'],
-                    'course_row_number' => $student['course_row_number'],
-                    'column'            => $column,
-                    'email'             => $student['CORREO'],
-                    'tab_id'            => $student['course_tab_id'],
-                    'value'             => $course['course_status'],
-                ];
+                try {
+                    //code...
+
+                    $data[] = [
+                        'sheet_id'          => $student['sheet_id'],
+                        'course_row_number' => $student['course_row_number'],
+                        'column'            => $column,
+                        'email'             => $student['CORREO'],
+                        'tab_id'            => $student['course_tab_id'],
+                        'value'             => $course['course_status'],
+                    ];
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
             }
         }
 
