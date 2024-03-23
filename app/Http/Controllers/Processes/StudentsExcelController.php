@@ -421,6 +421,7 @@ class StudentsExcelController extends Controller
                         ->get();
                     } catch (\Throwable $th) {
                         $quizzes = collect([]);
+                        continue;
                     }
 
                     $data[$i]['courses'][$j]['lessons_count'] = $lessonsCount[$course['wp_post_id']];
