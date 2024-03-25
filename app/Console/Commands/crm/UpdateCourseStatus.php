@@ -41,7 +41,7 @@ class UpdateCourseStatus extends Command
                 return;
             }
 
-            if ($orderCourse->classroom_status == 'Abandonó') {
+            if ($orderCourse->classroom_status == 'Abandonó' || $orderCourse->classroom_status == 'No se habilitó' || $orderCourse->classroom_status == 'Congelado') {
                 return;
             }
 

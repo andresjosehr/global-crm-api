@@ -378,7 +378,8 @@ class ImportStudentsServiceSEG
                     }
 
 
-                    if ($sapNumber == 1 || $s == 'Cursando' || $s == 'Congelado') {
+                    // || $s == 'Congelado'
+                    if ($sapNumber == 1 || $s == 'Cursando') {
                         $start = $student['INICIO'];
                         $end = $student['FIN'];
 
