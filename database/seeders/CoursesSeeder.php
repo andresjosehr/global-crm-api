@@ -85,7 +85,7 @@ class CoursesSeeder extends Seeder
                 'name'       => 'SAP QM Gestion de Calidad',
                 'short_name' => 'SAP QM',
                 'type'       => 'paid',
-                'wp_post_id' => 0
+                'wp_post_id' => 45661
             ],
 
         ]);
