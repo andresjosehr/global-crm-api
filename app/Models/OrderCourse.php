@@ -124,43 +124,46 @@ class OrderCourse extends Model implements Auditable
             ->get();
 
 
-        if ($this->certificationTests[0]->orderCourse->course->id != 6) {
-            foreach ($wp_certification_tests as $key => $wp_certification_test) {
+        if ($this->certificationTests) {
+            if ($this->certificationTests[0]->orderCourse->course->id != 6) {
+                foreach ($wp_certification_tests as $key => $wp_certification_test) {
 
 
-                if ($this->certificationTests[$key]->description === 'Ponderación') {
-                    continue;
-                }
-                $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
-                $this->certificationTests[$key]->start_time = $wp_certification_test->start_time;
-                $this->certificationTests[$key]->wp_certification = $wp_certification_test;
-            }
-        }
-
-
-        if ($this->certificationTests[0]->orderCourse->course->id == 6) {
-            $i = 0;
-
-            foreach ($wp_certification_tests as $key => $wp_certification_test) {
-
-                $this->certificationTests[$i]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
-                $this->certificationTests[$i]->start_time = $wp_certification_test->start_time;
-                $this->certificationTests[$i]->wp_certification = $wp_certification_test;
-
-                if ($wp_certification_test->graduation == 'passed') {
-                    if ($i < 4) {
-                        $i = 4;
+                    if ($this->certificationTests[$key]->description === 'Ponderación') {
                         continue;
                     }
-
-                    if ($i < 7) {
-                        $i = 7;
-                    }
+                    $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
+                    $this->certificationTests[$key]->start_time = $wp_certification_test->start_time;
+                    $this->certificationTests[$key]->wp_certification = $wp_certification_test;
                 }
+            }
 
-                $i++;
+
+            if ($this->certificationTests[0]->orderCourse->course->id == 6) {
+                $i = 0;
+
+                foreach ($wp_certification_tests as $key => $wp_certification_test) {
+
+                    $this->certificationTests[$i]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
+                    $this->certificationTests[$i]->start_time = $wp_certification_test->start_time;
+                    $this->certificationTests[$i]->wp_certification = $wp_certification_test;
+
+                    if ($wp_certification_test->graduation == 'passed') {
+                        if ($i < 4) {
+                            $i = 4;
+                            continue;
+                        }
+
+                        if ($i < 7) {
+                            $i = 7;
+                        }
+                    }
+
+                    $i++;
+                }
             }
         }
+
 
         return $this;
     }
