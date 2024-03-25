@@ -8,6 +8,7 @@ use App\Http\Controllers\Traking\FreezingsController;
 use App\Models\Due;
 use App\Models\Extension;
 use App\Models\Freezing;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DuesController extends Controller
@@ -153,20 +154,29 @@ class DuesController extends Controller
             $due->payment_verified_at = now();
             $due->payment_verified_by = $user->id;
 
-            if ($due->payment_reason == 'Extension') {
-                $extension = Extension::where('due_id', $due->id)->first();
-                ExtensionsController::sendNotificacion($extension->id);
-            }
 
-            if ($due->payment_reason == 'Congelación') {
-                $freezing = Freezing::where('due_id', $due->id)->whereSet(false)->first();
+            // if payment date is greater than 12/03/2024
+            $dueDate = Carbon::parse($due->date);
+            $limitDate = Carbon::parse('2024-03-12');
 
-                if ($freezing) {
-                    if ($freezing->courses == 'all') {
-                        FreezingsController::setFreezingMany($freezing);
-                    }
-                    if ($freezing->courses == 'single') {
-                        FreezingsController::setFreezingSingle($freezing);
+            if ($dueDate->gt($limitDate)) {
+
+
+                if ($due->payment_reason == 'Extension') {
+                    $extension = Extension::where('due_id', $due->id)->first();
+                    ExtensionsController::sendNotificacion($extension->id);
+                }
+
+                if ($due->payment_reason == 'Congelación') {
+                    $freezing = Freezing::where('due_id', $due->id)->whereSet(false)->first();
+
+                    if ($freezing) {
+                        if ($freezing->courses == 'all') {
+                            FreezingsController::setFreezingMany($freezing);
+                        }
+                        if ($freezing->courses == 'single') {
+                            FreezingsController::setFreezingSingle($freezing);
+                        }
                     }
                 }
             }
