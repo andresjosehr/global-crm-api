@@ -129,56 +129,29 @@ class StaffAvailabilitySlotsSeeder extends Seeder
                 'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
                 'day' => 'monday',
                 'start_time' => '09:00:00',
-                'end_time' => '13:00:00',
+                'end_time' => '12:30:00',
             ],
-            [
-                'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
-                'day' => 'monday',
-                'start_time' => '14:30:00',
-                'end_time' => '21:00:00',
-            ],
-
 
 
             [
                 'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
                 'day' => 'tuesday',
                 'start_time' => '09:00:00',
-                'end_time' => '13:00:00',
+                'end_time' => '12:30:00',
             ],
-            [
-                'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
-                'day' => 'tuesday',
-                'start_time' => '14:30:00',
-                'end_time' => '21:00:00',
-            ],
-
 
             [
                 'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
                 'day' => 'wednesday',
                 'start_time' => '09:00:00',
-                'end_time' => '13:00:00',
+                'end_time' => '12:30:00',
             ],
-            [
-                'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
-                'day' => 'wednesday',
-                'start_time' => '14:30:00',
-                'end_time' => '21:00:00',
-            ],
-
 
             [
                 'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
                 'day' => 'thursday',
                 'start_time' => '09:00:00',
-                'end_time' => '13:00:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
-                'day' => 'thursday',
-                'start_time' => '14:30:00',
-                'end_time' => '21:00:00',
+                'end_time' => '12:30:00',
             ],
 
 
@@ -187,19 +160,15 @@ class StaffAvailabilitySlotsSeeder extends Seeder
                 'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
                 'day' => 'friday',
                 'start_time' => '09:00:00',
-                'end_time' => '13:00:00',
-            ],
-            [
-                'user_id' => DB::table('users')->where('email', 'hllazay@gmail.com')->first()->id,
-                'day' => 'friday',
-                'start_time' => '14:30:00',
-                'end_time' => '21:00:00',
+                'end_time' => '12:30:00',
             ],
 
 
 
         ]);
     }
+
+
 
     public function user($email)
     {
