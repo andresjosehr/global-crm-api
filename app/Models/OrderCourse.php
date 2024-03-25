@@ -171,6 +171,10 @@ class OrderCourse extends Model implements Auditable
     public function attachLessonProgress()
     {
 
+        if($this->course->wp_post_id== 45661){
+            return $this;
+        }
+
         $lessons = DB::connection('wordpress')->table('posts as lessons')
             ->select('lessons.*', 'sections.section_course_id', 'sections.section_name')
             ->join('learnpress_section_items as section_items', 'section_items.item_id', '=', 'lessons.ID')
