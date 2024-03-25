@@ -124,7 +124,7 @@ class OrderCourse extends Model implements Auditable
             ->get();
 
 
-        if ($this->certificationTests) {
+        if (count($this->certificationTests) > 0) {
             if ($this->certificationTests[0]->orderCourse->course->id != 6) {
                 foreach ($wp_certification_tests as $key => $wp_certification_test) {
 
