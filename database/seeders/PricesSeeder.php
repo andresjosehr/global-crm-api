@@ -1245,7 +1245,7 @@ class PricesSeeder extends Seeder
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 110,
+                'amount' => 100,
                 'months' => 7,
                 'mode' => ''
             ],
@@ -1253,7 +1253,7 @@ class PricesSeeder extends Seeder
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 120,
+                'amount' => 110,
                 'months' => 8,
                 'mode' => ''
             ],
@@ -1262,7 +1262,7 @@ class PricesSeeder extends Seeder
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 130,
+                'amount' => 120,
                 'months' => 9,
                 'mode' => ''
             ],
@@ -1270,21 +1270,21 @@ class PricesSeeder extends Seeder
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 140,
+                'amount' => 130,
                 'months' => 10,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 150,
+                'amount' => 140,
                 'months' => 11,
                 'mode' => ''
             ],
             [
                 'description' => 'Extension Curso SAP',
                 'currency_id' => DB::table('currencies')->where('iso_code', 'USD')->first()->id,
-                'amount' => 160,
+                'amount' => 145,
                 'months' => 12,
                 'mode' => ''
             ],
