@@ -17,6 +17,7 @@ use App\Http\Controllers\Traking\ExtensionsController;
 use App\Http\Controllers\Traking\FreezingsController;
 use App\Http\Controllers\Traking\SapInstalationsController;
 use App\Http\Controllers\Traking\SapTriesController;
+use App\Http\Controllers\TrakingController\LicenseTransferController;
 use App\Http\Controllers\UsersActivitiesControllers;
 use App\Http\Controllers\UsersController;
 use App\Http\Services\ImportStudentsService;
@@ -105,6 +106,9 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
 
     Route::resource('orders', OrdersController::class);
     Route::resource('order-courses', OrdersCoursesController::class);
+
+
+
     Route::get('student-orders/get-options', 'App\Http\Controllers\OrdersController@getOptions');
 
     Route::resource('dues', 'App\Http\Controllers\DuesController');
@@ -201,6 +205,8 @@ Route::group(['middleware' => ['api_access']], function () use ($basePathControl
             Route::put('update/{id}', 'App\Http\Controllers\Traking\FreezingsController@update');
             Route::get('unfreeze-course/{id}', 'App\Http\Controllers\Traking\FreezingsController@unfreezeCourse');
         });
+
+        Route::post('save-licence-transfer', [LicenseTransferController::class, 'saveLicenceTransfer']);
     });
     /* Add new routes here */
     Route::get('get-roles', [OptionsController::class, 'getRoles']);
@@ -230,7 +236,7 @@ Route::get('get-state-by-country/{country_id}', 'App\Http\Controllers\CountriesC
 Route::get('get-city-by-state/{state_id}', 'App\Http\Controllers\CountriesController@getCityByState');
 Route::get('get-city/{id}', 'App\Http\Controllers\CountriesController@getCity');
 Route::get('get-state/{id}', 'App\Http\Controllers\CountriesController@getState');
-Route::get('test', 'App\Http\Controllers\TestController@index3');
+Route::get('test', 'App\Http\Controllers\TestController@index');
 Route::get('test2', 'App\Http\Controllers\TestController@excludeInvalidDays');
 
 

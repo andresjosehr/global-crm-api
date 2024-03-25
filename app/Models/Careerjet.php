@@ -31,6 +31,7 @@ class Careerjet extends Model
         'salary_min',
         'salary_type',
         'created_at',
+        'category',
         'updated_at'
     ];
 }

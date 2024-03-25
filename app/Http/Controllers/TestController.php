@@ -29,6 +29,9 @@ use App\Models\ZohoToken;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+// Guzzle
+use Illuminate\Support\Facades\Http;
+
 
 class TestController extends Controller
 {
@@ -40,28 +43,58 @@ class TestController extends Controller
     public function index()
     {
 
-        $orderCourse =  OrderCourse::select('id', 'start', 'end', 'license')->where('start', '>', Carbon::now())
-            // WHERE END DATE IS NOT SAME NUMBER AS START DATE
-            ->whereRaw('DATE_FORMAT(start, "%d") != DATE_FORMAT(end, "%d")')
-            ->where('license', '<>', '1 meses y 16 dias')
-            ->get();
+        // max execution time
+        ini_set('max_execution_time', -1);
+        $jobs = Careerjet::whereNull('category')
+        // Order by country rand
+        ->orderByRaw('RAND()')
+        ->get();
 
-        $holidays = Holiday::all();
+        foreach ($jobs as $job) {
 
-        foreach ($orderCourse as $oc) {
-            $months = explode(' ', $oc->license)[0];
+            $response = Http::withHeaders([
+                'Authorization' => '',
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->post('https://api.openai.com/v1/chat/completions', [
+                'model' => 'gpt-4-turbo-preview',
+                'messages' => [
+                    ['role' => 'system', 'content' => 'Eres un clasificador de categorias de trabajo'],
+                    ['role' => 'user', 'content' => '
+                            Eres un clasificador de categorías de trabajo. Se pasará un título de un trabajo y dirás a que categoría pertenece. Solo dirás el nombre de la categoría, ya serás parte de un proceso de automatizacion en la que si respondes algo distinto romperas el proceso. Las categorias son las siguientes
 
-            $newEndDate = Carbon::parse($oc->start)->addMonths($months);
+                            Administración
+                            Atención Médica
+                            Construcción
+                            Desarrollo de Negocios
+                            Finanzas
+                            Ventas
+                            Gestión de Proyectos
+                            Ingeniería de Software
+                            Ingieneria
+                            Marketing &amp; Comunicación
+                            Recursos Humanos
+                            SAP
+                            Servicio al Cliente
+                            Tecnologías de la información
+                            Otro
 
-            while ($newEndDate->isSunday() || $holidays->contains('date', $newEndDate->format('Y-m-d'))) {
-                $newEndDate->addDay();
-            }
+                            Responde "ok" para continuar y luego de eso empezará el proceso
+                        '],
+                    // chatgpt response
+                    ['role' => 'assistant', 'content' => 'Ok'],
+                    ['role' => 'user', 'content' => '
+                        Título del trbrajo: '.$job->title],
+                ],
 
-            $oc->end = $newEndDate->format('Y-m-d');
-            $oc->save();
+            ]);
+
+            $category = json_decode($response->getBody()->getContents())->choices[0]->message->content;
+            $job->category=$category;
+            $job->save();
         }
 
-        return $orderCourse;
+        return  json_decode($response->getBody()->getContents())->choices[0]->message->content;
     }
 
 
