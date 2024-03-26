@@ -41,13 +41,19 @@ class UpdateCourseStatus extends Command
                 return;
             }
 
-            if ($orderCourse->classroom_status == 'Abandonó' || $orderCourse->classroom_status == 'No se habilitó' || $orderCourse->classroom_status == 'Congelado') {
+            if ($orderCourse->classroom_status == 'Abandonó' || $orderCourse->classroom_status == 'No se habilitó') {
                 return;
             }
 
             if (Carbon::now()->lt(Carbon::parse($orderCourse->start))) {
                 $orderCourse->classroom_status = 'Por habilitar';
                 $orderCourse->save();
+                return;
+            }
+
+
+            // if start date is after now and course status is congelado
+            if(Carbon::now()->lt(Carbon::parse($orderCourse->start)) && $orderCourse->classroom_status == 'Congelado') {
                 return;
             }
 
@@ -72,6 +78,13 @@ class UpdateCourseStatus extends Command
 
             if (Carbon::now()->gt(Carbon::parse($orderCourse->end))) {
                 $orderCourse->classroom_status = 'Finalizado';
+                $orderCourse->save();
+                return;
+            }
+
+
+            if(Carbon::now()->between(Carbon::parse($orderCourse->start), Carbon::parse($orderCourse->end))){
+                $orderCourse->classroom_status = 'Cursando';
                 $orderCourse->save();
                 return;
             }
