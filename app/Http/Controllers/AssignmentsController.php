@@ -124,8 +124,49 @@ class AssignmentsController extends Controller
         $estudiantesRetrasados = Student::whereHas('orders.dues', function ($query) use ($hoy) {
             $query->where('date', '<', $hoy->subDays(5))
                 //->whereNull('payment_receipt')
-                ->where('paid', 0);
+                ->where('paid', '<>', 1);
         })->with('user')->get();
+
+        $hoy = Carbon::today();
+        $estudiantesConPocoRetraso = Student::whereHas('orders.dues', function ($query) use ($hoy) {
+            $query->where('date', '>=', $hoy->subDays(5))
+                ->where('paid', '<>', 1);
+        })
+            ->with('user')
+            ->get();
+
+
+        $hoy = Carbon::today();
+        $manana = Carbon::tomorrow();
+        $estudiantesPagoHoyIniciaManana = Student::whereHas('orders', function ($query) use ($hoy, $manana) {
+            $query->whereHas('dues', function ($subQuery) use ($hoy) {
+                $subQuery->where('date', $hoy);
+            })->whereHas('orderCourses', function ($subQuery) use ($manana) {
+                $subQuery->where('start', $manana);
+            });
+        })->get();
+
+
+        $estudiantesPagoManana = Student::whereHas('orders.dues', function ($query) use ($manana) {
+            $query->where('date', $manana)
+                  ->where('paid', false);
+        })->get();
+
+
+        $enTresDias = Carbon::today()->addDays(3);
+        $estudiantesInicianTresDias = Student::whereHas('orders.orderCourses', function ($query) use ($enTresDias) {
+            $query->where('start', $enTresDias);
+        })->get();
+
+
+        $lunes = Carbon::parse('next monday');
+        $estudiantesPagaHoyIniciaLunes = Student::whereHas('orders', function ($query) use ($hoy, $lunes) {
+            $query->whereHas('dues', function ($subQuery) use ($hoy) {
+                $subQuery->where('date', $hoy);
+            })->whereHas('orderCourses', function ($subQuery) use ($lunes) {
+                $subQuery->where('start', $lunes);
+            });
+        })->get();
 
 
         // $freezings = Freezing
@@ -139,7 +180,12 @@ class AssignmentsController extends Controller
             'assignments'                    => $assignments,
             'sapInstalationWithRestrictions' => $sapInstalationWithRestrictions,
             'freezings'                      => $freezings,
-            'estudiantesRetrasados'          => $estudiantesRetrasados
+            'estudiantesRetrasados'          => $estudiantesRetrasados,
+            'estudiantesConPocoRetraso'      => $estudiantesConPocoRetraso,
+            'estudiantesPagoHoyIniciaManana' => $estudiantesPagoHoyIniciaManana,
+            'estudiantesPagoManana'          => $estudiantesPagoManana,
+            'estudiantesInicianTresDias'     => $estudiantesInicianTresDias,
+            'estudiantesPagaHoyIniciaLunes'  => $estudiantesPagaHoyIniciaLunes
         ];
 
 
