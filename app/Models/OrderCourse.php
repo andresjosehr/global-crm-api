@@ -106,62 +106,68 @@ class OrderCourse extends Model implements Auditable
 
     public function attachCertificationTestCourse()
     {
-        $user = WpUser::where('user_email', $this->order->student->email)->first();
+        try {
+            //code...
 
-        if (!$user) {
-            return $this;
-        }
+            $user = WpUser::where('user_email', $this->order->student->email)->first();
 
-        Log::info([$user->ID, $this->course->wp_post_id]);
-
-        $wp_certification_tests = WpLearnpressUserItem::whereHas('item', function ($q) {
-            $q->where('post_title', 'LIKE', '%Certificación%');
-        })
-            ->where('user_id', $user->ID)
-            ->where('ref_id', $this->course->wp_post_id)
-            ->where('item_type', 'lp_quiz')
-            ->orderBy('start_time', 'ASC')
-            ->get();
-
-
-        if (count($this->certificationTests) > 0) {
-            if ($this->certificationTests[0]->orderCourse->course->id != 6) {
-                foreach ($wp_certification_tests as $key => $wp_certification_test) {
-
-
-                    if ($this->certificationTests[$key]->description === 'Ponderación') {
-                        continue;
-                    }
-                    $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
-                    $this->certificationTests[$key]->start_time = $wp_certification_test->start_time;
-                    $this->certificationTests[$key]->wp_certification = $wp_certification_test;
-                }
+            if (!$user) {
+                return $this;
             }
 
+            Log::info([$user->ID, $this->course->wp_post_id]);
 
-            if ($this->certificationTests[0]->orderCourse->course->id == 6) {
-                $i = 0;
+            $wp_certification_tests = WpLearnpressUserItem::whereHas('item', function ($q) {
+                $q->where('post_title', 'LIKE', '%Certificación%');
+            })
+                ->where('user_id', $user->ID)
+                ->where('ref_id', $this->course->wp_post_id)
+                ->where('item_type', 'lp_quiz')
+                ->orderBy('start_time', 'ASC')
+                ->get();
 
-                foreach ($wp_certification_tests as $key => $wp_certification_test) {
 
-                    $this->certificationTests[$i]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
-                    $this->certificationTests[$i]->start_time = $wp_certification_test->start_time;
-                    $this->certificationTests[$i]->wp_certification = $wp_certification_test;
+            if (count($this->certificationTests) > 0) {
+                if ($this->certificationTests[0]->orderCourse->course->id != 6) {
+                    foreach ($wp_certification_tests as $key => $wp_certification_test) {
 
-                    if ($wp_certification_test->graduation == 'passed') {
-                        if ($i < 4) {
-                            $i = 4;
+
+                        if ($this->certificationTests[$key]->description === 'Ponderación') {
                             continue;
                         }
-
-                        if ($i < 7) {
-                            $i = 7;
-                        }
+                        $this->certificationTests[$key]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
+                        $this->certificationTests[$key]->start_time = $wp_certification_test->start_time;
+                        $this->certificationTests[$key]->wp_certification = $wp_certification_test;
                     }
+                }
 
-                    $i++;
+
+                if ($this->certificationTests[0]->orderCourse->course->id == 6) {
+                    $i = 0;
+
+                    foreach ($wp_certification_tests as $key => $wp_certification_test) {
+
+                        $this->certificationTests[$i]->status = $wp_certification_test->graduation == 'passed' ? 'Aprobado' : 'Reprobado';
+                        $this->certificationTests[$i]->start_time = $wp_certification_test->start_time;
+                        $this->certificationTests[$i]->wp_certification = $wp_certification_test;
+
+                        if ($wp_certification_test->graduation == 'passed') {
+                            if ($i < 4) {
+                                $i = 4;
+                                continue;
+                            }
+
+                            if ($i < 7) {
+                                $i = 7;
+                            }
+                        }
+
+                        $i++;
+                    }
                 }
             }
+        } catch (\Throwable $th) {
+            //throw $th;
         }
 
 
@@ -171,7 +177,7 @@ class OrderCourse extends Model implements Auditable
     public function attachLessonProgress()
     {
 
-        if($this->course->wp_post_id== 45661){
+        if ($this->course->wp_post_id == 45661) {
             return $this;
         }
 
