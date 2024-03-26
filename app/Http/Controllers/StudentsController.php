@@ -316,7 +316,7 @@ class StudentsController extends Controller
             'student' => $student
         ];
 
-        // GeneralJob::dispatch(StudentsController::class, 'dipatchNotification', $params)->onQueue('default');
+        GeneralJob::dispatch(StudentsController::class, 'dipatchNotification', $params)->onQueue('default');
 
 
         return ApiResponseController::response('Consulta exitosa', 200, $order);
