@@ -173,6 +173,9 @@ class OrdersController extends Controller
             return $item;
         }, $request->dues);
 
+        // Set first due as paid = true
+        $dues[0]['paid'] = true;
+
         // Dues
         $order->dues()->createMany($dues);
 

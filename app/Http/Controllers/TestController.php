@@ -428,6 +428,31 @@ class TestController extends Controller
     public function index3()
     {
 
+        $orders = Order::select('id')->get();
+
+        $dues = collect([]);
+        foreach($orders as $order){
+            if($due = Due::where('order_id', $order->id)->orderBy('id', 'asc')->first()){
+                $dues->push($due);
+            }
+        }
+
+        // Where paid = 0
+        $dues = $dues->filter(function($due){
+            return $due->paid <> 1;
+        });
+
+        $dues = $dues->map(function($due){
+        // update to paid
+            $due->paid = 1;
+            $due->save();
+            return $due;
+        });
+
+        return $dues;
+
+
+
         // max execution time 10 seconds
         ini_set('max_execution_time', -1);
 

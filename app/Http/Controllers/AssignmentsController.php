@@ -119,6 +119,15 @@ class AssignmentsController extends Controller
         $freezings = $freezings->sortBy('return_date')->values();
 
 
+        // Cuando el alumno tiene más de 5 días de retraso en un cuota:
+        $hoy = Carbon::today();
+        $estudiantesRetrasados = Student::whereHas('orders.dues', function ($query) use ($hoy) {
+            $query->where('date', '<', $hoy->subDays(5))
+                //->whereNull('payment_receipt')
+                ->where('paid', 0);
+        })->with('user')->get();
+
+
         // $freezings = Freezing
 
 
@@ -129,7 +138,8 @@ class AssignmentsController extends Controller
             'sapInstalationNotSchedule'      => $sapInstalationNotSchedule,
             'assignments'                    => $assignments,
             'sapInstalationWithRestrictions' => $sapInstalationWithRestrictions,
-            'freezings'                      => $freezings
+            'freezings'                      => $freezings,
+            'estudiantesRetrasados'          => $estudiantesRetrasados
         ];
 
 
