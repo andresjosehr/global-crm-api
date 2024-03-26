@@ -453,11 +453,14 @@ class OrdersController extends Controller
         if (!$orderCourse = OrderCourse::find($id)) {
             return ApiResponseController::response('No se encontro el registro', 204);
         }
-        $orderCourse->start                = $request->start;
-        $orderCourse->end                  = $request->end;
-        $orderCourse->classroom_status     = $request->classroom_status;
-        $orderCourse->license              = $request->license;
-        $orderCourse->certification_status = $request->certification_status;
+        $orderCourse->start                        = $request->start;
+        $orderCourse->end                          = $request->end;
+        $orderCourse->classroom_status             = $request->classroom_status;
+        $orderCourse->license                      = $request->license;
+        $orderCourse->certification_status         = $request->certification_status;
+        $orderCourse->certification_status_excel_1 = $request->certification_status_excel_1;
+        $orderCourse->certification_status_excel_2 = $request->certification_status_excel_2;
+        $orderCourse->certification_status_excel_3 = $request->certification_status_excel_3;
         $orderCourse->save();
 
         return ApiResponseController::response('Datos actualizados exitosamente', 200, $orderCourse);
