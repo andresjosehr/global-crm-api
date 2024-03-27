@@ -171,11 +171,21 @@ class TestController extends Controller
         // Filter students that does not have order_course_id
         $students = $students->filter(function ($student) {
             return $student['courses']->some(function ($course) {
-                return $course['order_course_id'] == null;
+                return $course['order_course_id'] != null;
+            });
+        })->values();
+
+        $students->each(function ($student) {
+            $student['courses']->each(function ($course) use ($student) {
+                foreach ($course['cols'] as $col) {
+                    $orderCourse = OrderCourse::where('id', $course['order_course_id'])->first();
+                    $orderCourse->$col = $student['certification'];
+                    $orderCourse->save();
+                }
             });
         });
 
-        return $students;
+        return ['Exito' => $students];
     }
 
 
