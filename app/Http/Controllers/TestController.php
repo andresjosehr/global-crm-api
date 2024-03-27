@@ -83,7 +83,9 @@ class TestController extends Controller
 
         // Get all students that does not exist in the database
         $students = $students->filter(function ($student) {
-            return Student::where('name', 'LIKE', '%' . trim($student['name']) . '%')->exists();
+            return Student::
+                // where name lower db
+                whereRaw('LOWER(name) = ?', [trim(strtolower($student['name']))])->exists();
         })->values();
 
         // return $students->values()->pluck('name')->unique()->values();
