@@ -43,27 +43,149 @@ class TestController extends Controller
     public function index()
     {
 
-        // Enable query log
-        DB:
-        $hoy = Carbon::today();
-        $estudiantesConPocoRetraso = Student::whereHas('orders.dues', function ($query) use ($hoy) {
-            $query->where('date', '>=', $hoy->subDays(5))
-                ->where(function ($query) {
-                    $query->where('paid', 0)
-                        ->orWhereNull('paid');
-                });
-        })
-            ->whereHas('user', function ($query) {
-                $query->where('role_id', 3);
-            })
-            ->with('user')
-            ->get()->map(function ($student) {
-                Log::info($student->orders->last()->dues->last());
-                $student->message = MessagesController::estudiantesConPocoRetraso($student->name, $student->orders->last()->dues->last(), $student->orders->last());
-                return $student;
-            })->values();
+        // max execution time
+        ini_set('max_execution_time', -1);
+        // Get certificados.csv from storage/app
+        $students =  file_get_contents(storage_path('app/certificados.csv'));
 
-        return $estudiantesConPocoRetraso;
+        // Convert to array
+        $students = explode("\n", $students);
+        $students = array_map(function ($student) {
+            return explode(",", $student);
+        }, $students);
+
+        // Attach headers to each row
+        $headers = collect($students[0]);
+        $students = collect($students)->map(function ($row) use ($headers) {
+            return collect($row)->mapWithKeys(function ($item, $key) use ($headers) {
+                // remove \r
+                $item = str_replace("\r", "", $item);
+                $headers[$key] = str_replace("\r", "", $headers[$key]);
+
+                if ($headers[$key] == 'courses') {
+                    $courses = explode('+', $item);
+                    $courses = array_map(function ($course) {
+                        return trim($course);
+                    }, $courses);
+                    return [$headers[$key] => $courses];
+                }
+
+                return [$headers[$key] => $item];
+            });
+        });
+
+        // Remove headers
+        $students = $students->slice(1)->values();
+
+        $students = $students->filter(function ($student) {
+            return isset($student['courses']);
+        });
+
+        // Get all students that does not exist in the database
+        $students = $students->filter(function ($student) {
+            return Student::where('name', 'LIKE', '%' . $student['name'] . '%')->exists();
+        })->values();
+
+        // return $students->values()->pluck('name')->unique()->values();
+
+        $coursesDB = Course::all()->pluck('id', 'short_name')->toArray();
+        $coursesDB['SAP INTEGRAL'] = 5;
+        $coursesDB['POWER BI (BASICO)'] = 7;
+        $coursesDB['POWER BI (AVANZADO)'] = 8;
+        $coursesDB['POWER BI'] = 7;
+        $coursesDB['MS PROJECT (BASICO)'] = 9;
+
+        $students = $students->map(function ($student) use ($coursesDB) {
+
+            $student['courses'] = collect($student['courses'])->map(function ($course) use ($student, $coursesDB) {
+
+                // If includes 'Excel Empresarial'
+                if (strpos($course, 'EXCEL EMPRESARIAL') !== false || strpos($course, 'EXCEL') !== false) {
+
+                    // if contains '3 niveles'
+                    if (strpos($course, '3 NIVELES') !== false) {
+                        $course = [
+                            'name' => 'EXCEL',
+                            'course_id' => $coursesDB['EXCEL'],
+                            'cols' => [
+                                'certification_status_excel_1',
+                                'certification_status_excel_2',
+                                'certification_status_excel_3'
+                            ]
+                        ];
+
+                        return $course;
+                    }
+                    // get what is between parenthesis
+                    preg_match_all("/\((.*?)\)/", $course, $matches);
+                    $niveles = explode(' - ', $matches[1][0]);
+                    $course2 = [
+                        'name' => 'EXCEL',
+                        'course_id' => $coursesDB['EXCEL'],
+                        'cols' => []
+                    ];
+                    $colKeys = [
+                        'BASICO' => 'certification_status_excel_1',
+                        'INTERMEDIO' => 'certification_status_excel_2',
+                        'AVANZADO' => 'certification_status_excel_3'
+                    ];
+                    foreach ($niveles as $nivel) {
+                        $course = str_replace($matches[0][0], '', $course);
+                        $course2['cols'][] = $colKeys[$nivel];
+                    }
+
+                    return $course2;
+                }
+
+                $course = [
+                    'name' => $course,
+                    'course_id' => $coursesDB[$course],
+                    'cols' => ['certification_status']
+                ];
+
+                return $course;
+            });
+            return $student;
+        });
+
+        $students = $students->map(function ($student) use ($coursesDB) {
+
+            $student['courses'] = $student['courses']->map(function ($course) use ($student) {
+                if (!isset($course['course_id'])) {
+                    Log::info($student);
+                }
+                $orderCourse = OrderCourse::where('course_id', $course['course_id'])->whereHas('order.student', function ($query) use ($student) {
+                    $query->where('name', 'LIKE', '%' . $student['name'] . '%');
+                })->first();
+                if ($orderCourse) {
+                    $course['order_course_id'] = $orderCourse->id;
+                    return $course;
+                }
+                $course['order_course_id'] = null;
+                return $course;
+            });
+            return $student;
+        });
+
+
+        // Filter students that does not have order_course_id
+        $students = $students->filter(function ($student) {
+            return $student['courses']->some(function ($course) {
+                return $course['order_course_id'] != null;
+            });
+        })->values();
+
+        $students->each(function ($student) {
+            $student['courses']->each(function ($course) use ($student) {
+                foreach ($course['cols'] as $col) {
+                    $orderCourse = OrderCourse::where('id', $course['order_course_id'])->first();
+                    $orderCourse->$col = $student['certification'];
+                    $orderCourse->save();
+                }
+            });
+        });
+
+        return ['Exito' => $students];
     }
 
 
