@@ -123,22 +123,26 @@ class AssignmentsController extends Controller
         $hoy = Carbon::today();
         $estudiantesRetrasados = Student::whereHas('orders.dues', function ($query) use ($hoy) {
             $query->where('date', '<', $hoy->subDays(5))
-                //->whereNull('payment_receipt')
-                ->where('paid', '<>', 1);
+                ->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                });
         })
-        ->when($user->role_id != 1, function ($query) use ($user) {
-            return $query->where('user_id', $user->id);
-        })
-        ->with('user')->get()->map(function ($student) {
-            $student->message = MessagesController::getMessagesEstudiantesRetrasados($student->name);
-            return $student;
-
-        })->values();
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })
+            ->with('user')->get()->map(function ($student) {
+                $student->message = MessagesController::getMessagesEstudiantesRetrasados($student->name);
+                return $student;
+            })->values();
 
         $hoy = Carbon::today();
         $estudiantesConPocoRetraso = Student::whereHas('orders.dues', function ($query) use ($hoy) {
             $query->where('date', '>=', $hoy->subDays(5))
-                ->where('paid', '<>', 1);
+                ->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                });
         })->when($user->role_id != 1, function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })
@@ -167,15 +171,18 @@ class AssignmentsController extends Controller
         $hoy = Carbon::today();
         $estudiantesPagoHoyIniciaFufuro = Student::whereHas('orders.dues', function ($query) use ($manana, $hoy) {
             $query->where('date', $hoy->format('Y-m-d'))
-                  ->where('paid', false);
+                ->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                });
         })->when($user->role_id != 1, function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })
-        ->whereHas('orders.orderCourses', function ($subQuery) use ($manana) {
-            // Inicia despues de mañana
-            $subQuery->where('start', '>', $manana->format('Y-m-d'));
-        })
-        ->get();
+            ->whereHas('orders.orderCourses', function ($subQuery) use ($manana) {
+                // Inicia despues de mañana
+                $subQuery->where('start', '>', $manana->format('Y-m-d'));
+            })
+            ->get();
 
 
         $hoy = Carbon::today();
@@ -185,11 +192,14 @@ class AssignmentsController extends Controller
         })->when($user->role_id != 1, function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })
-        ->whereHas('orders.dues', function ($query) use ($hoy) {
-            $query->where('date', '>' , $hoy)
-                  ->where('paid', false);
-        })
-        ->get();
+            ->whereHas('orders.dues', function ($query) use ($hoy) {
+                $query->where('date', '>', $hoy)
+                    ->where(function ($query) {
+                        $query->where('paid', 0)
+                            ->orWhereNull('paid');
+                    });
+            })
+            ->get();
 
 
         $lunes = Carbon::parse('next monday');
@@ -202,10 +212,10 @@ class AssignmentsController extends Controller
         })->when($user->role_id != 1, function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })->get()
-        ->map(function ($student) {
-            $student->message = MessagesController::estudiantesPagaHoyIniciaLunes($student->name, $student->orders->last()->dues->last());
-            return $student;
-        })->values();
+            ->map(function ($student) {
+                $student->message = MessagesController::estudiantesPagaHoyIniciaLunes($student->name, $student->orders->last()->dues->last());
+                return $student;
+            })->values();
 
 
         // $freezings = Freezing

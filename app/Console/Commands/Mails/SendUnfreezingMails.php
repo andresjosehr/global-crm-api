@@ -33,75 +33,78 @@ class SendUnfreezingMails extends Command
     {
         $times = [];
         $startTime = microtime(true);
-         // return ZohoToken::where('token', '<>', '')->first();
-         $mode = 'prod';
+        // return ZohoToken::where('token', '<>', '')->first();
+        $mode = 'prod';
 
-         // Memory limit
-         ini_set('memory_limit', -1);
+        // Memory limit
+        ini_set('memory_limit', -1);
 
-         $data = new StudentsExcelController();
-         $students = $data->index($mode);
-         // return json_encode($students);
+        $data = new StudentsExcelController();
+        $students = $data->index($mode);
+        // return json_encode($students);
 
-         $endTime = microtime(true);
-         $times['ConsultaDatos'] = $endTime - $startTime;
-         $startTime = $endTime;
+        $endTime = microtime(true);
+        $times['ConsultaDatos'] = $endTime - $startTime;
+        $startTime = $endTime;
 
-         $students = array_map(function ($student) {
-             $student['courses'] = array_map(function ($course) use ($student) {
-                 if ($course['type'] == 'paid') {
-                     $course['access'] = $student["ACCESOS"];
-                 }
-                 if ($course['type'] == 'free') {
-                     $cols = [6 => "EXC ACCESOS", 7 => "PBI ACCESOS", 8 => "PBI ACCESOS", 9 => "MSP ACCESOS"];
-                     $course['access'] = $student[$cols[$course['course_id']]];
-                 }
+        $students = array_map(function ($student) {
+            $student['courses'] = array_map(function ($course) use ($student) {
+                if ($course['type'] == 'paid') {
+                    $course['access'] = $student["ACCESOS"];
+                }
+                if ($course['type'] == 'free') {
+                    $cols = [6 => "EXC ACCESOS", 7 => "PBI ACCESOS", 8 => "PBI ACCESOS", 9 => "MSP ACCESOS"];
+                    $course['access'] = $student[$cols[$course['course_id']]];
+                }
 
-                 $course['_start'] = Carbon::parse($course['start'])->setTimezone('America/Lima')->startOfDay()->format('Y-m-d');
-                 $course['_now']   = Carbon::now()->setTimezone('America/Lima')->startOfDay()->format('Y-m-d');
+                $course['_start'] = Carbon::parse($course['start'])->setTimezone('America/Lima')->startOfDay()->format('Y-m-d');
+                $course['_now']   = Carbon::now()->setTimezone('America/Lima')->startOfDay()->format('Y-m-d');
 
-                 return $course;
-             }, $student['courses']);
-             return $student;
-         }, $students);
-
-
-
-         $students = array_filter($students, function ($student) {
-             $courses = array_filter($student['courses'], function ($course) use ($student) {
-                 if (!$course['start'] || $course['access'] != 'CORREO CONGELAR') {
-                     return null;
-                 }
-
-                 $now = Carbon::now()->setTimezone('America/Lima');
-                 $start = Carbon::parse($course['start'])->setTimezone('America/Lima')->startOfDay(); // Ajustamos al inicio del día
-                 $tomorrow = $now->copy()->addDay();
-                 // if today is saturday
-                 if($now->isSaturday()){
-                     $tomorrow->addDay();
-                 }
-
-
-                 // Check if start is tomorrow
-                 if (!$start->isSameDay($tomorrow)) {
-                     return false;
-                 }
-
-                 return true;
-             });
-             return count($courses) > 0;
-         });
-
-
-         $students = array_values($students);
-
-
-         self::sendMails($students);
-         self::updateExcel($students);
+                return $course;
+            }, $student['courses']);
+            return $student;
+        }, $students);
 
 
 
-         return $this->line(json_encode(["Data Excel" => $students]));
+        $students = array_filter($students, function ($student) {
+            $courses = array_filter($student['courses'], function ($course) use ($student) {
+                if (!$course['start'] || $course['access'] != 'CORREO CONGELAR') {
+                    return null;
+                }
+
+                $now = Carbon::now()->setTimezone('America/Lima');
+                $start = Carbon::parse($course['start'])->setTimezone('America/Lima')->startOfDay(); // Ajustamos al inicio del día
+                $tomorrow = $now->copy()->addDay();
+                // if today is saturday
+                if ($now->isSaturday()) {
+                    $tomorrow->addDay();
+                }
+
+                $tomorrow->addDay();
+                $tomorrow->addDay();
+
+
+                // Check if start is tomorrow
+                if (!$start->isSameDay($tomorrow)) {
+                    return false;
+                }
+
+                return true;
+            });
+            return count($courses) > 0;
+        });
+
+
+        $students = array_values($students);
+
+
+        self::sendMails($students);
+        self::updateExcel($students);
+
+
+
+        return $this->line(json_encode(["Data Excel" => $students]));
 
         return Command::SUCCESS;
     }
@@ -124,7 +127,7 @@ class SendUnfreezingMails extends Command
             $scheduleTime = Carbon::now()->setTimezone('America/Lima')->addDay()->format('m/d/Y');
 
             // Check if scheduleTime is sunday, if so, add one more day
-            if(Carbon::parse($scheduleTime)->isSunday()){
+            if (Carbon::parse($scheduleTime)->isSunday()) {
                 $scheduleTime = Carbon::parse($scheduleTime)->addDay()->format('m/d/Y');
             }
 
@@ -142,7 +145,7 @@ class SendUnfreezingMails extends Command
     public function updateExcel($students)
     {
 
-        $dataU = array_map(function($student){
+        $dataU = array_map(function ($student) {
             return [
                 'value' => 'PROGRAMADO (DESCONGELAR)',
                 'column' => 'K',
