@@ -311,7 +311,7 @@ class OrdersController extends Controller
     {
 
         $order = Order::with('orderCourses.course', 'orderCourses.extensions', 'orderCourses.certificationTests.due', 'orderCourses', 'orderCourses.freezings.due', 'orderCourses.dateHistory', 'sapInstalations.staff', 'sapInstalations.lastSapTry', 'sapInstalations.due', 'sapInstalations.student', 'sapInstalations.due', 'currency', 'dues', 'createdBy', 'invoice')
-        ->find($id);
+            ->find($id);
 
         $order->freezings = $order->orderCourses->map(function ($item) {
             return $item->freezings;
@@ -357,7 +357,9 @@ class OrdersController extends Controller
             $order->terms_confirmed_by_student = $request->terms_confirmed_by_student;
             $order->observations               = $request->observations;
             $order->free_courses_date          = $request->free_courses_date;
-            $order->price_amount               = $request->price_amount;
+            if ($request->price_amount) {
+                $order->price_amount               = $request->price_amount;
+            }
 
             $order->save();
 

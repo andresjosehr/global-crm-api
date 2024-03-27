@@ -45,56 +45,137 @@ class TestController extends Controller
 
         // max execution time
         ini_set('max_execution_time', -1);
-        $jobs = Careerjet::whereNull('category')
-        // Order by country rand
-        ->orderByRaw('RAND()')
-        ->get();
+        // Get certificados.csv from storage/app
+        $students =  file_get_contents(storage_path('app/certificados.csv'));
 
-        foreach ($jobs as $job) {
+        // Convert to array
+        $students = explode("\n", $students);
+        $students = array_map(function ($student) {
+            return explode(",", $student);
+        }, $students);
 
-            $response = Http::withHeaders([
-                'Authorization' => '',
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ])->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4-turbo-preview',
-                'messages' => [
-                    ['role' => 'system', 'content' => 'Eres un clasificador de categorias de trabajo'],
-                    ['role' => 'user', 'content' => '
-                            Eres un clasificador de categorías de trabajo. Se pasará un título de un trabajo y dirás a que categoría pertenece. Solo dirás el nombre de la categoría, ya serás parte de un proceso de automatizacion en la que si respondes algo distinto romperas el proceso. Las categorias son las siguientes
+        // Attach headers to each row
+        $headers = collect($students[0]);
+        $students = collect($students)->map(function ($row) use ($headers) {
+            return collect($row)->mapWithKeys(function ($item, $key) use ($headers) {
+                // remove \r
+                $item = str_replace("\r", "", $item);
+                $headers[$key] = str_replace("\r", "", $headers[$key]);
 
-                            Administración
-                            Atención Médica
-                            Construcción
-                            Desarrollo de Negocios
-                            Finanzas
-                            Ventas
-                            Gestión de Proyectos
-                            Ingeniería de Software
-                            Ingieneria
-                            Marketing &amp; Comunicación
-                            Recursos Humanos
-                            SAP
-                            Servicio al Cliente
-                            Tecnologías de la información
-                            Otro
+                if ($headers[$key] == 'courses') {
+                    $courses = explode('+', $item);
+                    $courses = array_map(function ($course) {
+                        return trim($course);
+                    }, $courses);
+                    return [$headers[$key] => $courses];
+                }
 
-                            Responde "ok" para continuar y luego de eso empezará el proceso
-                        '],
-                    // chatgpt response
-                    ['role' => 'assistant', 'content' => 'Ok'],
-                    ['role' => 'user', 'content' => '
-                        Título del trbrajo: '.$job->title],
-                ],
+                return [$headers[$key] => $item];
+            });
+        });
 
-            ]);
+        // Remove headers
+        $students = $students->slice(1)->values();
 
-            $category = json_decode($response->getBody()->getContents())->choices[0]->message->content;
-            $job->category=$category;
-            $job->save();
-        }
+        $students = $students->filter(function ($student) {
+            return isset($student['courses']);
+        });
 
-        return  json_decode($response->getBody()->getContents())->choices[0]->message->content;
+        // Get all students that does not exist in the database
+        $students = $students->filter(function ($student) {
+            return Student::where('name', 'LIKE', '%' . $student['name'] . '%')->exists();
+        })->values();
+
+        // return $students->values()->pluck('name')->unique()->values();
+
+        $coursesDB = Course::all()->pluck('id', 'short_name')->toArray();
+        $coursesDB['SAP INTEGRAL'] = 5;
+        $coursesDB['POWER BI (BASICO)'] = 7;
+        $coursesDB['POWER BI (AVANZADO)'] = 8;
+        $coursesDB['POWER BI'] = 7;
+        $coursesDB['MS PROJECT (BASICO)'] = 9;
+
+        $students = $students->map(function ($student) use ($coursesDB) {
+
+            $student['courses'] = collect($student['courses'])->map(function ($course) use ($student, $coursesDB) {
+
+                // If includes 'Excel Empresarial'
+                if (strpos($course, 'EXCEL EMPRESARIAL') !== false || strpos($course, 'EXCEL') !== false) {
+
+                    // if contains '3 niveles'
+                    if (strpos($course, '3 NIVELES') !== false) {
+                        $course = [
+                            'name' => 'EXCEL',
+                            'course_id' => $coursesDB['EXCEL'],
+                            'cols' => [
+                                'certification_status_excel_1',
+                                'certification_status_excel_2',
+                                'certification_status_excel_3'
+                            ]
+                        ];
+
+                        return $course;
+                    }
+                    // get what is between parenthesis
+                    preg_match_all("/\((.*?)\)/", $course, $matches);
+                    $niveles = explode(' - ', $matches[1][0]);
+                    $course2 = [
+                        'name' => 'EXCEL',
+                        'course_id' => $coursesDB['EXCEL'],
+                        'cols' => []
+                    ];
+                    $colKeys = [
+                        'BASICO' => 'certification_status_excel_1',
+                        'INTERMEDIO' => 'certification_status_excel_2',
+                        'AVANZADO' => 'certification_status_excel_3'
+                    ];
+                    foreach ($niveles as $nivel) {
+                        $course = str_replace($matches[0][0], '', $course);
+                        $course2['cols'][] = $colKeys[$nivel];
+                    }
+
+                    return $course2;
+                }
+
+                $course = [
+                    'name' => $course,
+                    'course_id' => $coursesDB[$course],
+                    'cols' => ['certification_status']
+                ];
+
+                return $course;
+            });
+            return $student;
+        });
+
+        $students = $students->map(function ($student) use ($coursesDB) {
+
+            $student['courses'] = $student['courses']->map(function ($course) use ($student) {
+                if (!isset($course['course_id'])) {
+                    Log::info($student);
+                }
+                $orderCourse = OrderCourse::where('course_id', $course['course_id'])->whereHas('order.student', function ($query) use ($student) {
+                    $query->where('name', 'LIKE', '%' . $student['name'] . '%');
+                })->first();
+                if ($orderCourse) {
+                    $course['order_course_id'] = $orderCourse->id;
+                    return $course;
+                }
+                $course['order_course_id'] = null;
+                return $course;
+            });
+            return $student;
+        });
+
+
+        // Filter students that does not have order_course_id
+        $students = $students->filter(function ($student) {
+            return $student['courses']->some(function ($course) {
+                return $course['order_course_id'] == null;
+            });
+        });
+
+        return $students;
     }
 
 
@@ -431,19 +512,19 @@ class TestController extends Controller
         $orders = Order::select('id')->get();
 
         $dues = collect([]);
-        foreach($orders as $order){
-            if($due = Due::where('order_id', $order->id)->orderBy('id', 'asc')->first()){
+        foreach ($orders as $order) {
+            if ($due = Due::where('order_id', $order->id)->orderBy('id', 'asc')->first()) {
                 $dues->push($due);
             }
         }
 
         // Where paid = 0
-        $dues = $dues->filter(function($due){
+        $dues = $dues->filter(function ($due) {
             return $due->paid <> 1;
         });
 
-        $dues = $dues->map(function($due){
-        // update to paid
+        $dues = $dues->map(function ($due) {
+            // update to paid
             $due->paid = 1;
             $due->save();
             return $due;
