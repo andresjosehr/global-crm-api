@@ -125,15 +125,28 @@ class AssignmentsController extends Controller
             $query->where('date', '<', $hoy->subDays(5))
                 //->whereNull('payment_receipt')
                 ->where('paid', '<>', 1);
-        })->with('user')->get();
+        })
+        ->when($user->role_id != 1, function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
+        })
+        ->with('user')->get()->map(function ($student) {
+            $student->message = MessagesController::getMessagesEstudiantesRetrasados($student->name);
+            return $student;
+
+        })->values();
 
         $hoy = Carbon::today();
         $estudiantesConPocoRetraso = Student::whereHas('orders.dues', function ($query) use ($hoy) {
             $query->where('date', '>=', $hoy->subDays(5))
                 ->where('paid', '<>', 1);
+        })->when($user->role_id != 1, function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
         })
             ->with('user')
-            ->get();
+            ->get()->map(function ($student) {
+                $student->message = MessagesController::estudiantesConPocoRetraso($student->name, $student->orders->last()->dues->last());
+                return $student;
+            })->values();
 
 
         $hoy = Carbon::today();
@@ -144,19 +157,39 @@ class AssignmentsController extends Controller
             })->whereHas('orderCourses', function ($subQuery) use ($manana) {
                 $subQuery->where('start', $manana);
             });
-        })->get();
+        })->when($user->role_id != 1, function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
+        })->get()->map(function ($student) {
+            $student->message = MessagesController::estudiantesPagoHoyIniciaManana($student->name, $student->orders->last()->dues->last());
+            return $student;
+        })->values();
 
-
-        $estudiantesPagoManana = Student::whereHas('orders.dues', function ($query) use ($manana) {
-            $query->where('date', $manana)
+        $hoy = Carbon::today();
+        $estudiantesPagoHoyIniciaFufuro = Student::whereHas('orders.dues', function ($query) use ($manana, $hoy) {
+            $query->where('date', $hoy->format('Y-m-d'))
                   ->where('paid', false);
-        })->get();
+        })->when($user->role_id != 1, function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
+        })
+        ->whereHas('orders.orderCourses', function ($subQuery) use ($manana) {
+            // Inicia despues de mañana
+            $subQuery->where('start', '>', $manana->format('Y-m-d'));
+        })
+        ->get();
 
 
+        $hoy = Carbon::today();
         $enTresDias = Carbon::today()->addDays(3);
-        $estudiantesInicianTresDias = Student::whereHas('orders.orderCourses', function ($query) use ($enTresDias) {
+        $estudiantesInicianTresDiasYPaganFuturo = Student::whereHas('orders.orderCourses', function ($query) use ($enTresDias) {
             $query->where('start', $enTresDias);
-        })->get();
+        })->when($user->role_id != 1, function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
+        })
+        ->whereHas('orders.dues', function ($query) use ($hoy) {
+            $query->where('date', '>' , $hoy)
+                  ->where('paid', false);
+        })
+        ->get();
 
 
         $lunes = Carbon::parse('next monday');
@@ -166,7 +199,13 @@ class AssignmentsController extends Controller
             })->whereHas('orderCourses', function ($subQuery) use ($lunes) {
                 $subQuery->where('start', $lunes);
             });
-        })->get();
+        })->when($user->role_id != 1, function ($query) use ($user) {
+            return $query->where('user_id', $user->id);
+        })->get()
+        ->map(function ($student) {
+            $student->message = MessagesController::estudiantesPagaHoyIniciaLunes($student->name, $student->orders->last()->dues->last());
+            return $student;
+        })->values();
 
 
         // $freezings = Freezing
@@ -175,17 +214,17 @@ class AssignmentsController extends Controller
 
 
         $data = [
-            'sapInstalationLinkNotSent'      => $sapInstalationLinkNotSent,
-            'sapInstalationNotSchedule'      => $sapInstalationNotSchedule,
-            'assignments'                    => $assignments,
-            'sapInstalationWithRestrictions' => $sapInstalationWithRestrictions,
-            'freezings'                      => $freezings,
-            'estudiantesRetrasados'          => $estudiantesRetrasados,
-            'estudiantesConPocoRetraso'      => $estudiantesConPocoRetraso,
-            'estudiantesPagoHoyIniciaManana' => $estudiantesPagoHoyIniciaManana,
-            'estudiantesPagoManana'          => $estudiantesPagoManana,
-            'estudiantesInicianTresDias'     => $estudiantesInicianTresDias,
-            'estudiantesPagaHoyIniciaLunes'  => $estudiantesPagaHoyIniciaLunes
+            'sapInstalationLinkNotSent'              => $sapInstalationLinkNotSent,
+            'sapInstalationNotSchedule'              => $sapInstalationNotSchedule,
+            'assignments'                            => $assignments,
+            'sapInstalationWithRestrictions'         => $sapInstalationWithRestrictions,
+            'freezings'                              => $freezings,
+            'estudiantesRetrasados'                  => $estudiantesRetrasados,
+            'estudiantesConPocoRetraso'              => $estudiantesConPocoRetraso,
+            'estudiantesPagoHoyIniciaManana'         => $estudiantesPagoHoyIniciaManana,
+            'estudiantesPagoHoyIniciaFufuro'         => $estudiantesPagoHoyIniciaFufuro,
+            'estudiantesInicianTresDiasYPaganFuturo' => $estudiantesInicianTresDiasYPaganFuturo,
+            'estudiantesPagaHoyIniciaLunes'          => $estudiantesPagaHoyIniciaLunes
         ];
 
 
