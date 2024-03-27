@@ -49,7 +49,7 @@ class MessagesController extends Controller
      */
     public function show($id)
     {
-        if(!$message = Message::find($id)){
+        if (!$message = Message::find($id)) {
             return ApiResponseController::response('No se encontró el mensaje', 404);
         }
 
@@ -96,7 +96,7 @@ class MessagesController extends Controller
 
     static public function getMessagesEstudiantesRetrasados($studentName)
     {
-        $text = 'Hola, '.$studentName.'
+        $text = 'Hola, ' . $studentName . '
 
         Espero te encuentres bien. Lamento que todas las opciones que te he brindado, para evitar que pierdas tu inversión, no sean factibles para ti.
 
@@ -110,14 +110,14 @@ class MessagesController extends Controller
         return $text;
     }
 
-    static public function estudiantesConPocoRetraso($studentName, $due)
+    static public function estudiantesConPocoRetraso($studentName, $due, $order)
     {
 
-        $currency = Currency::find($due->currency_id);
-        $text = '¡Hola! '.$studentName.'
+        $currency = Currency::where('id', $due->currency_id)->orWhere('id', $order->currency_id)->first();
+        $text = '¡Hola! ' . $studentName . '
 
         Te saludamos de parte de *Global Tech Academy*, para recordarte que tienes un *RETRASO* en tu cuota de pago:
-        '.$due->amount.' '.$currency->iso_code.' por vencer el '.Carbon::parse($due->date)->format('d/m/Y').'
+        ' . $due->amount . ' ' . $currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
 
         Quería saber si haz tenido algún problema o si puedo ayudarte en algo, para que realices tu pago y evites cualquier cobro moratorio:
         Recuerda que te matriculaste con un precio *PROMOCIONAL*, el cual está sujeto a tu pago en las fechas acordadas.
@@ -133,10 +133,10 @@ class MessagesController extends Controller
     static public function estudiantesPagoHoyIniciaManana($studentName, $due)
     {
         $currency = Currency::find($due->currency_id);
-        $text = '¡Hola! '.$studentName.'
+        $text = '¡Hola! ' . $studentName . '
 
         Te saludamos de parte de *Global Tech Academy*, para recordarte que hoy vence tu cuota de pago:
-        '.$due->amount.' '.$currency->iso_code.' por vencer el '.Carbon::parse($due->date)->format('d/m/Y').'
+        ' . $due->amount . ' ' . $currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
 
         *Para poder agendar tu fecha de instalación, esta cuota debe estar al día.*
         Luego te estaríamos brindando tus accesos tanto al aula virtual, como al servidor de SAP.
@@ -158,10 +158,10 @@ class MessagesController extends Controller
     {
         $currency = Currency::find($due->currency_id);
         $text = '¡Hola!
-        '.$studentName.'
+        ' . $studentName . '
 
         Te saludamos de parte de *Global Tech Academy*, para recordarte que hoy vence tu cuota de pago:
-        '.$due->amount.' '.$currency->iso_code.' por vencer el '.Carbon::parse($due->date)->format('d/m/Y').'
+        ' . $due->amount . ' ' . $currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
 
         Recuerda que te matriculaste con un precio *PROMOCIONAL*, el cual está sujeto a tu pago en las fechas acordadas.
 
@@ -179,7 +179,7 @@ class MessagesController extends Controller
     {
 
         $text = 'Hola, te escribía para comentarte que el día
-        '.$startDate.'
+        ' . $startDate . '
 
         Es tu fecha de inicio, y muchos de tus compañeros están realizando su pago hoy, para poder recibir la instalación en el horario de su preferencia.
         Conforme los alumnos van pagando, la agenda se va ocupando y luego sólo quedarán algunos horarios disponibles.
@@ -198,10 +198,10 @@ class MessagesController extends Controller
 
         $currency = Currency::find($due->currency_id);
         $text = '¡Hola!
-        '.$studentName.'
+        ' . $studentName . '
 
         Te saludamos de parte de *Global Tech Academy*, para recordarte que hoy vence tu cuota de pago:
-        '.$due->amount.' '.$currency->iso_code.' por vencer el '.Carbon::parse($due->date)->format('d/m/Y').'
+        ' . $due->amount . ' ' . $currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
 
         *Para poder agendar tu fecha de instalación, esta cuota debe estar al día.*
         Luego te estaríamos brindando tus accesos tanto al aula virtual, como al servidor de SAP.

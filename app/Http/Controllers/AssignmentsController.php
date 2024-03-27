@@ -131,6 +131,9 @@ class AssignmentsController extends Controller
             ->when($user->role_id != 1, function ($query) use ($user) {
                 return $query->where('user_id', $user->id);
             })
+            ->whereHas('user', function ($query) {
+                $query->where('role_id', 3);
+            })
             ->with('user')->get()->map(function ($student) {
                 $student->message = MessagesController::getMessagesEstudiantesRetrasados($student->name);
                 return $student;
@@ -146,9 +149,12 @@ class AssignmentsController extends Controller
         })->when($user->role_id != 1, function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })
+            ->whereHas('user', function ($query) {
+                $query->where('role_id', 3);
+            })
             ->with('user')
             ->get()->map(function ($student) {
-                $student->message = MessagesController::estudiantesConPocoRetraso($student->name, $student->orders->last()->dues->last());
+                $student->message = MessagesController::estudiantesConPocoRetraso($student->name, $student->orders->last()->dues->last(), $student->orders->last());
                 return $student;
             })->values();
 
@@ -163,10 +169,14 @@ class AssignmentsController extends Controller
             });
         })->when($user->role_id != 1, function ($query) use ($user) {
             return $query->where('user_id', $user->id);
-        })->get()->map(function ($student) {
-            $student->message = MessagesController::estudiantesPagoHoyIniciaManana($student->name, $student->orders->last()->dues->last());
-            return $student;
-        })->values();
+        })
+            ->whereHas('user', function ($query) {
+                $query->where('role_id', 3);
+            })
+            ->get()->map(function ($student) {
+                $student->message = MessagesController::estudiantesPagoHoyIniciaManana($student->name, $student->orders->last()->dues->last());
+                return $student;
+            })->values();
 
         $hoy = Carbon::today();
         $estudiantesPagoHoyIniciaFufuro = Student::whereHas('orders.dues', function ($query) use ($manana, $hoy) {
@@ -192,6 +202,9 @@ class AssignmentsController extends Controller
         })->when($user->role_id != 1, function ($query) use ($user) {
             return $query->where('user_id', $user->id);
         })
+            ->whereHas('user', function ($query) {
+                $query->where('role_id', 3);
+            })
             ->whereHas('orders.dues', function ($query) use ($hoy) {
                 $query->where('date', '>', $hoy)
                     ->where(function ($query) {
@@ -209,9 +222,13 @@ class AssignmentsController extends Controller
             })->whereHas('orderCourses', function ($subQuery) use ($lunes) {
                 $subQuery->where('start', $lunes);
             });
-        })->when($user->role_id != 1, function ($query) use ($user) {
-            return $query->where('user_id', $user->id);
-        })->get()
+        })
+            ->whereHas('user', function ($query) {
+                $query->where('role_id', 3);
+            })
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                return $query->where('user_id', $user->id);
+            })->get()
             ->map(function ($student) {
                 $student->message = MessagesController::estudiantesPagaHoyIniciaLunes($student->name, $student->orders->last()->dues->last());
                 return $student;

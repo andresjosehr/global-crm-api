@@ -46,19 +46,24 @@ class TestController extends Controller
         // Enable query log
         DB:
         $hoy = Carbon::today();
-        $estudiantesRetrasados = Student::whereHas('orders.dues', function ($query) use ($hoy) {
-            $query->where('date', '<', $hoy->subDays(5))
+        $estudiantesConPocoRetraso = Student::whereHas('orders.dues', function ($query) use ($hoy) {
+            $query->where('date', '>=', $hoy->subDays(5))
                 ->where(function ($query) {
                     $query->where('paid', 0)
                         ->orWhereNull('paid');
                 });
         })
-            ->with('user')->get()->map(function ($student) {
-                $student->message = MessagesController::getMessagesEstudiantesRetrasados($student->name);
+            ->whereHas('user', function ($query) {
+                $query->where('role_id', 3);
+            })
+            ->with('user')
+            ->get()->map(function ($student) {
+                Log::info($student->orders->last()->dues->last());
+                $student->message = MessagesController::estudiantesConPocoRetraso($student->name, $student->orders->last()->dues->last(), $student->orders->last());
                 return $student;
             })->values();
 
-        return $estudiantesRetrasados;
+        return $estudiantesConPocoRetraso;
     }
 
 
