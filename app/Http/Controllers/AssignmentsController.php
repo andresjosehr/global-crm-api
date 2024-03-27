@@ -123,6 +123,7 @@ class AssignmentsController extends Controller
         $hoy = Carbon::today();
         $estudiantesRetrasados = Student::whereHas('orders.dues', function ($query) use ($hoy) {
             $query->where('date', '<', $hoy->subDays(5))
+                ->where('date', '<', Carbon::today())
                 ->where(function ($query) {
                     $query->where('paid', 0)
                         ->orWhereNull('paid');
@@ -142,6 +143,7 @@ class AssignmentsController extends Controller
         $hoy = Carbon::today();
         $estudiantesConPocoRetraso = Student::whereHas('orders.dues', function ($query) use ($hoy) {
             $query->where('date', '>=', $hoy->subDays(5))
+                ->where('date', '<', Carbon::today())
                 ->where(function ($query) {
                     $query->where('paid', 0)
                         ->orWhereNull('paid');
