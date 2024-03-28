@@ -221,7 +221,7 @@ class OrderCourse extends Model implements Auditable
             return null;
         }
 
-        $orderCourses = OrderCourse::where('type', 'paid')->where('certification_status', 'Emitido')->where('order_id', $this->order_id)->count();
+        $orderCourses = OrderCourse::where('type', 'paid')->where('certification_status', 'like', '%Emitido%')->where('order_id', $this->order_id)->count();
 
 
         if ($orderCourses == 0) {
