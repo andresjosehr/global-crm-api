@@ -194,7 +194,10 @@ class AssignmentsController extends Controller
                 // Inicia despues de mañana
                 $subQuery->where('start', '>', $manana->format('Y-m-d'));
             })
-            ->get();
+            ->get()->map(function ($student) {
+                $student->message = MessagesController::estudiantesPagoHoyIniciaFufuro($student->name, $student->orders->last()->dues->last());
+                return $student;
+            })->values();
 
 
         $hoy = Carbon::today();
