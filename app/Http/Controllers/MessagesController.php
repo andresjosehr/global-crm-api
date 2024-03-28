@@ -174,17 +174,19 @@ class MessagesController extends Controller
         return $text;
     }
 
-    static public function estudiantesInicianTresDias($startDate)
+    static public function estudiantesInicianTresDiasYPaganFuturo($studentName, $due)
     {
 
-        $text = 'Hola, te escribía para comentarte que el día
-        ' . $startDate . '
+        $text = '¡Hola!
+        ' . $studentName . '
 
-        Es tu fecha de inicio, y muchos de tus compañeros están realizando su pago hoy, para poder recibir la instalación en el horario de su preferencia.
-        Conforme los alumnos van pagando, la agenda se va ocupando y luego sólo quedarán algunos horarios disponibles.
+        Te saludamos de parte de Global Tech Academy, para recordarte que en los proximos dias está por vencer tu cuota:
 
-        Por eso aproveché para consultarte, si es que puedes ir adelantando tu pago para hoy, y así agendar de una vez tu instalación para el día de tu inicio.
-        De esta manera escoges un horario que se acomode a ti, y no sólo los que queden libres.';
+        ' . $due->amount . ' ' . $due->currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
+
+        Recuerda que te matriculaste con un precio PROMOCIONAL, el cual está sujeto a tu pago en las fechas acordadas.
+
+        Disculpa si el recordatorio te genera alguna incomodidad, pero aprovechamos de hacer los recordatorios para evitar cualquier retraso.';
 
         // remove space from the beginning of each line
         $text = preg_replace('/^\s+/m', '', $text);
