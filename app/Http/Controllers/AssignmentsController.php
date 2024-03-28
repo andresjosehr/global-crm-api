@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
+use App\Models\Due;
 use App\Models\Freezing;
 use App\Models\OrderCourse;
 use App\Models\SapInstalation;
@@ -156,7 +157,11 @@ class AssignmentsController extends Controller
             })
             ->with('user')
             ->get()->map(function ($student) {
-                $student->message = MessagesController::estudiantesConPocoRetraso($student->name, $student->orders->last()->dues->last(), $student->orders->last());
+                $due = Due::where('date', '>', Carbon::now()->subDays(5))->where('date', '<', Carbon::today())->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                })->where('order_id', $student->orders->last()->id)->first();
+                $student->message = MessagesController::estudiantesConPocoRetraso($student->name, $due, $student->orders->last());
                 return $student;
             })->values();
 
@@ -165,7 +170,10 @@ class AssignmentsController extends Controller
         $manana = Carbon::tomorrow();
         $estudiantesPagoHoyIniciaManana = Student::whereHas('orders', function ($query) use ($hoy, $manana) {
             $query->whereHas('dues', function ($subQuery) use ($hoy) {
-                $subQuery->where('date', $hoy);
+                $subQuery->where('date', $hoy)->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                });
             })->whereHas('orderCourses', function ($subQuery) use ($manana) {
                 $subQuery->where('start', $manana);
             });
@@ -176,7 +184,11 @@ class AssignmentsController extends Controller
                 $query->where('role_id', 3);
             })
             ->get()->map(function ($student) {
-                $student->message = MessagesController::estudiantesPagoHoyIniciaManana($student->name, $student->orders->last()->dues->last());
+                $due = Due::where('date', Carbon::now()->format('Y-m-d'))->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                })->where('order_id', $student->orders->last()->id)->first();
+                $student->message = MessagesController::estudiantesPagoHoyIniciaManana($student->name, $due);
                 return $student;
             })->values();
 
@@ -195,7 +207,11 @@ class AssignmentsController extends Controller
                 $subQuery->where('start', '>', $manana->format('Y-m-d'));
             })
             ->get()->map(function ($student) {
-                $student->message = MessagesController::estudiantesPagoHoyIniciaFufuro($student->name, $student->orders->last()->dues->last());
+                $due = Due::where('date', Carbon::now()->format('Y-m-d'))->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                })->where('order_id', $student->orders->last()->id)->first();
+                $student->message = MessagesController::estudiantesPagoHoyIniciaFufuro($student->name, $due);
                 return $student;
             })->values();
 
@@ -235,7 +251,11 @@ class AssignmentsController extends Controller
                 return $query->where('user_id', $user->id);
             })->get()
             ->map(function ($student) {
-                $student->message = MessagesController::estudiantesPagaHoyIniciaLunes($student->name, $student->orders->last()->dues->last());
+                $due = Due::where('date', Carbon::now()->format('Y-m-d'))->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                })->where('order_id', $student->orders->last()->id)->first();
+                $student->message = MessagesController::estudiantesPagaHoyIniciaLunes($student->name, $due);
                 return $student;
             })->values();
 
