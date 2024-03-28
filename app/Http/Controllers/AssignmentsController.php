@@ -122,7 +122,7 @@ class AssignmentsController extends Controller
         // Cuando el alumno tiene más de 5 días de retraso en un cuota:
         $hoy = Carbon::today();
         $estudiantesRetrasados = Student::whereHas('orders.dues', function ($query) use ($hoy) {
-            $query->where('date', '<', $hoy->subDays(5))
+            $query->where('date', '=<', $hoy->subDays(5))
                 ->where('date', '<', Carbon::today())
                 ->where(function ($query) {
                     $query->where('paid', 0)

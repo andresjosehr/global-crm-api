@@ -43,6 +43,25 @@ class TestController extends Controller
     public function index()
     {
 
+        $hoy = Carbon::today();
+        return $estudiantesRetrasados = Student::whereHas('orders.dues', function ($query) use ($hoy) {
+            $query
+                // ->where('date', '<', $hoy->subDays(5))
+                // ->where('date', '<', Carbon::today())
+                ->where(function ($query) {
+                    // $query
+                    // ->where('paid', 0)
+                    // ->orWhereNull('paid');
+                });
+        })
+            ->whereHas('user', function ($query) {
+                $query->where('role_id', 3);
+            })
+            ->with('user')->get()->map(function ($student) {
+                $student->message = MessagesController::getMessagesEstudiantesRetrasados($student->name);
+                return $student;
+            })->values()->pluck('name')->toArray();
+
         // max execution time
         ini_set('max_execution_time', -1);
         // Get certificados.csv from storage/app
