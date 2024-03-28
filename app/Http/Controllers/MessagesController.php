@@ -116,8 +116,8 @@ class MessagesController extends Controller
         $currency = Currency::where('id', $due->currency_id)->orWhere('id', $order->currency_id)->first();
         $text = '¡Hola! ' . $studentName . '
 
-        Te saludamos de parte de *Global Tech Academy*, para recordarte que tienes un *RETRASO* en tu cuota de pago:
-        ' . $due->amount . ' ' . $currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
+        Te saludamos de parte de *Global Tech Academy*, para recordarte que tienes un *RETRASO* en tu cuota de pago desde el ' . Carbon::parse($due->date)->format('d/m/Y') . ' por el monto de:
+        ' . $due->amount . ' ' . $currency->iso_code . '
 
         Quería saber si haz tenido algún problema o si puedo ayudarte en algo, para que realices tu pago y evites cualquier cobro moratorio:
         Recuerda que te matriculaste con un precio *PROMOCIONAL*, el cual está sujeto a tu pago en las fechas acordadas.
