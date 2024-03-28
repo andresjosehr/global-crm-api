@@ -233,7 +233,14 @@ class AssignmentsController extends Controller
                             ->orWhereNull('paid');
                     });
             })
-            ->get();
+            ->get()->map(function ($student) {
+                $due = Due::where('date', '>', Carbon::now()->format('Y-m-d'))->where(function ($query) {
+                    $query->where('paid', 0)
+                        ->orWhereNull('paid');
+                })->where('order_id', $student->orders->last()->id)->first();
+                $student->message = MessagesController::estudiantesInicianTresDiasYPaganFuturo($student->name, $due);
+                return $student;
+            })->values();
 
 
         $lunes = Carbon::parse('next monday');
