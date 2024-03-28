@@ -160,8 +160,7 @@ class MessagesController extends Controller
         $text = '¡Hola!
         ' . $studentName . '
 
-        Te saludamos de parte de *Global Tech Academy*, para recordarte que hoy vence tu cuota de pago:
-        ' . $due->amount . ' ' . $currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
+        Te saludamos de parte de *Global Tech Academy*, para recordarte que hoy ' . Carbon::parse($due->date)->format('d/m/Y') . ' vence tu cuota de pago por el monto de: ' . $due->amount . ' ' . $currency->iso_code . '.
 
         Recuerda que te matriculaste con un precio *PROMOCIONAL*, el cual está sujeto a tu pago en las fechas acordadas.
 
@@ -200,8 +199,7 @@ class MessagesController extends Controller
         $text = '¡Hola!
         ' . $studentName . '
 
-        Te saludamos de parte de *Global Tech Academy*, para recordarte que hoy vence tu cuota de pago:
-        ' . $due->amount . ' ' . $currency->iso_code . ' por vencer el ' . Carbon::parse($due->date)->format('d/m/Y') . '
+        Te saludamos de parte de *Global Tech Academy*, para recordarte que hoy ' . Carbon::parse($due->date)->format('d/m/Y') . ' vence tu cuota de pago por el monto de: ' . $due->amount . ' ' . $currency->iso_code . '.
 
         *Para poder agendar tu fecha de instalación, esta cuota debe estar al día.*
         Luego te estaríamos brindando tus accesos tanto al aula virtual, como al servidor de SAP.
